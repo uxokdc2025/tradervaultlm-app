@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="tokens.css">
+  <style>
+    :root { --profit-soft:rgba(21,128,61,.12); --loss-soft:rgba(220,38,38,.12); --warn:#D97706; --warn-soft:rgba(217,119,6,.14); --page:#F7F6F1; --mkt-purple:#7C3AED; --mkt-purple-soft:rgba(124,58,237,.10); --mkt-green:#16A34A; --stripe:#635BFF; }
+    .tv-dark { --profit-soft:rgba(34,197,94,.16); --loss-soft:rgba(248,113,113,.16); --warn:#FBBF24; --warn-soft:rgba(251,191,36,.16); --page:#0B131B; --mkt-purple:#A78BFA; --mkt-purple-soft:rgba(167,139,250,.14); --mkt-green:#22C55E; }
+    .ms-scroll::-webkit-scrollbar { width:10px; height:10px; }
+    .ms-scroll::-webkit-scrollbar-thumb { background:var(--border); border-radius:6px; }
+    @keyframes ms-pulse { 0%,100%{ opacity:1;} 50%{ opacity:.4;} }
+    @keyframes ms-fade { from{ opacity:0;} to{ opacity:1;} }
+  </style>
+</helmet>
+<dc-import name="_Shell"
+  active-page="mysignals"
+  page-title="My signals"
+  page-subtitle="Manage your published strategies and track your earnings"
+  on-nav-overview="{{ goOverview }}"
+  on-nav-strategies="{{ goStrategies }}"
+  on-nav-analysis="{{ goAnalysis }}"
+  on-nav-chart="{{ goChart }}"
+  on-nav-audit="{{ goAudit }}"
+  on-nav-marketplace="{{ goMarketplace }}"
+  on-nav-mysignals="{{ goMySignals }}"
+  on-nav-settings="{{ goSoon }}"
+  hint-size="100%,100%">
+  {{ mysignalsEl }}
+</dc-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  state = {
+    expanded: { nq: true },
+    confirm: null,            // { id, type:'pause'|'unpublish' }
+    statusOverride: {},       // id -> 'paused'|'live'
+    unpublished: {},          // id -> true
+    publish: null,            // { step, instance, price, free, desc, expect, audit, dna, subc, stripe }
+    toastMsg: null,
+  };
+  componentWillUnmount() { if (this._t) clearTimeout(this._t); }
+  toast(m) { this.setState({ toastMsg: m }); if (this._t) clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toastMsg: null }), 2800); }
+
+  e(t, p, ...k) { return React.createElement(t, p, ...k); }
+  d(style, ...k) { return React.createElement('div', { style }, ...k); }
+  sp(style, ...k) { return React.createElement('span', { style }, ...k); }
+  btn(p, ...k) { return React.createElement('button', { type: 'button', ...p }, ...k); }
+  ic(paths, color, size, sw) { const h = React.createElement; return h('svg', { width: size || 16, height: size || 16, viewBox: '0 0 24 24', fill: 'none', stroke: color, strokeWidth: sw || 2, strokeLinecap: 'round', strokeLinejoin: 'round', style: { flexShrink: 0 } }, paths.map((dd, i) => h('path', { key: i, d: dd }))); }
+
+  // ── DATA ──
+  published() {
+    return [
+      { id: 'nq', name: 'NQ Momentum Pro', ini: 'NQ', grad: ['#7C5CFF', '#3DD5A8'], asset: 'NQ Futures', tf: '5m', style: 'Intraday', published: 'Apr 2026', subs: 847, score: 87, ret: 31.4, win: 74, dd: -7.2, sharpe: 1.92, revenue: 33180, status: 'live' },
+      { id: 'vwap', name: 'VWAP Scalper EU', ini: 'EU', grad: ['#2DD4BF', '#15A88B'], asset: 'EUR/USD', tf: '1H', style: 'Swing', published: 'May 2026', subs: 412, score: 71, ret: 18.2, win: 68, dd: -5.8, sharpe: 1.54, revenue: 11948, status: 'live' },
+      { id: 'es', name: 'ES Swing Setup', ini: 'ES', grad: ['#F59E0B', '#D97706'], asset: 'ES Futures', tf: '1H', style: 'Swing', published: 'Mar 2026', subs: 0, score: 62, ret: 14.1, win: 63, dd: -8.9, sharpe: 1.21, revenue: 0, status: 'paused' },
+    ].filter(s => !this.state.unpublished[s.id]);
+  }
+  statusOf(s) { return this.state.statusOverride[s.id] || s.status; }
+  activity() {
+    return [
+      { ini: 'TK', grad: ['#3B82F6', '#2563EB'], type: 'Subscribed', strat: 'NQ Momentum Pro', time: '2h ago' },
+      { ini: 'SR', grad: ['#2DD4BF', '#15A88B'], type: 'Subscribed', strat: 'NQ Momentum Pro', time: '5h ago' },
+      { ini: 'MJ', grad: ['#F59E0B', '#D97706'], type: 'Cancelled', strat: 'NQ Momentum Pro', time: '1d ago' },
+      { ini: 'PL', grad: ['#A855F7', '#D946A6'], type: 'Paused', strat: 'NQ Momentum Pro', time: '2d ago' },
+      { ini: 'AK', grad: ['#2DD4BF', '#15A88B'], type: 'Subscribed', strat: 'NQ Momentum Pro', time: '2d ago' },
+    ];
+  }
+  subscribers() {
+    return [
+      { ini: 'TK', grad: ['#3B82F6', '#2563EB'], strat: 'NQ Momentum Pro', since: 'Jun 12', price: 49, status: 'Active' },
+      { ini: 'SR', grad: ['#2DD4BF', '#15A88B'], strat: 'NQ Momentum Pro', since: 'Jun 11', price: 49, status: 'Active' },
+      { ini: 'PL', grad: ['#A855F7', '#D946A6'], strat: 'NQ Momentum Pro', since: 'May 20', price: 49, status: 'Paused' },
+      { ini: 'AK', grad: ['#2DD4BF', '#15A88B'], strat: 'VWAP Scalper EU', since: 'Jun 1', price: 29, status: 'Active' },
+      { ini: 'MJ', grad: ['#F59E0B', '#D97706'], strat: 'NQ Momentum Pro', since: 'Apr 10', price: 49, status: 'Cancelled' },
+    ];
+  }
+  payouts() {
+    return [
+      { date: 'Jun 1, 2026', gross: 45175, fee: 9035, net: 36140, status: 'Paid' },
+      { date: 'May 1, 2026', gross: 41200, fee: 8240, net: 32960, status: 'Paid' },
+      { date: 'Apr 1, 2026', gross: 28900, fee: 5780, net: 23120, status: 'Paid' },
+      { date: 'Jul 1, 2026', gross: 49288, fee: 9858, net: 39430, status: 'Pending' },
+    ];
+  }
+  instances() {
+    return [
+      { id: 'i1', name: 'NQ Momentum Pro · Instance 3', meta: 'NQ Futures · 5m · Intraday · 142 trades', ok: true, note: 'Live 47 days' },
+      { id: 'i2', name: 'ES Scalp · Instance 1', meta: 'ES Futures · 1m · Scalp · 320 trades', ok: false, note: 'Live 12 days' },
+      { id: 'i3', name: 'VWAP Scalper · Instance 2', meta: 'EUR/USD · 1H · Swing · 88 trades', ok: false, note: 'Paper only' },
+      { id: 'i4', name: 'Mean Reversion · Instance 1', meta: 'NQ · 5m · Intraday · 64 trades', ok: false, note: 'No live instance' },
+    ];
+  }
+
+  // ── primitives ──
+  money(n) { return '$' + n.toLocaleString(); }
+  scoreColor(s) { if (s >= 90) return 'var(--warn)'; if (s >= 70) return 'var(--mkt-green)'; if (s >= 55) return 'var(--mkt-purple)'; if (s >= 40) return 'var(--warn)'; return 'var(--loss)'; }
+  avatar(ini, grad, size, fs, round) {
+    return this.d({ width: size + 'px', height: size + 'px', borderRadius: (round || (size >= 36 ? '10px' : '50%')), flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,' + grad[0] + ',' + grad[1] + ')', color: '#fff', fontWeight: 700, fontSize: (fs || 13) + 'px' }, ini);
+  }
+  badge(text, kind) {
+    const m = { green: { bg: 'var(--profit-soft)', c: 'var(--profit)', b: 'color-mix(in srgb,var(--profit) 26%,transparent)' }, amber: { bg: 'var(--warn-soft)', c: 'var(--warn)', b: 'color-mix(in srgb,var(--warn) 30%,transparent)' }, gray: { bg: 'var(--subtle)', c: 'var(--muted)', b: 'var(--border-2,var(--border))' }, purple: { bg: 'var(--mkt-purple-soft)', c: 'var(--mkt-purple)', b: 'color-mix(in srgb,var(--mkt-purple) 30%,transparent)' }, blue: { bg: 'rgba(59,130,246,.10)', c: '#2563EB', b: 'rgba(59,130,246,.30)' } }[kind] || { bg: 'var(--subtle)', c: 'var(--muted)', b: 'var(--border)' };
+    return this.sp({ display: 'inline-block', fontSize: '11px', fontWeight: 700, letterSpacing: '0.03em', textTransform: 'uppercase', padding: '3px 9px', borderRadius: '6px', background: m.bg, color: m.c, border: '1px solid ' + m.b, whiteSpace: 'nowrap' }, text);
+  }
+  curveSvg(seed, w, h, stroke) {
+    const n = 26, pts = [];
+    let acc = 9; for (let i = 0; i < seed.length; i++) acc = (acc * 31 + seed.charCodeAt(i)) % 99991;
+    const rnd = (i) => { const x = Math.sin((acc + 1) * (i + 1) * 0.7321) * 9973.13; return x - Math.floor(x); };
+    for (let i = 0; i < n; i++) { const base = 0.16 + (i / (n - 1)) * 0.64; pts.push(Math.max(0.06, Math.min(0.95, base + (rnd(i) - 0.5) * 0.12))); }
+    const X = i => (i / (n - 1)) * w, Y = v => (h - v * h);
+    let line = 'M ' + X(0).toFixed(1) + ' ' + Y(pts[0]).toFixed(1);
+    for (let i = 1; i < n; i++) line += ' L ' + X(i).toFixed(1) + ' ' + Y(pts[i]).toFixed(1);
+    const area = line + ' L ' + w + ' ' + h + ' L 0 ' + h + ' Z';
+    const gid = 'msg' + Math.abs(acc) + Math.round(w);
+    return this.e('svg', { width: '100%', height: h, viewBox: '0 0 ' + w + ' ' + h, preserveAspectRatio: 'none', style: { display: 'block' } },
+      this.e('defs', {}, this.e('linearGradient', { id: gid, x1: '0', y1: '0', x2: '0', y2: '1' }, this.e('stop', { offset: '0%', stopColor: stroke, stopOpacity: '0.18' }), this.e('stop', { offset: '100%', stopColor: stroke, stopOpacity: '0' }))),
+      this.e('path', { d: area, fill: 'url(#' + gid + ')' }),
+      this.e('path', { d: line, fill: 'none', stroke: stroke, strokeWidth: '1.8', strokeLinejoin: 'round', strokeLinecap: 'round' }));
+  }
+  toggle(on, onClick) {
+    return this.btn({ onClick, 'aria-pressed': on, style: { width: '42px', height: '24px', flexShrink: 0, borderRadius: '999px', border: 'none', padding: '3px', cursor: 'pointer', background: on ? 'var(--mkt-purple)' : 'var(--border-2,var(--border))', display: 'flex', justifyContent: on ? 'flex-end' : 'flex-start', transition: 'background .15s' } }, this.d({ width: '18px', height: '18px', borderRadius: '50%', background: '#fff', boxShadow: '0 1px 2px rgba(0,0,0,.25)' }));
+  }
+
+  // ── STATS STRIP ──
+  statCard(value, label, sub, color) {
+    return this.d({ flex: 1, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '14px', padding: '18px 20px' },
+      this.sp({ display: 'block', fontSize: '28px', fontWeight: 800, color: color || 'var(--head)', letterSpacing: '-0.02em', lineHeight: '1' }, value),
+      this.sp({ display: 'block', fontSize: '11px', fontWeight: 700, letterSpacing: '0.05em', color: 'var(--muted)', textTransform: 'uppercase', marginTop: '10px', lineHeight: '1.3' }, label),
+      this.sp({ display: 'block', fontSize: '13px', color: 'var(--muted)', marginTop: '5px' }, sub));
+  }
+  statsStrip() {
+    return this.d({ display: 'flex', gap: '16px' },
+      this.statCard('1,259', 'Total subscribers', '+47 this week', 'var(--head)'),
+      this.statCard('$49,110', 'Monthly recurring revenue', 'Gross before platform fee', 'var(--mkt-purple)'),
+      this.statCard('$39,288', "This month's earnings", 'After 20% platform fee', 'var(--profit)'),
+      this.statCard('3', 'Active strategies', 'Publishing live signals', 'var(--head)'));
+  }
+
+  // ── PUBLISHED CARDS ──
+  metricBox(label, value, color) {
+    return this.d({ flex: 1, background: 'var(--subtle)', border: '1px solid var(--border)', borderRadius: '10px', padding: '11px 13px' },
+      this.sp({ display: 'block', fontSize: '17px', fontWeight: 700, color: color || 'var(--head)', fontVariantNumeric: 'tabular-nums', lineHeight: '1.1' }, value),
+      this.sp({ display: 'block', fontSize: '9px', fontWeight: 700, letterSpacing: '0.06em', color: 'var(--muted)', textTransform: 'uppercase', marginTop: '5px' }, label));
+  }
+  activityRow(a, last) {
+    const col = { Subscribed: 'var(--profit)', Cancelled: 'var(--loss)', Paused: 'var(--warn)' }[a.type];
+    return this.d({ display: 'flex', alignItems: 'center', gap: '11px', padding: '11px 0', borderBottom: last ? 'none' : '1px solid var(--border)' },
+      this.avatar(a.ini, a.grad, 30, 11, '50%'),
+      this.sp({ flex: 1, fontSize: '13.5px', color: 'var(--body)' }, this.sp({ fontWeight: 700, color: col }, a.type), ' — ' + a.strat),
+      this.sp({ fontSize: '12.5px', color: 'var(--muted)', whiteSpace: 'nowrap' }, a.time));
+  }
+  publishedCard(s) {
+    const status = this.statusOf(s);
+    const open = !!this.state.expanded[s.id];
+    const confirming = this.state.confirm && this.state.confirm.id === s.id;
+    const actBtn = (label, on, danger) => this.btn({ onClick: (e) => { e.stopPropagation(); on(); }, style: { height: '40px', padding: '0 18px', borderRadius: '9px', border: '1px solid ' + (danger ? 'var(--tv-red-border,#FECACA)' : 'var(--border-2,var(--border))'), background: 'var(--card)', color: danger ? 'var(--loss)' : 'var(--body)', fontFamily: 'var(--sans)', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }, 'style-hover': 'background:var(--subtle)' }, label);
+    const actions = status === 'paused'
+      ? [actBtn('Resume', () => { this.setState(st => ({ statusOverride: { ...st.statusOverride, [s.id]: 'live' } })); this.toast(s.name + ' resumed — signals routing'); }), actBtn('Unpublish', () => this.setState({ confirm: { id: s.id, type: 'unpublish' } }), true)]
+      : [actBtn('Edit', () => this.openPublish(s)), actBtn('Pause', () => this.setState({ confirm: { id: s.id, type: 'pause' } })), actBtn('Unpublish', () => this.setState({ confirm: { id: s.id, type: 'unpublish' } }), true)];
+    const header = this.e('div', { onClick: () => this.setState(st => ({ expanded: { ...st.expanded, [s.id]: !st.expanded[s.id] } })), style: { display: 'flex', alignItems: 'center', gap: '14px', padding: '18px 20px', cursor: 'pointer' } },
+      this.avatar(s.ini, s.grad, 46, 15),
+      this.d({ flex: 1, minWidth: 0 },
+        this.d({ display: 'flex', alignItems: 'center', gap: '10px' }, this.sp({ fontSize: '17px', fontWeight: 700, color: 'var(--head)' }, s.name), this.badge(status === 'live' ? 'Live' : 'Paused', status === 'live' ? 'green' : 'gray')),
+        this.sp({ display: 'block', fontSize: '13px', color: 'var(--muted)', marginTop: '4px' }, s.asset + ' · ' + s.tf + ' · ' + s.style + ' · Published ' + s.published)),
+      this.badge(s.subs.toLocaleString() + ' subscribers', 'purple'),
+      this.sp({ fontSize: '22px', fontWeight: 800, color: this.scoreColor(s.score), fontVariantNumeric: 'tabular-nums', marginLeft: '4px' }, '' + s.score),
+      this.d({ display: 'flex', gap: '9px', marginLeft: '6px' }, ...actions),
+      this.d({ color: 'var(--muted)', marginLeft: '4px' }, this.ic([open ? 'm18 15-6-6-6 6' : 'm6 9 6 6 6-6'], 'currentColor', 20)));
+    const confirmBar = confirming ? this.confirmBar(s) : null;
+    const body = open ? this.d({ display: 'flex', gap: '20px', padding: '4px 20px 20px', borderTop: '1px solid var(--border)', marginTop: '0' },
+      // left
+      this.d({ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', gap: '12px', paddingTop: '18px' },
+        this.d({ background: 'var(--subtle)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px 16px', height: '110px' }, this.curveSvg(s.id + 'eq', 460, 80, 'var(--mkt-green)')),
+        this.d({ display: 'flex', gap: '10px' }, this.metricBox('Return', '+' + s.ret + '%', 'var(--profit)'), this.metricBox('Win rate', s.win + '%', 'var(--profit)'), this.metricBox('Max DD', s.dd + '%', 'var(--loss)'), this.metricBox('Sharpe', '' + s.sharpe, 'var(--head)')),
+        this.d({ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', borderRadius: '12px', border: '1px solid var(--mkt-purple-soft)', background: 'linear-gradient(135deg, var(--mkt-purple-soft), rgba(45,212,191,.08))' },
+          this.sp({ fontSize: '14px', fontWeight: 600, color: 'var(--mkt-purple)' }, 'Revenue this month'),
+          this.sp({ fontSize: '19px', fontWeight: 800, color: 'var(--mkt-purple)', fontVariantNumeric: 'tabular-nums' }, this.money(s.revenue)))),
+      // right
+      this.d({ flex: '0 0 360px', maxWidth: '360px', borderLeft: '1px solid var(--border)', paddingLeft: '20px', paddingTop: '18px' },
+        this.d({ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '4px' }, this.sp({ fontSize: '15px', fontWeight: 700, color: 'var(--head)' }, 'Subscriber activity'), this.sp({ fontSize: '12.5px', color: 'var(--muted)' }, s.subs.toLocaleString() + ' total')),
+        this.d({}, ...this.activity().map((a, i, arr) => this.activityRow(a, i === arr.length - 1))))) : null;
+    return this.d({ key: s.id, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 1px 2px rgba(15,23,36,.04)' }, header, confirmBar, body);
+  }
+  confirmBar(s) {
+    const c = this.state.confirm;
+    const isPause = c.type === 'pause';
+    const msg = isPause ? 'Pause ' + s.name + '? Subscribers will stop receiving signals. They will not be charged while paused.' : 'Unpublishing removes ' + s.name + ' from the Marketplace. All subscriptions will be cancelled and subscribers notified.';
+    const confirmLabel = isPause ? 'Pause' : 'Unpublish';
+    const onConfirm = () => {
+      if (isPause) { this.setState(st => ({ statusOverride: { ...st.statusOverride, [s.id]: 'paused' }, confirm: null })); this.toast(s.name + ' paused — subscribers not charged'); }
+      else { this.setState(st => ({ unpublished: { ...st.unpublished, [s.id]: true }, confirm: null })); this.toast(s.name + ' unpublished — subscribers notified'); }
+    };
+    return this.d({ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 20px', borderTop: '1px solid var(--border)', background: isPause ? 'var(--warn-soft)' : 'var(--loss-soft)' },
+      this.sp({ flex: 1, fontSize: '13.5px', color: 'var(--head)', lineHeight: '1.5' }, msg),
+      this.btn({ onClick: () => this.setState({ confirm: null }), style: { height: '38px', padding: '0 16px', borderRadius: '9px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--body)', fontFamily: 'var(--sans)', fontSize: '13.5px', fontWeight: 600, cursor: 'pointer' } }, 'Cancel'),
+      this.btn({ onClick: onConfirm, style: { height: '38px', padding: '0 18px', borderRadius: '9px', border: 'none', background: isPause ? 'var(--warn)' : 'var(--loss)', color: '#fff', fontFamily: 'var(--sans)', fontSize: '13.5px', fontWeight: 700, cursor: 'pointer' } }, confirmLabel));
+  }
+
+  // ── EARNINGS ──
+  esum(value, label, sub, color, last) {
+    return this.d({ flex: 1, padding: '18px 22px', borderRight: last ? 'none' : '1px solid var(--border)' },
+      this.sp({ display: 'block', fontSize: '26px', fontWeight: 800, color: color || 'var(--head)', letterSpacing: '-0.02em', lineHeight: '1', fontVariantNumeric: 'tabular-nums' }, value),
+      this.sp({ display: 'block', fontSize: '11px', fontWeight: 700, letterSpacing: '0.05em', color: 'var(--muted)', textTransform: 'uppercase', marginTop: '9px' }, label),
+      this.sp({ display: 'block', fontSize: '13px', color: 'var(--muted)', marginTop: '3px' }, sub));
+  }
+  bandLabel(text) { return this.d({ padding: '12px 22px', background: 'var(--subtle)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }, this.sp({ fontSize: '12px', fontWeight: 700, letterSpacing: '0.05em', color: 'var(--muted)', textTransform: 'uppercase' }, text)); }
+  thRow(cols) {
+    return this.d({ display: 'flex', alignItems: 'center', padding: '12px 22px', borderBottom: '1px solid var(--border)' }, ...cols.map((c, i) =>
+      this.sp({ key: i, flex: c.flex, textAlign: c.align || 'left', fontSize: '11px', fontWeight: 700, letterSpacing: '0.05em', color: 'var(--muted)', textTransform: 'uppercase' }, c.t)));
+  }
+  earningsSection() {
+    const subRows = this.subscribers().map((r, i, arr) => this.d({ key: i, display: 'flex', alignItems: 'center', padding: '14px 22px', borderBottom: i === arr.length - 1 ? 'none' : '1px solid var(--border)' },
+      this.d({ flex: '2 1 0', display: 'flex', alignItems: 'center', gap: '12px' }, this.avatar(r.ini, r.grad, 34, 12, '50%'), this.sp({ fontSize: '14.5px', fontWeight: 600, color: 'var(--head)' }, r.ini, this.sp({ color: 'var(--muted)' }, '••'))),
+      this.sp({ flex: '3 1 0', fontSize: '14px', color: 'var(--body)' }, r.strat),
+      this.sp({ flex: '2 1 0', fontSize: '14px', color: 'var(--body)', fontVariantNumeric: 'tabular-nums' }, r.since),
+      this.sp({ flex: '2 1 0', fontSize: '14px', fontWeight: 600, color: 'var(--head)', fontVariantNumeric: 'tabular-nums' }, '$' + r.price),
+      this.d({ flex: '2 1 0' }, this.badge(r.status, r.status === 'Active' ? 'green' : (r.status === 'Paused' ? 'amber' : 'gray')))));
+    const payRows = this.payouts().map((r, i, arr) => this.d({ key: i, display: 'flex', alignItems: 'center', padding: '15px 22px', borderBottom: i === arr.length - 1 ? 'none' : '1px solid var(--border)' },
+      this.sp({ flex: '2 1 0', fontSize: '14px', color: 'var(--head)', fontWeight: 500, fontVariantNumeric: 'tabular-nums' }, r.date),
+      this.sp({ flex: '2 1 0', fontSize: '14px', color: 'var(--body)', fontVariantNumeric: 'tabular-nums' }, this.money(r.gross)),
+      this.sp({ flex: '2 1 0', fontSize: '14px', color: 'var(--loss)', fontVariantNumeric: 'tabular-nums' }, '-' + this.money(r.fee)),
+      this.sp({ flex: '2 1 0', fontSize: '14px', fontWeight: 700, color: r.status === 'Pending' ? 'var(--mkt-purple)' : 'var(--profit)', fontVariantNumeric: 'tabular-nums' }, this.money(r.net)),
+      this.d({ flex: '2 1 0' }, this.badge(r.status, r.status === 'Paid' ? 'green' : 'amber'))));
+    return this.d({ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', overflow: 'hidden' },
+      this.d({ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 22px' },
+        this.sp({ fontSize: '19px', fontWeight: 700, color: 'var(--head)', letterSpacing: '-0.01em' }, 'Earnings'),
+        this.sp({ fontSize: '14px', color: 'var(--muted)' }, 'Next payout: ', this.sp({ fontWeight: 700, color: 'var(--head)' }, '$31,430 on Jul 1'))),
+      this.d({ display: 'flex', borderTop: '1px solid var(--border)' },
+        this.esum('$39,288', 'This month', 'After 20% fee', 'var(--profit)'),
+        this.esum('$36,140', 'Last month', 'After 20% fee', 'var(--profit)'),
+        this.esum('$184,920', 'All time', 'After fees', 'var(--head)'),
+        this.esum('$31,430', 'Next payout', 'Jul 1, 2026', 'var(--mkt-purple)', true)),
+      this.bandLabel('Subscribers'),
+      this.thRow([{ t: 'Subscriber', flex: '2 1 0' }, { t: 'Strategy', flex: '3 1 0' }, { t: 'Since', flex: '2 1 0' }, { t: 'Monthly', flex: '2 1 0' }, { t: 'Status', flex: '2 1 0' }]),
+      ...subRows,
+      this.bandLabel('Payout history'),
+      this.thRow([{ t: 'Date', flex: '2 1 0' }, { t: 'Gross', flex: '2 1 0' }, { t: 'Platform fee (20%)', flex: '2 1 0' }, { t: 'Net', flex: '2 1 0' }, { t: 'Status', flex: '2 1 0' }]),
+      ...payRows);
+  }
+
+  // ── EMPTY STATE ──
+  emptyState() {
+    const reqs = [['Have a strategy with a live instance', true], ['Live instance running for 30+ days', true], ['Stripe account connected', false]];
+    const allMet = reqs.every(r => r[1]);
+    return this.d({ maxWidth: '560px', margin: '40px auto', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '40px', textAlign: 'center' },
+      this.d({ width: '60px', height: '60px', borderRadius: '14px', margin: '0 auto 20px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--mkt-purple-soft)', color: 'var(--mkt-purple)' }, this.ic(['M4.9 19.1A10 10 0 0 1 4.9 5', 'M7.8 16.2a6 6 0 0 1 0-8.4', 'M16.2 7.8a6 6 0 0 1 0 8.4', 'M19.1 4.9a10 10 0 0 1 0 14.2'], 'currentColor', 28), this.d({ position: 'absolute' })),
+      this.sp({ display: 'block', fontSize: '21px', fontWeight: 800, color: 'var(--head)', letterSpacing: '-0.01em' }, "You haven't published any strategies yet"),
+      this.sp({ display: 'block', fontSize: '15px', color: 'var(--muted)', marginTop: '8px' }, 'Publish a live strategy and start earning from your signals'),
+      this.d({ textAlign: 'left', margin: '24px 0', display: 'flex', flexDirection: 'column', gap: '12px' }, ...reqs.map(([label, met], i) =>
+        this.d({ key: i, display: 'flex', alignItems: 'center', gap: '12px' },
+          this.d({ width: '22px', height: '22px', borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: met ? 'var(--profit-soft)' : 'var(--loss-soft)' }, this.ic(met ? ['M20 6 9 17l-5-5'] : ['M18 6 6 18', 'm6 6 12 12'], met ? 'var(--profit)' : 'var(--loss)', 13, 2.6)),
+          this.sp({ fontSize: '14.5px', color: 'var(--body)' }, label)))),
+      this.btn({ onClick: () => { if (allMet) this.openPublish(null); else this.toast('Connect a Stripe account to publish'); }, disabled: !allMet, style: { height: '48px', width: '100%', border: 'none', borderRadius: '11px', background: allMet ? 'var(--mkt-purple)' : 'var(--subtle)', color: allMet ? '#fff' : 'var(--muted)', fontFamily: 'var(--sans)', fontSize: '15px', fontWeight: 700, cursor: allMet ? 'pointer' : 'not-allowed', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' } }, 'Publish your first strategy', this.ic(['M5 12h14', 'm12 5 7 7-7 7'], allMet ? '#fff' : 'var(--muted)', 16)));
+  }
+
+  // ── PUBLISH DRAWER ──
+  openPublish(s) { this.setState({ publish: { step: 1, instance: s ? 'i1' : null, price: s ? 49 : 49, free: false, desc: '', expect: '', audit: true, dna: true, subc: true, stripe: false } }); }
+  setP(patch) { this.setState(st => ({ publish: { ...st.publish, ...patch } })); }
+  stepNav() {
+    const steps = ['Instance', 'Pricing', 'Description', 'Visibility', 'Payout'];
+    const cur = this.state.publish.step;
+    return this.d({ display: 'flex', gap: '4px', padding: '0 24px', borderBottom: '1px solid var(--border)' }, ...steps.map((label, i) => {
+      const n = i + 1; const done = n < cur; const active = n === cur;
+      return this.btn({ key: label, onClick: () => { if (n <= cur) this.setP({ step: n }); }, style: { flex: 1, padding: '13px 4px', background: 'none', border: 'none', borderBottom: '2px solid ' + (active ? 'var(--mkt-purple)' : (done ? 'var(--profit)' : 'transparent')), cursor: n <= cur ? 'pointer' : 'default', fontFamily: 'var(--sans)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px' } },
+        this.d({ width: '20px', height: '20px', borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, background: active ? 'var(--mkt-purple)' : (done ? 'var(--profit)' : 'var(--subtle)'), color: active || done ? '#fff' : 'var(--muted)' }, done ? this.ic(['M20 6 9 17l-5-5'], '#fff', 12, 3) : '' + n),
+        this.sp({ fontSize: '12.5px', fontWeight: 600, color: active ? 'var(--head)' : 'var(--muted)' }, label));
+    }));
+  }
+  pubField(label, sub, control) {
+    return this.d({}, this.sp({ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--head)' }, label), sub ? this.sp({ display: 'block', fontSize: '12.5px', color: 'var(--muted)', marginTop: '2px', marginBottom: '10px' }, sub) : this.d({ height: '8px' }), control);
+  }
+  pubStep() {
+    const p = this.state.publish;
+    if (p.step === 1) {
+      const rows = this.instances().map(it => {
+        const on = p.instance === it.id;
+        return this.btn({ key: it.id, disabled: !it.ok, onClick: () => it.ok && this.setP({ instance: it.id }), style: { display: 'flex', alignItems: 'center', gap: '12px', width: '100%', textAlign: 'left', padding: '13px 14px', borderRadius: '11px', cursor: it.ok ? 'pointer' : 'not-allowed', opacity: it.ok ? 1 : 0.55, fontFamily: 'var(--sans)', background: on ? 'var(--mkt-purple-soft)' : 'var(--card)', border: '1.5px solid ' + (on ? 'var(--mkt-purple)' : 'var(--border)') } },
+          this.d({ width: '18px', height: '18px', borderRadius: '50%', flexShrink: 0, border: '2px solid ' + (on ? 'var(--mkt-purple)' : 'var(--border-2,var(--border))'), display: 'flex', alignItems: 'center', justifyContent: 'center' }, on ? this.d({ width: '9px', height: '9px', borderRadius: '50%', background: 'var(--mkt-purple)' }) : null),
+          this.d({ flex: 1, minWidth: 0 }, this.sp({ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--head)' }, it.name), this.sp({ fontSize: '12px', color: 'var(--muted)' }, it.meta)),
+          this.sp({ fontSize: '12px', fontWeight: 700, color: it.ok ? 'var(--profit)' : 'var(--loss)', whiteSpace: 'nowrap' }, it.note + ' ' + (it.ok ? '✓' : '✗')));
+      });
+      return this.d({ display: 'flex', flexDirection: 'column', gap: '14px' }, this.pubField('Choose a live instance to publish', 'Must be live for 30+ days. Paper and draft instances are not eligible.', this.d({ display: 'flex', flexDirection: 'column', gap: '10px' }, ...rows)));
+    }
+    if (p.step === 2) {
+      const fee = p.free ? 0 : Math.round(p.price * 0.2 * 100) / 100;
+      const you = p.free ? 0 : Math.round((p.price - fee) * 100) / 100;
+      const note = p.free ? 'Free strategies still route signals to subscribers. No platform fee applies.' : 'At $' + p.price + '/month: TraderVault takes 20% ($' + fee.toFixed(2) + ') · You receive $' + you.toFixed(2) + ' per subscriber.';
+      const priceInput = p.free ? null : this.d({ display: 'flex', alignItems: 'center', gap: '10px' },
+        this.d({ display: 'flex', alignItems: 'center', height: '46px', border: '1px solid var(--border-2,var(--border))', borderRadius: '10px', overflow: 'hidden', background: 'var(--card)' },
+          this.sp({ padding: '0 12px', fontSize: '16px', fontWeight: 700, color: 'var(--muted)', borderRight: '1px solid var(--border)', height: '100%', display: 'flex', alignItems: 'center' }, '$'),
+          this.e('input', { type: 'number', min: 9, max: 999, value: p.price, onChange: (e) => this.setP({ price: Math.max(9, Math.min(999, +e.target.value || 9)) }), style: { width: '100px', height: '100%', border: 'none', outline: 'none', padding: '0 12px', fontFamily: 'var(--sans)', fontSize: '16px', fontWeight: 600, color: 'var(--head)', background: 'transparent' } }),
+          this.sp({ padding: '0 14px', fontSize: '14px', color: 'var(--muted)', borderLeft: '1px solid var(--border)', height: '100%', display: 'flex', alignItems: 'center' }, '/month')));
+      return this.d({ display: 'flex', flexDirection: 'column', gap: '18px' },
+        p.free ? null : this.pubField('Monthly price', 'Minimum $9, maximum $999.', priceInput),
+        this.d({ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', border: '1px solid var(--border)', borderRadius: '12px', background: 'var(--card)' },
+          this.d({ flex: 1 }, this.sp({ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--head)' }, 'Free'), this.sp({ fontSize: '12.5px', color: 'var(--muted)' }, 'Offer at no cost')),
+          this.toggle(p.free, () => this.setP({ free: !p.free }))),
+        this.d({ padding: '13px 15px', borderRadius: '11px', background: 'var(--mkt-purple-soft)', border: '1px solid color-mix(in srgb,var(--mkt-purple) 22%,transparent)' }, this.sp({ fontSize: '13px', color: 'var(--mkt-purple)', fontWeight: 500, lineHeight: '1.55' }, note)));
+    }
+    if (p.step === 3) {
+      const ta = (val, max, ph, key) => this.e('textarea', { value: val, maxLength: max, placeholder: ph, onChange: (e) => this.setP({ [key]: e.target.value }), style: { width: '100%', minHeight: key === 'desc' ? '110px' : '74px', resize: 'vertical', boxSizing: 'border-box', padding: '12px 14px', fontFamily: 'var(--sans)', fontSize: '14px', lineHeight: '1.55', color: 'var(--head)', background: 'var(--card)', border: '1px solid var(--border-2,var(--border))', borderRadius: '10px', outline: 'none' } });
+      return this.d({ display: 'flex', flexDirection: 'column', gap: '18px' },
+        this.pubField('Strategy description', 'What does this strategy trade? What is the logic? Who is it for?', this.d({}, ta(p.desc, 500, 'Describe your strategy…', 'desc'), this.sp({ display: 'block', textAlign: 'right', fontSize: '11px', color: 'var(--muted)', marginTop: '5px' }, p.desc.length + ' / 500'))),
+        this.pubField('What to expect', 'Signal frequency, typical hold times, sessions traded.', this.d({}, ta(p.expect, 200, 'Typically 2–4 signals per day during NY session…', 'expect'), this.sp({ display: 'block', textAlign: 'right', fontSize: '11px', color: 'var(--muted)', marginTop: '5px' }, p.expect.length + ' / 200'))),
+        this.pubField('Risk disclosure', null, this.d({ padding: '12px 14px', borderRadius: '10px', background: 'var(--subtle)', border: '1px solid var(--border)', fontSize: '13px', color: 'var(--muted)', lineHeight: '1.55' }, 'Past performance does not guarantee future results. Trading involves risk of loss. Subscribers should only trade with money they can afford to lose.')));
+    }
+    if (p.step === 4) {
+      const dnaAvailable = p.instance === 'i1';
+      const row = (on, onClick, title, desc, disabled) => this.d({ display: 'flex', alignItems: 'flex-start', gap: '14px', padding: '15px 16px', border: '1px solid var(--border)', borderRadius: '12px', background: 'var(--card)', opacity: disabled ? 0.6 : 1 },
+        this.d({ flex: 1 }, this.sp({ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--head)' }, title), this.sp({ display: 'block', fontSize: '12.5px', color: 'var(--muted)', marginTop: '3px', lineHeight: '1.5' }, desc)),
+        disabled ? this.sp({ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', whiteSpace: 'nowrap', paddingTop: '3px' }, 'Locked') : this.toggle(on, onClick));
+      return this.d({ display: 'flex', flexDirection: 'column', gap: '14px' },
+        this.pubField('What data is visible to potential subscribers?', 'More transparency = more trust = more subscribers.', this.d({ display: 'flex', flexDirection: 'column', gap: '12px' },
+          row(p.audit, () => this.setP({ audit: !p.audit }), 'Public audit trail', 'Subscribers see every signal, fill, skip, and rejection. Strongly recommended — this is your trust layer.'),
+          row(dnaAvailable && p.dna, () => dnaAvailable && this.setP({ dna: !p.dna }), 'Win/Loss DNA', dnaAvailable ? 'Share the context engine patterns that predict wins.' : 'No context data recorded for this instance. Add context recording in Backtest Config to unlock this.', !dnaAvailable),
+          row(p.subc, () => this.setP({ subc: !p.subc }), 'Subscriber count visible', 'Show how many people subscribe to your strategy. Social proof helps conversion.'))));
+    }
+    // step 5
+    if (!p.stripe) {
+      return this.d({ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '14px', padding: '20px 8px' },
+        this.d({ width: '52px', height: '52px', borderRadius: '13px', background: 'var(--stripe)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '26px', fontWeight: 800 }, 'S'),
+        this.sp({ fontSize: '18px', fontWeight: 700, color: 'var(--head)' }, 'Connect with Stripe'),
+        this.sp({ fontSize: '14px', color: 'var(--muted)', maxWidth: '340px', lineHeight: '1.55' }, 'Secure payouts directly to your bank account. Takes less than 2 minutes to set up.'),
+        this.btn({ onClick: () => { this.setP({ stripe: true }); this.toast('Stripe account connected'); }, style: { height: '48px', padding: '0 26px', border: 'none', borderRadius: '11px', background: 'var(--stripe)', color: '#fff', fontFamily: 'var(--sans)', fontSize: '15px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' } }, 'Connect with Stripe', this.ic(['M5 12h14', 'm12 5 7 7-7 7'], '#fff', 16)),
+        this.sp({ fontSize: '12px', color: 'var(--muted)', maxWidth: '360px', lineHeight: '1.55' }, 'Once connected, payouts are sent on the 1st of each month. Minimum payout threshold is $25. Standard Stripe processing fees apply.'));
+    }
+    return this.d({ display: 'flex', flexDirection: 'column', gap: '16px' },
+      this.d({ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', borderRadius: '12px', border: '1px solid var(--profit-soft)', background: 'var(--profit-soft)' },
+        this.d({ width: '38px', height: '38px', borderRadius: '10px', background: 'var(--stripe)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: 800 }, 'S'),
+        this.d({ flex: 1 }, this.sp({ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--head)' }, 'Payouts go to uxokdc@gmail.com'), this.sp({ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '12.5px', color: 'var(--profit)', fontWeight: 600, marginTop: '2px' }, this.ic(['M20 6 9 17l-5-5'], 'var(--profit)', 13, 2.6), 'Verified')),
+        this.btn({ onClick: () => this.setP({ stripe: false }), style: { background: 'none', border: 'none', color: 'var(--mkt-purple)', fontFamily: 'var(--sans)', fontSize: '13px', fontWeight: 600, cursor: 'pointer' } }, 'Change')),
+      this.sp({ fontSize: '12.5px', color: 'var(--muted)', lineHeight: '1.55' }, 'Payouts are sent on the 1st of each month. Minimum payout threshold is $25.'));
+  }
+  publishDrawer() {
+    const p = this.state.publish;
+    const open = !!p;
+    const backdrop = this.d({ onClick: () => this.setState({ publish: null }), style: { position: 'fixed', inset: 0, zIndex: 420, background: 'rgba(15,23,36,.5)', opacity: open ? 1 : 0, pointerEvents: open ? 'auto' : 'none', transition: 'opacity .22s' } });
+    let inner = null;
+    if (p) {
+      const last = p.step === 5;
+      const ctaLabel = last ? (p.stripe ? 'Publish strategy' : 'Connect Stripe to continue') : 'Continue';
+      const canNext = p.step === 1 ? !!p.instance : (last ? p.stripe : true);
+      const cta = this.btn({ onClick: () => { if (!canNext) return; if (last) { this.setState({ publish: null }); this.toast('Your strategy is now live on the Marketplace.'); } else this.setP({ step: p.step + 1 }); }, disabled: !canNext, style: { flex: 1, height: '48px', border: 'none', borderRadius: '11px', background: canNext ? 'var(--mkt-purple)' : 'var(--subtle)', color: canNext ? '#fff' : 'var(--muted)', fontFamily: 'var(--sans)', fontSize: '15px', fontWeight: 700, cursor: canNext ? 'pointer' : 'not-allowed', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' } }, ctaLabel, last ? null : this.ic(['M5 12h14', 'm12 5 7 7-7 7'], canNext ? '#fff' : 'var(--muted)', 16));
+      const back = p.step > 1 ? this.btn({ onClick: () => this.setP({ step: p.step - 1 }), style: { height: '48px', padding: '0 18px', borderRadius: '11px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--body)', fontFamily: 'var(--sans)', fontSize: '15px', fontWeight: 600, cursor: 'pointer' } }, 'Back') : null;
+      inner = this.d({ display: 'flex', flexDirection: 'column', height: '100%' },
+        this.d({ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 24px' },
+          this.sp({ fontSize: '18px', fontWeight: 700, color: 'var(--head)' }, 'Publish a strategy'),
+          this.btn({ onClick: () => this.setState({ publish: null }), 'aria-label': 'Close', style: { width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '9px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--muted)', cursor: 'pointer' } }, this.ic(['M18 6 6 18', 'm6 6 12 12'], 'currentColor', 17))),
+        this.stepNav(),
+        this.d({ flex: 1, minHeight: 0, overflowY: 'auto', padding: '22px 24px' }, this.pubStep()),
+        this.d({ flexShrink: 0, display: 'flex', gap: '10px', padding: '16px 24px', borderTop: '1px solid var(--border)', background: 'var(--card)' }, back, cta));
+    }
+    const panel = this.e('div', { style: { position: 'fixed', top: 0, right: 0, height: '100vh', width: '480px', maxWidth: '94vw', zIndex: 421, background: 'var(--page)', borderLeft: '1px solid var(--border)', boxShadow: '-16px 0 48px -12px rgba(15,23,36,.28)', transform: open ? 'translateX(0)' : 'translateX(100%)', transition: 'transform .28s cubic-bezier(.32,.72,0,1)' } }, inner);
+    return this.e(React.Fragment, {}, backdrop, panel);
+  }
+
+  // ── PAGE ──
+  mysignalsEl() {
+    const st = this.state;
+    const pub = this.published();
+    const header = this.d({ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px' },
+      this.d({}, this.sp({ display: 'block', fontSize: '30px', fontWeight: 800, color: 'var(--head)', letterSpacing: '-0.02em' }, 'My signals'),
+        this.sp({ display: 'block', fontSize: '16px', color: 'var(--muted)', marginTop: '6px' }, 'Manage your published strategies and track your earnings')),
+      this.btn({ onClick: () => this.openPublish(null), style: { display: 'inline-flex', alignItems: 'center', gap: '8px', height: '46px', padding: '0 22px', border: 'none', borderRadius: '11px', background: 'var(--mkt-purple)', color: '#fff', fontFamily: 'var(--sans)', fontSize: '15px', fontWeight: 700, cursor: 'pointer', flexShrink: 0 } }, this.ic(['M12 5v14', 'M5 12h14'], '#fff', 18), 'Publish strategy'));
+    const content = pub.length === 0
+      ? this.emptyState()
+      : this.d({ display: 'flex', flexDirection: 'column', gap: '28px' },
+          this.statsStrip(),
+          this.d({}, this.sp({ display: 'block', fontSize: '19px', fontWeight: 700, color: 'var(--head)', letterSpacing: '-0.01em', marginBottom: '14px' }, 'Published strategies'),
+            this.d({ display: 'flex', flexDirection: 'column', gap: '16px' }, ...pub.map(s => this.publishedCard(s)))),
+          this.earningsSection());
+    const toastEl = st.toastMsg ? this.d({ position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)', zIndex: 600, background: 'var(--head)', color: 'var(--bg)', padding: '12px 20px', borderRadius: '10px', fontSize: '14px', fontWeight: 500, boxShadow: '0 10px 30px rgba(15,23,36,.28)' }, st.toastMsg) : null;
+    return this.d({ height: '100%', overflowY: 'auto', background: 'var(--page)' },
+      this.d({ className: 'ms-scroll' }, this.d({ maxWidth: '1240px', margin: '0 auto', padding: '28px 32px 64px', display: 'flex', flexDirection: 'column', gap: '28px' }, header, content)),
+      this.publishDrawer(), toastEl);
+  }
+
+  renderVals() {
+    const goto = (file) => () => { try { window.location.href = file; } catch (e) {} };
+    return {
+      mysignalsEl: this.mysignalsEl(),
+      goOverview: goto('Overview.dc.html'), goStrategies: goto('Strategies.dc.html'), goAnalysis: goto('Analysis.dc.html'),
+      goChart: goto('Chart.dc.html'), goAudit: goto('Audit.dc.html'), goMarketplace: goto('Marketplace.dc.html'), goMySignals: () => {},
+      goSoon: () => this.toast('That page is coming soon'),
+    };
+  }
+}
+</script>
+</body>
+</html>

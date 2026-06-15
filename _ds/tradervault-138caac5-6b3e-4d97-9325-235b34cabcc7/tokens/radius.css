@@ -1,0 +1,27 @@
+/* TraderVault LM — Border Radius Tokens */
+/* Crisp, structured shape language. --radius-lg is the system base radius   */
+/* most components consume; kept at a tight 8px so buttons/cards read sharp.  */
+
+:root {
+  --radius-none: 0;
+  --radius-xs:   0.125rem;   /* 2px   — inputs */
+  --radius-sm:   0.25rem;    /* 4px   — buttons (semantic), chips */
+  --radius-md:   0.375rem;   /* 6px   */
+  --radius-lg:   0.5rem;     /* 8px   — base: buttons, cards */
+  --radius-xl:   0.75rem;    /* 12px  — panels */
+  --radius-2xl:  1rem;       /* 16px  — modals */
+  --radius-3xl:  1.25rem;    /* 20px  */
+  --radius-4xl:  1.5rem;     /* 24px  */
+  --radius-full: 9999px;     /* pill / circle — tags, badges, avatars */
+
+  /* Semantic aliases */
+  --radius-btn:     var(--radius-sm);    /* 4px  */
+  --radius-input:   var(--radius-xs);    /* 2px  */
+  --radius-card:    var(--radius-lg);    /* 8px  */
+  --radius-badge:   var(--radius-full);
+  --radius-badge-sq:var(--radius-xs);
+  --radius-avatar:  var(--radius-full);
+  --radius-dialog:  var(--radius-2xl);   /* 16px */
+  --radius-popover: var(--radius-xl);    /* 12px */
+  --radius-tooltip: var(--radius-sm);
+}

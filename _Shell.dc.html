@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFFFFF;--card:#F8FAFC;--subtle:#F1F5F9;--border:#E2E8F0;--input:#CBD5E1;
+  --muted:#64718A;--body:#475569;--head:#1E293B;
+  --lime:#C8FF00;--lime-dark:#B0E000;--navy:#101B25;--navy-mid:#0C1720;--navy-light:#18242F;
+  --accent:#7C3AED;--accent-on:#FFFFFF;--accent-soft:rgba(124,58,237,.12);--accent-ring:rgba(124,58,237,.24);--link:#7C3AED;
+  --profit:#15803D;--loss:#DC2626;--warn:#F59E0B;--info:#3B82F6;
+  --warn-soft:rgba(245,158,11,.16);--warn-ink:#B45309;
+  --sb-bg:#101B25;--sb-fg:#9DAAB6;--sb-muted:#7E8C99;--sb-hover:#1B2731;--sb-border:#2A3640;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --sans:'Inter',ui-sans-serif,system-ui,sans-serif;
+}
+.tv-dark{
+  --bg:#0B131B;--card:#101B25;--subtle:#18242F;--border:#28333D;--input:#2F3C47;
+  --muted:#8492A0;--body:#AEB9C4;--head:#F1F4F7;--link:#A78BFA;
+  --navy:#18242F;--navy-mid:#101B25;--navy-light:#1C2832;
+  --accent:#C8FF00;--accent-on:#101B25;--accent-soft:rgba(200,255,0,.16);--accent-ring:rgba(200,255,0,.22);
+  --warn-soft:rgba(245,158,11,.20);--warn-ink:#FBBF24;
+  --profit:#22C55E;--loss:#F87171;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:var(--sans);color:var(--body);background:#07090F;-webkit-font-smoothing:antialiased;}
+::-webkit-scrollbar{width:8px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;border:2px solid var(--bg);}
+::-webkit-scrollbar-track{background:transparent;}
+@keyframes tvpulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+</style>
+</helmet>
+
+<div class="tv-root {{ themeClass }}" style="display:flex;height:100vh;width:100%;overflow:hidden;background:var(--bg);">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside style="{{ sbStyle }}">
+    <!-- Logo -->
+    <a onClick="{{ onNavOverview }}" style="display:flex;align-items:center;padding:18px 16px 16px;text-decoration:none;cursor:pointer;{{ logoJustify }}">
+      <img src="assets/tv-mark.svg" alt="TraderVault" style="{{ logoMarkStyle }}">
+      <img src="assets/tv-wordmark-dark.svg" alt="TraderVault" style="{{ logoWordmarkStyle }}">
+    </a>
+
+    <!-- Nav scroll -->
+    <nav role="menu" aria-label="Primary navigation" style="flex:1;overflow-y:auto;overflow-x:hidden;padding:6px 10px;display:flex;flex-direction:column;gap:2px;">
+
+      <a role="menuitem" aria-current="{{ isOverview }}" onClick="{{ onNavOverview }}" style="{{ navOverview }}" style-hover="background:rgba(202,255,51,0.13)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#CAFF33" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        <span style="{{ labelStyle }}">Overview</span>
+      </a>
+
+      <div style="{{ sectionStyle }}">STRATEGIES</div>
+
+      <a role="menuitem" aria-current="{{ isStrategies }}" onClick="{{ onNavStrategies }}" style="{{ navStrategies }}" style-hover="background:rgba(61,213,168,0.13)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#3DD5A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 6a9 9 0 0 1-9 9"/><path d="M18 9v-3h-3"/></svg>
+        <span style="{{ labelStyle }}">Strategies</span>
+        <span style="{{ stratBadgeStyle }}">5</span>
+      </a>
+
+      <a role="menuitem" aria-current="{{ isAnalysis }}" onClick="{{ onNavAnalysis }}" style="{{ navAnalysis }}" style-hover="background:rgba(61,213,168,0.13)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#3DD5A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg>
+        <span style="{{ labelStyle }}">Analysis</span>
+      </a>
+
+      <div style="{{ sectionStyle }}">TRADING</div>
+
+      <a role="menuitem" aria-current="{{ isChart }}" onClick="{{ onNavChart }}" style="{{ navChart }}" style-hover="background:rgba(251,178,58,0.13)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FBB23A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="7"/><rect x="14" y="6" width="3" height="11"/></svg>
+        <span style="{{ labelStyle }}">Chart signals</span>
+      </a>
+
+      <a role="menuitem" aria-current="{{ isAudit }}" onClick="{{ onNavAudit }}" style="{{ navAudit }}" style-hover="background:rgba(251,178,58,0.13)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FBB23A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        <span style="{{ labelStyle }}">Audit log</span>
+      </a>
+
+      <div style="{{ sectionStyle }}">MARKETPLACE</div>
+
+      <a role="menuitem" aria-current="{{ isMarketplace }}" onClick="{{ onNavMarketplace }}" style="{{ navMarketplace }}" style-hover="background:rgba(248,113,113,0.13)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M2 7h20"/><path d="M12 7v15"/></svg>
+        <span style="{{ labelStyle }}">Marketplace</span>
+      </a>
+
+      <a role="menuitem" aria-current="{{ isMySignals }}" onClick="{{ onNavMySignals }}" style="{{ navMySignals }}" style-hover="background:rgba(248,113,113,0.13)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M4.9 19.1A10 10 0 0 1 4.9 5"/><path d="M7.8 16.2a6 6 0 0 1 0-8.4"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4"/><path d="M19.1 4.9a10 10 0 0 1 0 14.2"/></svg>
+        <span style="{{ labelStyle }}">My signals</span>
+      </a>
+
+    </nav>
+
+    <!-- Footer chrome -->
+    <div style="{{ footerStyle }}">
+      <div style="position:relative;padding:10px 12px;border-top:1px solid var(--sb-border);">
+        <!-- Account switcher menu (expands upward) -->
+        <div style="{{ acctMenuStyle }}">
+          <div style="padding:9px 12px 7px;font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--sb-muted);">SWITCH ACCOUNT</div>
+          <div style="height:1px;background:var(--sb-border);"></div>
+          <div style="padding:6px;display:flex;flex-direction:column;gap:2px;">
+            <button onClick="{{ onPickAlpacaPaper }}" style="{{ acctItemPaper }}" style-hover="background:var(--sb-hover)">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none;"></span>
+              <div style="min-width:0;text-align:left;flex:1;">
+                <div style="font-size:13px;font-weight:600;color:#fff;">Alpaca paper</div>
+                <div style="font-size:11px;color:var(--sb-muted);">Paper trading · $99,858.87</div>
+              </div>
+            </button>
+            <button onClick="{{ onPickAlpacaLive }}" style="{{ acctItemLive }}" style-hover="background:var(--sb-hover)">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--sb-muted);flex:none;"></span>
+              <div style="min-width:0;text-align:left;flex:1;">
+                <div style="font-size:13px;font-weight:600;color:#fff;">Alpaca live</div>
+                <div style="font-size:11px;color:var(--sb-muted);">Live trading · $24,107.40</div>
+              </div>
+            </button>
+            <button onClick="{{ onPickBinance }}" style="{{ acctItemBinance }}" style-hover="background:var(--sb-hover)">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--sb-muted);flex:none;"></span>
+              <div style="min-width:0;text-align:left;flex:1;">
+                <div style="font-size:13px;font-weight:600;color:#fff;">Binance Futures</div>
+                <div style="font-size:11px;color:var(--sb-muted);">Live trading · $12,540.18</div>
+              </div>
+            </button>
+          </div>
+          <div style="height:1px;background:var(--sb-border);"></div>
+          <button style="display:flex;align-items:center;gap:9px;width:100%;padding:10px 14px;background:none;border:none;color:var(--sb-fg);font-family:var(--sans);font-size:12px;font-weight:500;cursor:pointer;text-align:left;" style-hover="background:var(--sb-hover);color:#fff">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Connect new account
+          </button>
+        </div>
+        <!-- Account trigger -->
+        <button onClick="{{ onToggleAccts }}" style="{{ acctTriggerStyle }}" style-hover="background:var(--sb-hover)">
+          <div style="min-width:0;flex:1;text-align:left;{{ labelStyle }}">
+            <div style="font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--sb-muted);margin-bottom:5px;">ACCOUNT</div>
+            <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:6px;">{{ selAcctName }}</div>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+              <span style="font-size:9px;font-weight:600;letter-spacing:0.06em;padding:2px 6px;border-radius:4px;background:rgba(59,130,246,.18);color:#7DB1FF;">{{ selAcctBroker }}</span>
+              <span style="font-size:9px;font-weight:600;letter-spacing:0.06em;padding:2px 6px;border-radius:4px;background:rgba(148,163,184,.18);color:#A7B4C2;">{{ selAcctMode }}</span>
+              <span style="font-family:var(--mono);font-size:12px;color:#fff;margin-left:auto;font-variant-numeric:tabular-nums;">{{ selAcctBalance }}</span>
+            </div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--sb-muted);transition:transform .15s;{{ acctChevron }}"><path d="m18 15-6-6-6 6"/></svg>
+        </button>
+      </div>
+      <div style="padding:14px 12px 14px;display:flex;flex-direction:column;gap:9px;border-top:1px solid var(--sb-border);">
+        <div style="{{ clockRowStyle }}">
+          <span style="width:6px;height:6px;border-radius:50%;background:var(--accent);flex:none;box-shadow:0 0 6px var(--accent);"></span>
+          <span style="font-family:var(--mono);font-size:13px;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:0.04em;">{{ clock }}</span>
+          <span style="font-size:10px;font-weight:600;color:var(--sb-muted);letter-spacing:0.08em;">UTC</span>
+        </div>
+        <div style="height:1px;background:var(--sb-border);margin:1px 0;"></div>
+        <button onClick="{{ onKill }}" style="{{ killStyle }}" style-hover="filter:brightness(1.05)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+          <span style="{{ labelStyle }}">{{ killLabel }}</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===================== MAIN ===================== -->
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;">
+
+    <!-- Topbar -->
+    <header style="height:56px;flex:none;display:flex;align-items:center;gap:16px;padding:0 20px;border-bottom:1px solid var(--border);background:var(--bg);">
+      <button onClick="{{ onToggleCollapse }}" title="{{ collapseTitle }}" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;flex:none;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--body);cursor:pointer;padding:0;" style-hover="background:var(--subtle);color:var(--head)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="{{ collapseIconStyle }}"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </button>
+      <div style="display:flex;align-items:center;gap:7px;font-size:14px;min-width:0;">
+        <span style="color:var(--head);font-weight:600;white-space:nowrap;">{{ pageTitle }}</span>
+        <sc-if value="{{ hasPageSub }}" hint-placeholder-val="{{ false }}">
+          <span style="color:var(--border);">·</span>
+          <span style="font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ pageSubtitle }}</span>
+        </sc-if>
+      </div>
+      <div style="flex:1;"></div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--body);"><span style="width:7px;height:7px;border-radius:50%;background:var(--profit);animation:tvpulse 2s infinite;"></span>WS</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);"><span style="width:7px;height:7px;border-radius:50%;background:var(--muted);"></span>equity closed</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--body);"><span style="width:7px;height:7px;border-radius:50%;background:var(--profit);"></span>crypto 24/7</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--body);"><span style="width:7px;height:7px;border-radius:50%;background:var(--profit);"></span>forex 24/5</span>
+      </div>
+      <div style="width:1px;height:24px;background:var(--border);"></div>
+      <!-- Watchlist -->
+      <div style="position:relative;flex:none;">
+        <button onClick="{{ onToggleWatch }}" style="{{ watchBtnStyle }}" style-hover="background:var(--subtle)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span>Watch</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--muted);transition:transform .15s;{{ watchChevron }}"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div style="{{ watchMenuStyle }}">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 11px;">
+            <span style="font-size:15px;font-weight:600;color:var(--head);">Watchlist</span>
+            <span style="font-size:12px;color:var(--muted);">4 markets</span>
+          </div>
+          <div style="height:1px;background:var(--border);"></div>
+          <div style="padding:6px;display:flex;flex-direction:column;">
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;" style-hover="background:var(--subtle)">
+              <span style="width:30px;height:30px;border-radius:7px;background:rgba(247,147,26,.14);color:#F7931A;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:none;">BTC</span>
+              <div style="min-width:0;flex:1;"><div style="font-size:13px;font-weight:600;color:var(--head);">BTC/USD</div><div style="font-size:11px;color:var(--muted);">Bitcoin</div></div>
+              <div style="text-align:right;"><div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--head);font-variant-numeric:tabular-nums;">61,258.89</div><div style="font-family:var(--mono);font-size:11px;color:var(--profit);font-variant-numeric:tabular-nums;">+0.09%</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;" style-hover="background:var(--subtle)">
+              <span style="width:30px;height:30px;border-radius:7px;background:rgba(98,126,234,.14);color:#627EEA;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:none;">ETH</span>
+              <div style="min-width:0;flex:1;"><div style="font-size:13px;font-weight:600;color:var(--head);">ETH/USD</div><div style="font-size:11px;color:var(--muted);">Ethereum</div></div>
+              <div style="text-align:right;"><div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--head);font-variant-numeric:tabular-nums;">3,412.06</div><div style="font-family:var(--mono);font-size:11px;color:var(--profit);font-variant-numeric:tabular-nums;">+1.24%</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;" style-hover="background:var(--subtle)">
+              <span style="width:30px;height:30px;border-radius:7px;background:rgba(30,41,59,.08);color:var(--head);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex:none;">AAPL</span>
+              <div style="min-width:0;flex:1;"><div style="font-size:13px;font-weight:600;color:var(--head);">AAPL</div><div style="font-size:11px;color:var(--muted);">Apple Inc.</div></div>
+              <div style="text-align:right;"><div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--head);font-variant-numeric:tabular-nums;">227.48</div><div style="font-family:var(--mono);font-size:11px;color:var(--loss);font-variant-numeric:tabular-nums;">-0.42%</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;" style-hover="background:var(--subtle)">
+              <span style="width:30px;height:30px;border-radius:7px;background:rgba(30,41,59,.08);color:var(--head);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex:none;">EUR</span>
+              <div style="min-width:0;flex:1;"><div style="font-size:13px;font-weight:600;color:var(--head);">EUR/USD</div><div style="font-size:11px;color:var(--muted);">Euro</div></div>
+              <div style="text-align:right;"><div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--head);font-variant-numeric:tabular-nums;">1.0842</div><div style="font-family:var(--mono);font-size:11px;color:var(--profit);font-variant-numeric:tabular-nums;">+0.11%</div></div>
+            </div>
+          </div>
+          <div style="height:1px;background:var(--border);"></div>
+          <a style="display:block;text-align:center;padding:13px;font-size:14px;font-weight:600;color:var(--link);cursor:pointer;text-decoration:none;" style-hover="background:var(--subtle)">Manage watchlist</a>
+        </div>
+      </div>
+      <div style="width:1px;height:24px;background:var(--border);"></div>
+      <!-- Notifications -->
+      <div style="position:relative;flex:none;">
+        <button onClick="{{ onToggleNotif }}" style="{{ bellBtnStyle }}" style-hover="background:var(--subtle)">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          <span style="position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:var(--loss);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums;">57</span>
+        </button>
+        <div style="{{ notifMenuStyle }}">
+          <div style="padding:15px 18px 12px;font-size:15px;font-weight:600;color:var(--head);">Notifications</div>
+          <div style="height:1px;background:var(--border);"></div>
+          <div style="padding:6px;display:flex;flex-direction:column;">
+            <div style="display:flex;align-items:flex-start;gap:12px;padding:11px 12px;border-radius:8px;cursor:pointer;" style-hover="background:var(--subtle)">
+              <span style="width:32px;height:32px;border-radius:50%;background:var(--profit);display:flex;align-items:center;justify-content:center;flex:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <div style="min-width:0;"><div style="font-size:14px;font-weight:600;color:var(--head);line-height:1.25;">BTC/USDT trade executed</div><div style="font-size:12px;color:var(--muted);margin-top:2px;">2 min ago</div></div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:12px;padding:11px 12px;border-radius:8px;cursor:pointer;" style-hover="background:var(--subtle)">
+              <span style="width:32px;height:32px;border-radius:50%;background:var(--warn);display:flex;align-items:center;justify-content:center;flex:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+              <div style="min-width:0;"><div style="font-size:14px;font-weight:600;color:var(--head);line-height:1.25;">Signal Bot paused — volatility high</div><div style="font-size:12px;color:var(--muted);margin-top:2px;">15 min ago</div></div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:12px;padding:11px 12px;border-radius:8px;cursor:pointer;" style-hover="background:var(--subtle)">
+              <span style="width:32px;height:32px;border-radius:50%;background:var(--info);display:flex;align-items:center;justify-content:center;flex:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+              <div style="min-width:0;"><div style="font-size:14px;font-weight:600;color:var(--head);line-height:1.25;">New strategy available</div><div style="font-size:12px;color:var(--muted);margin-top:2px;">1 hour ago</div></div>
+            </div>
+          </div>
+          <div style="height:1px;background:var(--border);"></div>
+          <a style="display:block;text-align:center;padding:13px;font-size:14px;font-weight:600;color:var(--link);cursor:pointer;text-decoration:none;" style-hover="background:var(--subtle)">View all notifications</a>
+        </div>
+      </div>
+      <!-- Theme toggle -->
+      <button onClick="{{ onToggleTheme }}" title="{{ themeTitle }}" style="{{ themeBtnStyle }}" style-hover="background:var(--subtle)">
+        <span style="{{ themeMoonStyle }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
+        <span style="{{ themeSunStyle }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></span>
+      </button>
+      <!-- Profile -->
+      <div style="position:relative;flex:none;">
+        <button onClick="{{ onToggleProfile }}" style="display:flex;align-items:center;gap:7px;padding:3px 7px 3px 3px;border-radius:999px;border:1px solid var(--border);background:var(--bg);cursor:pointer;" style-hover="background:var(--subtle)">
+          <span style="width:30px;height:30px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;color:var(--lime);font-size:12px;font-weight:700;flex:none;">JD</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted);transition:transform .15s;{{ profileChevron }}"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div style="{{ profileMenuStyle }}">
+          <div style="display:flex;align-items:center;gap:11px;padding:14px 16px 13px;">
+            <span style="width:38px;height:38px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#7C3AED,#2DD4BF);color:#fff;font-size:14px;font-weight:700;">D</span>
+            <div style="min-width:0;">
+              <div style="font-size:15px;font-weight:700;color:var(--head);line-height:1.2;">David Cervantes</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:2px;">uxokdc@gmail.com</div>
+              <span style="display:inline-block;margin-top:6px;font-size:10px;font-weight:700;color:#7C3AED;background:var(--accent-soft);border-radius:5px;padding:2px 8px;">Pro</span>
+            </div>
+          </div>
+          <div style="height:1px;background:var(--border);"></div>
+          <div style="padding:6px;display:flex;flex-direction:column;">
+            <a onClick="{{ onAvProfile }}" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:7px;font-size:14px;color:var(--body);cursor:pointer;" style-hover="background:var(--subtle);color:var(--head)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;opacity:.65;"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span style="flex:1;">My profile</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="m9 18 6-6-6-6"/></svg></a>
+            <a onClick="{{ onAvSettings }}" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:7px;font-size:14px;color:var(--body);cursor:pointer;" style-hover="background:var(--subtle);color:var(--head)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;opacity:.65;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-2.82 1.17V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15H4.5a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 6 9.4a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 11 4.6V4.5a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 2.82 1.17l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 11h.1a2 2 0 0 1 0 4h-.1Z"/></svg><span style="flex:1;">Settings</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="m9 18 6-6-6-6"/></svg></a>
+            <a onClick="{{ onAvHelp }}" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:7px;font-size:14px;color:var(--body);cursor:pointer;" style-hover="background:var(--subtle);color:var(--head)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;opacity:.65;"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span style="flex:1;">Help &amp; support</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="m9 18 6-6-6-6"/></svg></a>
+            <a onClick="{{ onAvSubscription }}" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:7px;font-size:14px;color:var(--body);cursor:pointer;" style-hover="background:var(--subtle);color:var(--head)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;opacity:.65;"><path d="m2 9 3-3 3 3 4-4 4 4 3-3 3 3v6H2z"/></svg><span style="flex:1;">Subscription</span><span style="flex:none;font-size:10px;font-weight:700;color:#7C3AED;background:var(--accent-soft);border-radius:5px;padding:2px 8px;">Pro</span></a>
+          </div>
+          <div style="height:1px;background:var(--border);margin:0 6px;"></div>
+          <div style="padding:6px;">
+            <a onClick="{{ onAvSignout }}" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:7px;font-size:14px;font-weight:600;color:var(--loss);cursor:pointer;" style-hover="background:var(--loss-soft,rgba(220,38,38,.1))"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sign out</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page content slot -->
+    <div style="flex:1;min-height:0;overflow:hidden;">
+      {{ children }}
+    </div>
+  </div>
+
+  {{ helpDrawerEl }}
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: {&quot;width&quot;: 1440, &quot;height&quot;: 900},
+  &quot;activePage&quot;:    {&quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;overview&quot;,&quot;strategies&quot;,&quot;analysis&quot;,&quot;chart&quot;,&quot;journal&quot;,&quot;audit&quot;,&quot;accounts&quot;,&quot;configure&quot;,&quot;signal&quot;,&quot;settings&quot;], &quot;default&quot;: &quot;overview&quot;},
+  &quot;pageTitle&quot;:     {&quot;editor&quot;: &quot;text&quot;,   &quot;default&quot;: &quot;Overview&quot;},
+  &quot;pageSubtitle&quot;:  {&quot;editor&quot;: &quot;text&quot;,   &quot;default&quot;: &quot;&quot;}
+}">
+class Component extends DCLogic {
+  state = {
+    collapsed: false,
+    dark: (()=>{ try{return localStorage.getItem('tv-theme')==='dark';}catch(e){return false;} })(),
+    acctOpen: false, acctKey: 'paper',
+    watchOpen: false, notifOpen: false, profileOpen: false,
+    killArmed: false,
+    clock: '',
+  };
+
+  componentDidMount() {
+    this._t = setInterval(() => this.setState({ clock: this.fmtClock() }), 1000);
+    this.setState({ clock: this.fmtClock() });
+    window.addEventListener('keydown', this.onEsc);
+    window.addEventListener('click', this.onOutside);
+  }
+  componentWillUnmount() {
+    clearInterval(this._t);
+    window.removeEventListener('keydown', this.onEsc);
+    window.removeEventListener('click', this.onOutside);
+  }
+  onEsc = (e) => { if (e.key === 'Escape') this.setState({ watchOpen:false, notifOpen:false, profileOpen:false, acctOpen:false }); };
+  onOutside = () => { /* menus close via their own outside-click logic */ };
+  fmtClock() { const d=new Date(), p=n=>String(n).padStart(2,'0'); return p(d.getUTCHours())+':'+p(d.getUTCMinutes())+':'+p(d.getUTCSeconds()); }
+
+  nav(id) {
+    const active = this.props.activePage || 'overview';
+    const a = active === id;
+    const navA = {
+      overview:  { accent:'#CAFF33', bg:'rgba(202,255,51,0.12)' },
+      strategies:{ accent:'#3DD5A8', bg:'rgba(61,213,168,0.12)' },
+      analysis:  { accent:'#3DD5A8', bg:'rgba(61,213,168,0.12)' },
+      chart:     { accent:'#FBB23A', bg:'rgba(251,178,58,0.10)' },
+      journal:   { accent:'#FBB23A', bg:'rgba(251,178,58,0.10)' },
+      audit:     { accent:'#FBB23A', bg:'rgba(251,178,58,0.10)' },
+      accounts:  { accent:'#F87171', bg:'rgba(248,113,113,0.10)' },
+      configure: { accent:'#F87171', bg:'rgba(248,113,113,0.10)' },
+      signal:    { accent:'#F87171', bg:'rgba(248,113,113,0.10)' },
+      marketplace:{ accent:'#F87171', bg:'rgba(248,113,113,0.10)' },
+      mysignals: { accent:'#F87171', bg:'rgba(248,113,113,0.10)' },
+      settings:  { accent:'#C4CBD4', bg:'rgba(255,255,255,0.06)' },
+    };
+    const { accent, bg } = navA[id] || navA.overview;
+    const grey = '#8B95A4';
+    const c = this.state.collapsed;
+    return `display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;text-decoration:none;cursor:pointer;transition:background .12s;white-space:nowrap;overflow:hidden;${c?'justify-content:center;':''}color:${a?accent:grey};background:${a?bg:'transparent'};font-weight:${a?500:400};box-shadow:${a?`inset 3px 0 0 0 ${accent}`:'none'};`;
+  }
+
+  helpDrawerEl() {
+    if (!this.state.helpOpen) return null;
+    const h = React.createElement;
+    const d = (s, ...k) => h('div', { style: s }, ...k);
+    const sp = (s, ...k) => h('span', { style: s }, ...k);
+    const icn = (p, c, sz) => h('svg', { width: sz || 18, height: sz || 18, viewBox: '0 0 24 24', fill: 'none', stroke: c, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', style: { flexShrink: 0 } }, (Array.isArray(p) ? p : [p]).map((x, i) => h('path', { key: i, d: x })));
+    const badge = (t, c, bg) => sp({ flexShrink: 0, fontSize: '10px', fontWeight: 700, color: c, background: bg, borderRadius: '999px', padding: '3px 9px' }, t);
+    const cardRow = (bg, col, ip, title, desc, right) => h('button', { type: 'button', onClick: () => this.setState({ helpOpen: false }), style: { display: 'flex', alignItems: 'flex-start', gap: '13px', width: '100%', textAlign: 'left', padding: '14px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg)', cursor: 'pointer', fontFamily: 'var(--sans)' } },
+      d({ width: '40px', height: '40px', borderRadius: '10px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: bg, color: col }, icn(ip, col, 20)),
+      d({ flex: 1, minWidth: 0 }, sp({ display: 'block', fontSize: '15px', fontWeight: 700, color: 'var(--head)' }, title), sp({ display: 'block', fontSize: '13px', color: 'var(--muted)', marginTop: '3px', lineHeight: '1.45' }, desc)),
+      right);
+    const ext = icn(['M15 3h6v6', 'M10 14 21 3', 'M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5'], 'var(--muted)', 15);
+    const chev = icn('m9 18 6-6-6-6', 'var(--muted)', 16);
+    const faqs = [
+      ['Why did my signal get skipped?', 'Signals are skipped when confidence falls below your minimum threshold, when the session filter blocks a trade, or when the context engine determines conditions don’t match your winning pattern. Check the Audit log for the exact reason in plain English.'],
+      ['What is the context engine?', 'It records “silent witnesses” — indicators, correlated assets, and other strategy signals — at the moment each trade fires during a backtest. After hundreds of trades, AI finds which combinations predicted wins and losses. This powers Win/Loss DNA and the Intelligence tab in Analysis.'],
+      ['What’s the difference between Tweak and Optimize?', 'Tweak = change asset, timeframe, or trade management → a new instance under the same strategy. Optimize = change the indicators or conditions → a new strategy. Your original strategy is always untouched.'],
+      ['How does the KILL switch work?', 'It immediately pauses all live signals and closes open positions at market. It’s always in the topbar, and every KILL event is logged in the Audit log. Re-enable your live instances to resume.'],
+      ['How do I upgrade my subscription?', 'Open the avatar menu (top right) → Subscription. Upgrade, downgrade, or cancel anytime. Upgrading unlocks more context engine capacity.'],
+    ];
+    const faqEl = (q, a, i) => { const open = this.state.helpFaq === i; return d({ border: '1px solid var(--border)', borderRadius: '10px', overflow: 'hidden' },
+      h('button', { type: 'button', onClick: () => this.setState(s => ({ helpFaq: s.helpFaq === i ? null : i })), style: { display: 'flex', alignItems: 'center', gap: '10px', width: '100%', textAlign: 'left', padding: '13px 14px', background: 'var(--bg)', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)' } }, sp({ flex: 1, fontSize: '14px', fontWeight: 600, color: 'var(--head)' }, q), icn(open ? 'm18 15-6-6-6 6' : 'm6 9 6 6 6-6', 'var(--muted)', 16)),
+      open ? d({ padding: '0 14px 14px', fontSize: '13px', color: 'var(--body)', lineHeight: '1.55' }, a) : null); };
+    const drawer = h('aside', { role: 'dialog', 'aria-label': 'Help and support', onClick: (e) => e.stopPropagation(), style: { position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 161, width: 'min(380px,94vw)', background: 'var(--bg)', borderLeft: '1px solid var(--border)', boxShadow: '-24px 0 60px -20px rgba(15,23,36,.3)', display: 'flex', flexDirection: 'column' } },
+      d({ flexShrink: 0, height: '56px', padding: '0 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '11px' }, icn(['M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z', 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z', 'm4.9 4.9 4.2 4.2', 'm14.9 14.9 4.2 4.2', 'm19.1 4.9-4.2 4.2', 'm9.1 14.9-4.2 4.2'], 'var(--head)', 18), sp({ flex: 1, fontSize: '16px', fontWeight: 700, color: 'var(--head)' }, 'Help & support'), h('button', { type: 'button', onClick: () => this.setState({ helpOpen: false }), style: { width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--muted)', cursor: 'pointer' } }, icn(['M18 6 6 18', 'm6 6 12 12'], 'currentColor', 15))),
+      d({ flex: 1, minHeight: 0, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' },
+        d({ position: 'relative' }, d({ position: 'absolute', left: '13px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }, icn(['M11 11m-8 0a8 8 0 1 0 16 0 8 8 0 0 0-16 0', 'm21 21-4.3-4.3'], 'var(--muted)', 16)), h('input', { type: 'text', placeholder: 'Search docs, FAQs, and guides…', style: { width: '100%', height: '46px', padding: '0 14px 0 40px', fontFamily: 'var(--sans)', fontSize: '14px', color: 'var(--head)', background: 'var(--subtle)', border: '1px solid var(--border)', borderRadius: '10px', outline: 'none' } })),
+        cardRow('rgba(88,101,242,.14)', '#5865F2', ['M9 11a1 1 0 1 0 0-2 1 1 0 0 0 0 2z', 'M15 11a1 1 0 1 0 0-2 1 1 0 0 0 0 2z', 'M7.5 6.5C9 6 10.5 5.7 12 5.7s3 .3 4.5.8C18.5 8 19.5 11 19.5 15l-2.2 2-1.3-2', 'M6.7 17 4.5 15c0-4 1-7 3-8.5'], 'Join Discord community', 'Ask questions, share strategies, get help from the community', badge('Live', '#15803D', 'rgba(21,128,61,.12)')),
+        cardRow('rgba(37,99,235,.12)', 'var(--info)', ['M4 5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-2z', 'M8 7h7', 'M8 11h6'], 'Documentation', 'Guides, tutorials, and full feature reference', ext),
+        cardRow('rgba(13,148,136,.12)', '#0D9488', ['M4 6h16v12H4z', 'm4 7 8 6 8-6'], 'Submit a request', 'Bug reports, feature requests, account issues', chev),
+        cardRow('rgba(217,119,6,.14)', 'var(--warn)', ['M22 12h-4l-3 9L9 3l-3 9H2'], 'System status', 'All systems operational · Last checked 2 min ago', badge('OK', '#15803D', 'rgba(21,128,61,.12)')),
+        sp({ display: 'block', fontSize: '11px', fontWeight: 700, letterSpacing: '.06em', color: 'var(--muted)', textTransform: 'uppercase', margin: '8px 2px 0' }, 'Frequently asked'),
+        ...faqs.map(([q, a], i) => faqEl(q, a, i))));
+    const overlay = h('div', { onClick: () => this.setState({ helpOpen: false }), style: { position: 'fixed', inset: 0, zIndex: 160, background: 'rgba(15,23,36,.42)' } });
+    return h(React.Fragment, {}, overlay, drawer);
+  }
+
+  renderVals() {
+    const st = this.state;
+    const c = st.collapsed;
+
+    const accts = {
+      paper:   { name:'Alpaca paper',    broker:'ALPACA', mode:'PAPER', balance:'$99,858.87' },
+      live:    { name:'Alpaca live',     broker:'ALPACA', mode:'LIVE',  balance:'$24,107.40' },
+      binance: { name:'Binance Futures', broker:'BINANCE',mode:'LIVE',  balance:'$12,540.18' },
+    };
+    const sel = accts[st.acctKey] || accts.paper;
+
+    // badge styles
+    const badgeHidden = c ? 'display:none;' : '';
+    const stratBadgeStyle = badgeHidden + 'font-size:9px;font-weight:600;padding:1px 5px;border-radius:3px;background:rgba(61,213,168,0.18);color:#3DD5A8;margin-left:auto;';
+    const acctsBadgeStyle = badgeHidden + 'font-size:9px;font-weight:600;padding:1px 5px;border-radius:3px;background:rgba(248,113,113,0.18);color:#F87171;margin-left:auto;';
+
+    return {
+      themeClass: st.dark ? 'tv-dark' : '',
+      // sidebar
+      sbStyle: `width:${c?'66px':'234px'};flex:none;background:var(--sb-bg);display:flex;flex-direction:column;overflow:hidden;transition:width .18s ease;`,
+      logoJustify: c ? 'justify-content:center;' : '',
+      logoMarkStyle: `height:30px;width:auto;flex:none;display:${c?'block':'none'};`,
+      logoWordmarkStyle: `height:26px;width:auto;flex:none;display:${c?'none':'block'};`,
+      labelStyle: c ? 'display:none;' : 'flex:1;',
+      sectionStyle: `padding:${c?'12px 0 4px':'14px 12px 5px'};font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--sb-muted);${c?'text-align:center;display:none;':''}`,
+      footerStyle: `display:${c?'none':'block'};`,
+      stratBadgeStyle, acctsBadgeStyle,
+      // nav
+      navOverview:   this.nav('overview'),   isOverview:   (this.props.activePage||'overview')==='overview'   ?'page':'false',
+      navStrategies: this.nav('strategies'), isStrategies: this.props.activePage==='strategies' ?'page':'false',
+      navAnalysis:   this.nav('analysis'),   isAnalysis:   this.props.activePage==='analysis'   ?'page':'false',
+      navChart:      this.nav('chart'),      isChart:      this.props.activePage==='chart'       ?'page':'false',
+      navJournal:    this.nav('journal'),    isJournal:    this.props.activePage==='journal'     ?'page':'false',
+      navAudit:      this.nav('audit'),      isAudit:      this.props.activePage==='audit'       ?'page':'false',
+      navAccounts:   this.nav('accounts'),   isAccounts:   this.props.activePage==='accounts'   ?'page':'false',
+      navConfigure:  this.nav('configure'),  isConfigure:  this.props.activePage==='configure'  ?'page':'false',
+      navSignal:     this.nav('signal'),     isSignal:     this.props.activePage==='signal'      ?'page':'false',
+      navMarketplace:this.nav('marketplace'),isMarketplace:this.props.activePage==='marketplace' ?'page':'false',
+      navMySignals:  this.nav('mysignals'),  isMySignals:  this.props.activePage==='mysignals'   ?'page':'false',
+      navSettings:   this.nav('settings'),   isSettings:   this.props.activePage==='settings'   ?'page':'false',
+      // nav handlers (pages override via onNav* props or handle routing themselves)
+      onNavOverview:   this.props.onNavOverview   || (()=>{}),
+      onNavStrategies: this.props.onNavStrategies || (()=>{}),
+      onNavAnalysis:   this.props.onNavAnalysis   || (()=>{}),
+      onNavChart:      this.props.onNavChart      || (()=>{ window.location.href = 'Chart.dc.html'; }),
+      onNavJournal:    this.props.onNavJournal    || (()=>{}),
+      onNavAudit:      this.props.onNavAudit      || (()=>{}),
+      onNavAccounts:   this.props.onNavAccounts   || (()=>{}),
+      onNavConfigure:  this.props.onNavConfigure  || (()=>{}),
+      onNavSignal:     this.props.onNavSignal     || (()=>{}),
+      onNavMarketplace:this.props.onNavMarketplace|| (()=>{ window.location.href = 'Marketplace.dc.html'; }),
+      onNavMySignals:  this.props.onNavMySignals  || (()=>{ window.location.href = 'MySignals.dc.html'; }),
+      onNavSettings:   this.props.onNavSettings   || (()=>{}),
+      // account switcher
+      acctChevron: st.acctOpen ? 'transform:rotate(180deg);' : '',
+      acctTriggerStyle: `display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;background:none;border:1px solid ${st.acctOpen?'var(--sb-border)':'transparent'};border-radius:9px;cursor:pointer;`,
+      acctMenuStyle: `position:absolute;left:10px;right:10px;bottom:calc(100% - 2px);background:var(--navy-light);border:1px solid var(--sb-border);border-radius:11px;box-shadow:0 -10px 32px -8px rgba(0,0,0,.45);overflow:hidden;z-index:40;transition:opacity .14s,transform .14s;transform-origin:bottom center;${st.acctOpen?'opacity:1;transform:translateY(0) scale(1);pointer-events:auto;':'opacity:0;transform:translateY(8px) scale(.98);pointer-events:none;'}`,
+      acctItemPaper:   `display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;background:${st.acctKey==='paper'?'var(--sb-hover)':'none'};border:none;border-radius:7px;cursor:pointer;`,
+      acctItemLive:    `display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;background:${st.acctKey==='live'?'var(--sb-hover)':'none'};border:none;border-radius:7px;cursor:pointer;`,
+      acctItemBinance: `display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;background:${st.acctKey==='binance'?'var(--sb-hover)':'none'};border:none;border-radius:7px;cursor:pointer;`,
+      selAcctName: sel.name, selAcctBroker: sel.broker, selAcctMode: sel.mode, selAcctBalance: sel.balance,
+      onToggleAccts:    () => this.setState(s => ({ acctOpen:!s.acctOpen, watchOpen:false, notifOpen:false, profileOpen:false })),
+      onPickAlpacaPaper:() => this.setState({ acctKey:'paper',   acctOpen:false }),
+      onPickAlpacaLive: () => this.setState({ acctKey:'live',    acctOpen:false }),
+      onPickBinance:    () => this.setState({ acctKey:'binance', acctOpen:false }),
+      // clock + kill
+      clock: st.clock,
+      clockRowStyle: `display:flex;align-items:center;gap:8px;${c?'justify-content:center;':''}`,
+      killLabel: st.killArmed ? 'ARMED' : 'KILL',
+      killStyle: st.killArmed
+        ? `display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--loss);background:var(--loss);color:#fff;font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:0.06em;cursor:pointer;`
+        : `display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:10px 14px;border-radius:8px;border:1px solid rgba(239,68,68,.5);background:rgba(239,68,68,.14);color:#FF8A8A;font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:0.06em;cursor:pointer;`,
+      onKill: () => this.setState(s => ({ killArmed: !s.killArmed })),
+      // collapse
+      collapseTitle: c ? 'Expand navigation' : 'Collapse navigation',
+      collapseIconStyle: `flex:none;transition:transform .18s;transform:rotate(${c?'180deg':'0deg'});`,
+      onToggleCollapse: () => this.setState(s => ({ collapsed:!s.collapsed })),
+      // topbar page info
+      pageTitle:    this.props.pageTitle    || 'TraderVault',
+      pageSubtitle: this.props.pageSubtitle || '',
+      hasPageSub:   !!(this.props.pageSubtitle),
+      // watchlist
+      watchChevron: st.watchOpen ? 'transform:rotate(180deg);' : '',
+      watchBtnStyle: `display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 12px;border-radius:8px;border:1px solid ${st.watchOpen?'var(--navy)':'var(--border)'};background:var(--bg);color:${st.watchOpen?'var(--head)':'var(--body)'};font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;`,
+      watchMenuStyle: `position:absolute;top:calc(100% + 8px);right:0;width:320px;background:var(--bg);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 32px -8px rgba(13,27,42,.22),0 2px 8px -2px rgba(13,27,42,.12);z-index:50;overflow:hidden;transition:opacity .14s,transform .14s;transform-origin:top right;${st.watchOpen?'opacity:1;transform:translateY(0) scale(1);pointer-events:auto;':'opacity:0;transform:translateY(-6px) scale(.97);pointer-events:none;'}`,
+      onToggleWatch: () => this.setState(s => ({ watchOpen:!s.watchOpen, notifOpen:false, profileOpen:false })),
+      // notifications
+      bellBtnStyle: `position:relative;display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;border:1px solid ${st.notifOpen?'var(--navy)':'var(--border)'};background:var(--bg);color:var(--body);cursor:pointer;`,
+      notifMenuStyle: `position:absolute;top:calc(100% + 8px);right:0;width:330px;background:var(--bg);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 32px -8px rgba(13,27,42,.22),0 2px 8px -2px rgba(13,27,42,.12);z-index:50;overflow:hidden;transition:opacity .14s,transform .14s;transform-origin:top right;${st.notifOpen?'opacity:1;transform:translateY(0) scale(1);pointer-events:auto;':'opacity:0;transform:translateY(-6px) scale(.97);pointer-events:none;'}`,
+      onToggleNotif: () => this.setState(s => ({ notifOpen:!s.notifOpen, watchOpen:false, profileOpen:false })),
+      // theme
+      themeTitle: st.dark ? 'Switch to light mode' : 'Switch to dark mode',
+      themeBtnStyle: `display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;border:1px solid ${st.dark?'var(--navy)':'var(--border)'};background:var(--bg);color:var(--body);cursor:pointer;flex:none;`,
+      themeMoonStyle: `display:${st.dark?'none':'inline-flex'};`,
+      themeSunStyle:  `display:${st.dark?'inline-flex':'none'};color:var(--accent);`,
+      onToggleTheme: () => {
+        const d = !st.dark;
+        try { localStorage.setItem('tv-theme', d?'dark':'light'); } catch(e) {}
+        this.setState({ dark: d });
+      },
+      // profile
+      profileChevron: st.profileOpen ? 'transform:rotate(180deg);' : '',
+      profileMenuStyle: `position:absolute;top:calc(100% + 8px);right:0;width:230px;background:var(--bg);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 32px -8px rgba(13,27,42,.22),0 2px 8px -2px rgba(13,27,42,.12);z-index:50;overflow:hidden;transition:opacity .14s,transform .14s;transform-origin:top right;${st.profileOpen?'opacity:1;transform:translateY(0) scale(1);pointer-events:auto;':'opacity:0;transform:translateY(-6px) scale(.97);pointer-events:none;'}`,
+      helpDrawerEl: this.helpDrawerEl(),
+      onAvProfile: () => { try { window.location.href = 'Settings.dc.html#profile'; } catch(e){} },
+      onAvSettings: () => { try { window.location.href = 'Settings.dc.html#appearance'; } catch(e){} },
+      onAvSubscription: () => { try { window.location.href = 'Settings.dc.html#subscription'; } catch(e){} },
+      onAvHelp: () => this.setState({ helpOpen: true, profileOpen: false }),
+      onAvSignout: () => this.setState({ profileOpen: false }),
+      onToggleProfile: () => this.setState(s => ({ profileOpen:!s.profileOpen, watchOpen:false, notifOpen:false })),
+    };
+  }
+}
+</script>
+</body>
+</html>

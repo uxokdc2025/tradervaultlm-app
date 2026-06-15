@@ -1,0 +1,39 @@
+/* TraderVault LM — Shadow Tokens */
+/* Navy-tinted elevation. Shadows used sparingly; depth comes from surface */
+/* contrast (white/cream on navy) and borders more than layered shadow.    */
+
+:root {
+  /* ── Elevation scale (navy-tinted) ── */
+  --shadow-xs:  0 1px 2px 0 oklch(0.242 0.051 234 / 0.06);
+  --shadow-sm:  0 1px 3px 0 oklch(0.242 0.051 234 / 0.10),
+                0 1px 2px -1px oklch(0.242 0.051 234 / 0.10);
+  --shadow-md:  0 4px 6px -1px oklch(0.242 0.051 234 / 0.10),
+                0 2px 4px -2px oklch(0.242 0.051 234 / 0.10);
+  --shadow-lg:  0 10px 15px -3px oklch(0.242 0.051 234 / 0.12),
+                0 4px  6px -4px oklch(0.242 0.051 234 / 0.10);
+  --shadow-xl:  0 20px 25px -5px oklch(0.242 0.051 234 / 0.14),
+                0 8px  10px -6px oklch(0.242 0.051 234 / 0.10);
+  --shadow-none: none;
+
+  /* ── Inset ring (button highlight) ── */
+  --shadow-btn-inset: inset 0 1px oklch(1 0 0 / 0.18);
+
+  /* ── Focus ring ── */
+  --ring-width: 3px;
+  --ring-color: oklch(0.528 0.280 287.2 / 0.35);   /* purple */
+
+  /* Semantic */
+  --shadow-card:   var(--shadow-sm);
+  --shadow-input:  var(--shadow-xs);
+  --shadow-dialog: var(--shadow-xl);
+  --shadow-popover:var(--shadow-lg);
+}
+
+.dark {
+  /* Shadows are nearly invisible on navy — lean on border separation */
+  --shadow-xs: 0 1px 2px 0 oklch(0 0 0 / 0.3);
+  --shadow-sm: 0 1px 3px 0 oklch(0 0 0 / 0.35);
+  --shadow-md: 0 4px 6px -1px oklch(0 0 0 / 0.35);
+  --shadow-lg: 0 10px 15px -3px oklch(0 0 0 / 0.45);
+  --shadow-btn-inset: none;
+}

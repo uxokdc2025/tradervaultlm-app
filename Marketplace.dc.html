@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="tokens.css">
+  <style>
+    :root { --profit-soft:rgba(21,128,61,.12); --loss-soft:rgba(220,38,38,.12); --warn:#D97706; --warn-soft:rgba(217,119,6,.14); --page:#F7F6F1; --mkt-purple:#7C3AED; --mkt-purple-soft:rgba(124,58,237,.10); --mkt-green:#16A34A; --stripe:#635BFF; }
+    .tv-dark { --profit-soft:rgba(34,197,94,.16); --loss-soft:rgba(248,113,113,.16); --warn:#FBBF24; --warn-soft:rgba(251,191,36,.16); --page:#0B131B; --mkt-purple:#A78BFA; --mkt-purple-soft:rgba(167,139,250,.14); --mkt-green:#22C55E; }
+    .mkt-scroll::-webkit-scrollbar { width:10px; height:10px; }
+    .mkt-scroll::-webkit-scrollbar-thumb { background:var(--border); border-radius:6px; }
+    @keyframes mkt-pulse { 0%,100%{ opacity:1; transform:scale(1);} 50%{ opacity:.45; transform:scale(.8);} }
+    @keyframes mkt-slide-in { from{ transform:translateX(100%);} to{ transform:translateX(0);} }
+    @keyframes mkt-fade { from{ opacity:0;} to{ opacity:1;} }
+    @keyframes mkt-pop { from{ opacity:0; transform:translateY(8px) scale(.98);} to{ opacity:1; transform:translateY(0) scale(1);} }
+  </style>
+</helmet>
+<dc-import name="_Shell"
+  active-page="marketplace"
+  page-title="Marketplace"
+  page-subtitle="Subscribe to proven strategies — signals delivered to your broker"
+  on-nav-overview="{{ goOverview }}"
+  on-nav-strategies="{{ goStrategies }}"
+  on-nav-analysis="{{ goAnalysis }}"
+  on-nav-chart="{{ goChart }}"
+  on-nav-audit="{{ goAudit }}"
+  on-nav-marketplace="{{ goMarketplace }}"
+  on-nav-mysignals="{{ goSoon }}"
+  on-nav-settings="{{ goSoon }}"
+  hint-size="100%,100%">
+  {{ marketplaceEl }}
+</dc-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  state = {
+    search: '', asset: 'all', sort: 'top', pill: 'All',
+    subs: { 'nq-momentum': true, 'vwap-eu': true },
+    subMeta: { 'nq-momentum': { since: 'Jun 1', account: 'Alpaca paper' }, 'vwap-eu': { since: 'May 20', account: 'Alpaca live' } },
+    paused: {},
+    detailId: null, manageOpen: false,
+    flow: null, // { id, step:1|2|3, account }
+    confirmCancel: null,
+    toastMsg: null,
+  };
+  componentWillUnmount() { if (this._t) clearTimeout(this._t); }
+  toast(m) { this.setState({ toastMsg: m }); if (this._t) clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toastMsg: null }), 2800); }
+
+  e(t, p, ...k) { return React.createElement(t, p, ...k); }
+  d(style, ...k) { return React.createElement('div', { style }, ...k); }
+  sp(style, ...k) { return React.createElement('span', { style }, ...k); }
+  btn(p, ...k) { return React.createElement('button', { type: 'button', ...p }, ...k); }
+  ic(paths, color, size, sw) { const h = React.createElement; return h('svg', { width: size || 16, height: size || 16, viewBox: '0 0 24 24', fill: 'none', stroke: color, strokeWidth: sw || 2, strokeLinecap: 'round', strokeLinejoin: 'round', style: { flexShrink: 0 } }, paths.map((dd, i) => h('path', { key: i, d: dd }))); }
+
+  // ── DATA ──
+  strategies() {
+    return [
+      { id: 'nq-momentum', name: 'NQ Momentum Pro', seller: 'James R.', ini: 'JR', grad: ['#7C5CFF', '#3DD5A8'], subs: 847, score: 87, ret: 31.4, win: 74, dd: -7.2, sharpe: 1.92, asset: 'NQ Futures', tf: '5m', style: 'Intraday', ind: ['MACD', 'VWAP'], live: 6, price: 49, cls: 'Futures', top: true, isNew: false },
+      { id: 'vwap-eu', name: 'VWAP Scalper EU', seller: 'Maria K.', ini: 'MK', grad: ['#2DD4BF', '#15A88B'], subs: 412, score: 71, ret: 18.2, win: 68, dd: -5.8, sharpe: 1.54, asset: 'EUR/USD', tf: '1H', style: 'Scalp', ind: ['VWAP', 'EMA'], live: 4, price: 29, cls: 'Forex', top: false, isNew: false },
+      { id: 'btc-mean', name: 'BTC Mean Reversion', seller: 'Alex S.', ini: 'AS', grad: ['#F59E0B', '#D97706'], subs: 203, score: 76, ret: 42.1, win: 71, dd: -11.4, sharpe: 1.71, asset: 'BTC/USDT', tf: '4H', style: 'Swing', ind: ['RSI', 'BB'], live: 2, price: 39, cls: 'Crypto', top: false, isNew: true },
+      { id: 'es-scalp', name: 'ES Scalp Machine', seller: 'Tom W.', ini: 'TW', grad: ['#3B82F6', '#2563EB'], subs: 1204, score: 82, ret: 28.7, win: 77, dd: -6.1, sharpe: 2.14, asset: 'ES Futures', tf: '1m', style: 'Scalp', ind: ['VWAP', 'Delta'], live: 12, price: 79, cls: 'Futures', top: false, isNew: false },
+      { id: 'gbp-swing', name: 'GBP Swing Basic', seller: 'Pedro L.', ini: 'PL', grad: ['#A855F7', '#D946A6'], subs: 89, score: 58, ret: 11.3, win: 58, dd: -9.2, sharpe: 0.98, asset: 'GBP/USD', tf: '4H', style: 'Swing', ind: ['EMA', 'RSI'], live: 1, price: 0, cls: 'Forex', top: false, isNew: true },
+      { id: 'spy-trend', name: 'SPY Trend Rider', seller: 'Sarah R.', ini: 'SR', grad: ['#2DD4BF', '#15A88B'], subs: 317, score: 79, ret: 24.6, win: 72, dd: -8.4, sharpe: 1.63, asset: 'SPY', tf: '1H', style: 'Position', ind: ['ADX', 'EMA'], live: 3, price: 19, cls: 'Equities', top: false, isNew: false },
+    ];
+  }
+  byId(id) { return this.strategies().find(s => s.id === id); }
+  accounts() {
+    return [
+      { id: 'alpaca-paper', name: 'Alpaca paper', ini: 'A', bal: '$99,843.78', mode: 'Paper' },
+      { id: 'alpaca-live', name: 'Alpaca live', ini: 'A', bal: '$24,200.00', mode: 'Live' },
+      { id: 'ib', name: 'Interactive Brokers', ini: 'IB', bal: '$51,400.00', mode: 'Live' },
+    ];
+  }
+
+  // ── primitives ──
+  money(p) { return p === 0 ? 'Free' : '$' + p + '/mo'; }
+  scoreColor(s) { if (s >= 90) return 'var(--warn)'; if (s >= 70) return 'var(--mkt-green)'; if (s >= 55) return 'var(--mkt-purple)'; if (s >= 40) return 'var(--warn)'; return 'var(--loss)'; }
+  avatar(ini, grad, size, fs) {
+    return this.d({ width: size + 'px', height: size + 'px', borderRadius: size >= 40 ? '11px' : '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,' + grad[0] + ',' + grad[1] + ')', color: '#fff', fontWeight: 700, fontSize: (fs || 13) + 'px', letterSpacing: '0.02em' }, ini);
+  }
+  liveDot(color) { return this.d({ width: '8px', height: '8px', borderRadius: '50%', background: color || 'var(--mkt-green)', flexShrink: 0, animation: 'mkt-pulse 1.8s ease-in-out infinite' }); }
+  chip(text, kind) {
+    const m = { gray: { bg: 'var(--subtle)', c: 'var(--body)', b: 'var(--border)' }, green: { bg: 'var(--profit-soft)', c: 'var(--profit)', b: 'color-mix(in srgb,var(--profit) 26%,transparent)' }, blue: { bg: 'rgba(59,130,246,.10)', c: '#2563EB', b: 'rgba(59,130,246,.30)' }, purple: { bg: 'var(--mkt-purple-soft)', c: 'var(--mkt-purple)', b: 'color-mix(in srgb,var(--mkt-purple) 30%,transparent)' }, red: { bg: 'var(--loss-soft)', c: 'var(--loss)', b: 'color-mix(in srgb,var(--loss) 26%,transparent)' } }[kind] || { bg: 'var(--subtle)', c: 'var(--body)', b: 'var(--border)' };
+    return this.sp({ fontSize: '11px', fontWeight: 600, padding: '4px 9px', borderRadius: '6px', background: m.bg, color: m.c, whiteSpace: 'nowrap', border: '1px solid ' + m.b }, text);
+  }
+  curveSvg(seed, w, h, stroke) {
+    const n = 28, pts = [];
+    let acc = 7; for (let i = 0; i < seed.length; i++) acc = (acc * 33 + seed.charCodeAt(i)) % 99991;
+    const rnd = (i) => { const x = Math.sin((acc + 1) * (i + 1) * 0.7321) * 9973.13; return x - Math.floor(x); };
+    for (let i = 0; i < n; i++) { const base = 0.14 + (i / (n - 1)) * 0.66; const noise = (rnd(i) - 0.5) * 0.14; pts.push(Math.max(0.06, Math.min(0.95, base + noise))); }
+    const X = i => (i / (n - 1)) * w, Y = v => (h - v * h);
+    let line = 'M ' + X(0).toFixed(1) + ' ' + Y(pts[0]).toFixed(1);
+    for (let i = 1; i < n; i++) line += ' L ' + X(i).toFixed(1) + ' ' + Y(pts[i]).toFixed(1);
+    const area = line + ' L ' + w + ' ' + h + ' L 0 ' + h + ' Z';
+    const gid = 'mktg' + Math.abs(acc) + Math.round(w);
+    return this.e('svg', { width: '100%', height: h, viewBox: '0 0 ' + w + ' ' + h, preserveAspectRatio: 'none', style: { display: 'block' } },
+      this.e('defs', {}, this.e('linearGradient', { id: gid, x1: '0', y1: '0', x2: '0', y2: '1' },
+        this.e('stop', { offset: '0%', stopColor: stroke, stopOpacity: '0.20' }),
+        this.e('stop', { offset: '100%', stopColor: stroke, stopOpacity: '0' }))),
+      this.e('path', { d: area, fill: 'url(#' + gid + ')' }),
+      this.e('path', { d: line, fill: 'none', stroke: stroke, strokeWidth: '1.6', strokeLinejoin: 'round', strokeLinecap: 'round' }));
+  }
+  metricCell(label, value, color, first, last) {
+    return this.d({ flex: 1, padding: '9px 11px', borderRight: last ? 'none' : '1px solid var(--border)' },
+      this.sp({ display: 'block', fontSize: '14px', fontWeight: 700, color: color || 'var(--head)', fontVariantNumeric: 'tabular-nums', lineHeight: '1.1' }, value),
+      this.sp({ display: 'block', fontSize: '9px', fontWeight: 700, letterSpacing: '0.06em', color: 'var(--muted)', textTransform: 'uppercase', marginTop: '4px' }, label));
+  }
+
+  // ── SUBSCRIBE STATE ──
+  isSub(id) { return !!this.state.subs[id]; }
+  openFlow(id) { this.setState({ flow: { id, step: 1, account: 'alpaca-paper' }, detailId: null }); }
+  subscribeClick(id) { if (this.isSub(id)) { this.toast('Already subscribed — manage it from Your subscriptions'); return; } this.openFlow(id); }
+  completeSubscribe() {
+    const f = this.state.flow; if (!f) return;
+    const acct = this.accounts().find(a => a.id === f.account);
+    this.setState(s => ({ subs: { ...s.subs, [f.id]: true }, subMeta: { ...s.subMeta, [f.id]: { since: 'Jun 14', account: acct.name } }, flow: { ...f, step: 3 } }));
+  }
+
+  // ── SEARCH / FILTER BAR ──
+  selectEl(value, options, onChange, w) {
+    return this.d({ position: 'relative', width: w || 'auto', flex: w ? 'none' : 1 },
+      this.e('select', { value, onChange, style: { width: '100%', height: '50px', padding: '0 40px 0 18px', fontFamily: 'var(--sans)', fontSize: '16px', fontWeight: 600, color: 'var(--head)', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', outline: 'none', appearance: 'none', WebkitAppearance: 'none', cursor: 'pointer' } }, ...options.map(o => this.e('option', { key: o[0], value: o[0] }, o[1]))),
+      this.d({ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }, this.ic(['m6 9 6 6 6-6'], 'var(--muted)', 18)));
+  }
+  filterBar() {
+    const st = this.state;
+    const search = this.d({ position: 'relative', width: '116px', flexShrink: 0 },
+      this.d({ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }, this.ic(['M11 11m-8 0a8 8 0 1 0 16 0 8 8 0 0 0-16 0', 'm21 21-4.3-4.3'], 'var(--muted)', 18)),
+      this.e('input', { type: 'text', value: st.search, placeholder: '', title: 'Search strategies, traders, assets…', onChange: (e) => this.setState({ search: e.target.value }), style: { width: '100%', height: '50px', padding: '0 12px 0 44px', fontFamily: 'var(--sans)', fontSize: '15px', color: 'var(--head)', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', outline: 'none' } }));
+    const assetOpts = [['all', 'All assets'], ['Futures', 'Futures'], ['Forex', 'Forex'], ['Crypto', 'Crypto'], ['Equities', 'Equities']];
+    const pills = ['All', 'Top rated', 'New', 'Free'];
+    const pillBar = this.d({ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }, ...pills.map(p => {
+      const on = st.pill === p;
+      return this.btn({ key: p, onClick: () => this.setState({ pill: p }), style: { height: '44px', padding: '0 20px', borderRadius: '999px', fontFamily: 'var(--sans)', fontSize: '15px', fontWeight: 600, cursor: 'pointer', background: on ? 'var(--mkt-purple)' : 'var(--card)', color: on ? '#fff' : 'var(--body)', border: '1px solid ' + (on ? 'var(--mkt-purple)' : 'var(--border)'), transition: 'all .12s' } }, p);
+    }));
+    return this.d({ display: 'flex', alignItems: 'center', gap: '14px', rowGap: '14px', flexWrap: 'wrap' }, search, this.selectEl(st.asset, assetOpts, (e) => this.setState({ asset: e.target.value }), '300px'), this.d({ flex: 1, minWidth: '8px' }), pillBar);
+  }
+
+  filtered() {
+    const st = this.state; let list = this.strategies().slice();
+    if (st.asset !== 'all') list = list.filter(s => s.cls === st.asset);
+    if (st.pill === 'Top rated') list = list.filter(s => s.top || s.score >= 80);
+    else if (st.pill === 'New') list = list.filter(s => s.isNew || s.live <= 2);
+    else if (st.pill === 'Free') list = list.filter(s => s.price === 0);
+    const q = st.search.trim().toLowerCase();
+    if (q) list = list.filter(s => (s.name + ' ' + s.seller + ' ' + s.asset + ' ' + s.ind.join(' ')).toLowerCase().includes(q));
+    const sorters = { top: (a, b) => b.score - a.score, new: (a, b) => a.live - b.live, return: (a, b) => b.ret - a.ret, win: (a, b) => b.win - a.win, plow: (a, b) => a.price - b.price, phigh: (a, b) => b.price - a.price };
+    list.sort(sorters[st.sort] || sorters.top);
+    return list;
+  }
+
+  // ── ACTIVE SUBSCRIPTIONS ROW ──
+  miniCard(s) {
+    const meta = this.state.subMeta[s.id] || { since: '—' };
+    const paused = !!this.state.paused[s.id];
+    return this.btn({ key: s.id, onClick: () => this.setState({ detailId: s.id }), style: { flexShrink: 0, width: '300px', textAlign: 'left', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '14px', padding: '16px 18px', cursor: 'pointer', fontFamily: 'var(--sans)', display: 'flex', flexDirection: 'column', gap: '12px', transition: 'border-color .12s' }, 'style-hover': '' },
+      this.d({ display: 'flex', alignItems: 'center', gap: '11px' },
+        this.avatar(s.ini, s.grad, 34, 12),
+        this.sp({ flex: 1, fontSize: '15px', fontWeight: 700, color: 'var(--head)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }, s.name),
+        paused ? this.liveDot('var(--warn)') : this.liveDot()),
+      this.d({ display: 'flex', alignItems: 'flex-end', gap: '18px' },
+        this.d({}, this.sp({ display: 'block', fontSize: '15px', fontWeight: 700, color: 'var(--profit)', fontVariantNumeric: 'tabular-nums' }, '+' + s.ret + '%'), this.sp({ fontSize: '9px', fontWeight: 700, letterSpacing: '0.06em', color: 'var(--muted)' }, 'RETURN')),
+        this.d({}, this.sp({ display: 'block', fontSize: '15px', fontWeight: 700, color: 'var(--head)', fontVariantNumeric: 'tabular-nums' }, s.win + '%'), this.sp({ fontSize: '9px', fontWeight: 700, letterSpacing: '0.06em', color: 'var(--muted)' }, 'WIN')),
+        this.d({}, this.sp({ display: 'block', fontSize: '15px', fontWeight: 700, color: this.scoreColor(s.score), fontVariantNumeric: 'tabular-nums' }, '' + s.score), this.sp({ fontSize: '9px', fontWeight: 700, letterSpacing: '0.06em', color: 'var(--muted)' }, 'SCORE'))),
+      this.sp({ fontSize: '12px', color: 'var(--muted)' }, 'Since ' + meta.since + ' · ' + this.money(s.price)));
+  }
+  subscriptionsRow() {
+    const subbed = this.strategies().filter(s => this.isSub(s.id));
+    const cards = subbed.map(s => this.miniCard(s));
+    const addCard = this.btn({ key: 'add', onClick: () => { const el = document.getElementById('mkt-discover'); if (el) el.scrollTop = el.offsetTop; this.toast('Browse the strategies below'); }, style: { flexShrink: 0, minWidth: '320px', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', background: 'transparent', border: '1.5px dashed var(--border-2,var(--border))', borderRadius: '14px', padding: '16px', cursor: 'pointer', fontFamily: 'var(--sans)', color: 'var(--muted)' } },
+      this.ic(['M12 5v14', 'M5 12h14'], 'currentColor', 18), this.sp({ fontSize: '15px', fontWeight: 600 }, 'Browse below to add more'));
+    const header = this.d({ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '14px' },
+      this.sp({ fontSize: '19px', fontWeight: 700, color: 'var(--head)', letterSpacing: '-0.01em' }, 'Your subscriptions'),
+      this.btn({ onClick: () => this.setState({ manageOpen: true }), style: { display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: 'var(--mkt-purple)', fontFamily: 'var(--sans)', fontSize: '15px', fontWeight: 600, cursor: 'pointer' } }, 'Manage', this.ic(['M5 12h14', 'm12 5 7 7-7 7'], 'currentColor', 16)));
+    return this.d({},
+      header,
+      this.d({ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '4px' }, ...cards, addCard));
+  }
+
+  // ── STRATEGY CARD ──
+  strategyCard(s) {
+    const subbed = this.isSub(s.id);
+    const tags = [s.asset, s.tf, s.style, ...s.ind, s.live + 'M live'];
+    const subBtn = this.btn({ onClick: (e) => { e.stopPropagation(); this.subscribeClick(s.id); }, style: { height: '46px', padding: '0 22px', minWidth: '150px', border: 'none', borderRadius: '10px', fontFamily: 'var(--sans)', fontSize: '15px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: subbed ? 'var(--mkt-green)' : 'var(--mkt-purple)', color: '#fff', transition: 'filter .12s' }, 'style-hover': 'filter:brightness(1.06)' },
+      subbed ? this.ic(['M20 6 9 17l-5-5'], '#fff', 16, 2.6) : null, subbed ? 'Subscribed' : 'Subscribe');
+    return this.btn({ key: s.id, onClick: () => this.setState({ detailId: s.id }), style: { display: 'flex', flexDirection: 'column', textAlign: 'left', background: 'var(--card)', border: (s.top ? '1.5px solid var(--mkt-purple)' : '1px solid var(--border)'), borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', fontFamily: 'var(--sans)', boxShadow: '0 1px 2px rgba(15,23,36,.04)' } },
+      // header
+      this.d({ padding: '16px 18px 0', display: 'flex', gap: '13px' },
+        this.avatar(s.ini, s.grad, 46, 15),
+        this.d({ flex: 1, minWidth: 0 },
+          s.top ? this.sp({ display: 'inline-block', fontSize: '10px', fontWeight: 800, letterSpacing: '0.07em', color: 'var(--mkt-purple)', background: 'var(--mkt-purple-soft)', padding: '3px 8px', borderRadius: '5px', marginBottom: '5px' }, 'TOP RATED') : null,
+          this.sp({ display: 'block', fontSize: '17px', fontWeight: 700, color: 'var(--head)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '-0.01em' }, s.name),
+          this.sp({ display: 'block', fontSize: '13px', color: 'var(--muted)', marginTop: '2px' }, s.seller + ' · ' + s.subs.toLocaleString() + ' subscribers')),
+        this.sp({ fontSize: '28px', fontWeight: 800, color: this.scoreColor(s.score), fontVariantNumeric: 'tabular-nums', lineHeight: '1' }, '' + s.score)),
+      // curve
+      this.d({ padding: '12px 18px 4px', height: '52px' }, this.curveSvg(s.id, 320, 44, 'var(--mkt-green)')),
+      // metric pills
+      this.d({ margin: '6px 18px 0', display: 'flex', border: '1px solid var(--border)', borderRadius: '10px', overflow: 'hidden' },
+        this.metricCell('Return', '+' + s.ret + '%', 'var(--profit)'),
+        this.metricCell('Win', s.win + '%', 'var(--profit)'),
+        this.metricCell('Max DD', s.dd + '%', 'var(--loss)'),
+        this.metricCell('Sharpe', '' + s.sharpe, 'var(--head)', false, true)),
+      // tags
+      this.d({ padding: '14px 18px 16px', display: 'flex', flexWrap: 'wrap', gap: '7px', flex: 1, alignContent: 'flex-start' }, ...tags.map((t, i) => React.cloneElement(this.chip(t, t.indexOf('live') >= 0 ? 'green' : 'gray'), { key: i }))),
+      // footer
+      this.d({ marginTop: 'auto', padding: '14px 18px', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' },
+        this.d({}, this.sp({ display: 'block', fontSize: '18px', fontWeight: 800, color: 'var(--head)' }, this.money(s.price)), this.sp({ fontSize: '12px', color: 'var(--muted)' }, s.subs.toLocaleString() + ' subscribers')),
+        subBtn));
+  }
+  discoverGrid() {
+    const list = this.filtered();
+    const sortOpts = [['top', 'Top rated'], ['new', 'Newest'], ['return', 'Return'], ['win', 'Win rate'], ['plow', 'Price low→high'], ['phigh', 'Price high→low']];
+    const header = this.d({ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', marginBottom: '16px', flexWrap: 'wrap' },
+      this.d({ display: 'flex', alignItems: 'baseline', gap: '10px' },
+        this.sp({ fontSize: '19px', fontWeight: 700, color: 'var(--head)', letterSpacing: '-0.01em' }, 'Discover strategies'),
+        this.sp({ fontSize: '14px', color: 'var(--muted)' }, '· ' + list.length + ' strategies')),
+      this.d({ position: 'relative', width: '230px' },
+        this.e('select', { value: this.state.sort, onChange: (e) => this.setState({ sort: e.target.value }), style: { width: '100%', height: '46px', padding: '0 38px 0 16px', fontFamily: 'var(--sans)', fontSize: '15px', fontWeight: 600, color: 'var(--head)', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', outline: 'none', appearance: 'none', WebkitAppearance: 'none', cursor: 'pointer' } }, ...sortOpts.map(o => this.e('option', { key: o[0], value: o[0] }, 'Sort: ' + o[1]))),
+        this.d({ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }, this.ic(['m6 9 6 6 6-6'], 'var(--muted)', 17))));
+    const grid = list.length ? this.d({ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }, ...list.map(s => this.strategyCard(s)))
+      : this.d({ padding: '60px', textAlign: 'center', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '16px', color: 'var(--muted)', fontSize: '15px' }, 'No strategies match these filters');
+    return this.d({}, header, grid);
+  }
+
+  marketplaceEl() {
+    const st = this.state;
+    const header = this.d({ marginBottom: '4px' },
+      this.sp({ display: 'block', fontSize: '30px', fontWeight: 800, color: 'var(--head)', letterSpacing: '-0.02em' }, 'Marketplace'),
+      this.sp({ display: 'block', fontSize: '16px', color: 'var(--muted)', marginTop: '6px' }, 'Subscribe to proven strategies — signals delivered directly to your broker'));
+    const toastEl = st.toastMsg ? this.d({ position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)', zIndex: 600, background: 'var(--head)', color: 'var(--bg)', padding: '12px 20px', borderRadius: '10px', fontSize: '14px', fontWeight: 500, boxShadow: '0 10px 30px rgba(15,23,36,.28)' }, st.toastMsg) : null;
+    return this.d({ height: '100%', overflowY: 'auto', background: 'var(--page)' },
+      this.d({ className: 'mkt-scroll' },
+        this.d({ maxWidth: '1240px', margin: '0 auto', padding: '28px 32px 64px', display: 'flex', flexDirection: 'column', gap: '28px' },
+          header, this.filterBar(), this.subscriptionsRow(), this.d({ id: 'mkt-discover' }, this.discoverGrid()))),
+      this.detailDrawer(), this.manageDrawer(), this.flowOverlay(), toastEl);
+  }
+
+  // ── DETAIL DRAWER ──
+  kpiCard(label, value, color) {
+    return this.d({ flex: 1, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px 16px' },
+      this.sp({ display: 'block', fontSize: '22px', fontWeight: 800, color: color || 'var(--head)', fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.01em' }, value),
+      this.sp({ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--muted)', marginTop: '5px' }, label));
+  }
+  monthlyHeat(seed) {
+    const months = ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+    let acc = 3; for (let i = 0; i < seed.length; i++) acc = (acc * 29 + seed.charCodeAt(i)) % 97;
+    const cells = months.map((m, i) => {
+      const r = Math.sin((acc + 1) * (i + 3) * 1.37) * 100;
+      const v = ((r - Math.floor(r)) * 14 - 4);
+      const pos = v >= 0;
+      return this.d({ key: m, flex: 1, minWidth: 0 },
+        this.d({ height: '40px', borderRadius: '7px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: pos ? 'var(--profit-soft)' : 'var(--loss-soft)', border: '1px solid ' + (pos ? 'color-mix(in srgb,var(--profit) 22%,transparent)' : 'color-mix(in srgb,var(--loss) 22%,transparent)') },
+          this.sp({ fontSize: '11px', fontWeight: 700, color: pos ? 'var(--profit)' : 'var(--loss)', fontVariantNumeric: 'tabular-nums' }, (pos ? '+' : '') + v.toFixed(1))),
+        this.sp({ display: 'block', textAlign: 'center', fontSize: '9px', color: 'var(--muted)', marginTop: '4px' }, m));
+    });
+    return this.d({ display: 'flex', gap: '5px' }, ...cells);
+  }
+  dnaRows(seed) {
+    const conds = [['SQQQ confirmation', 88], ['ATR > 20d avg', 81], ['Break of structure', 74], ['DXY divergence', 63], ['Volume spike', 57]];
+    return this.d({ display: 'flex', flexDirection: 'column', gap: '10px' }, ...conds.map(([label, pct]) =>
+      this.d({ key: label, display: 'flex', alignItems: 'center', gap: '12px' },
+        this.sp({ width: '150px', flexShrink: 0, fontSize: '13px', color: 'var(--body)', fontWeight: 500 }, label),
+        this.d({ flex: 1, height: '8px', borderRadius: '4px', background: 'var(--subtle)', overflow: 'hidden' }, this.d({ width: pct + '%', height: '100%', borderRadius: '4px', background: 'var(--mkt-green)' })),
+        this.sp({ width: '38px', textAlign: 'right', fontSize: '13px', fontWeight: 700, color: 'var(--head)', fontVariantNumeric: 'tabular-nums' }, pct + '%'))));
+  }
+  recentSignals(s) {
+    let acc = 11; for (let i = 0; i < s.id.length; i++) acc = (acc * 31 + s.id.charCodeAt(i)) % 9973;
+    const rows = [];
+    for (let i = 0; i < 8; i++) {
+      const r = (k) => { const x = Math.sin((acc + 1) * (i + 1) * (k + 1.3) * 0.91) * 1000; return x - Math.floor(x); };
+      const long = r(1) > 0.42;
+      const win = r(2) > 0.32;
+      const pnl = (win ? 1 : -1) * (0.4 + r(3) * 2.4);
+      const conf = Math.round(55 + r(4) * 40);
+      rows.push({ date: 'Jun ' + (14 - i), dir: long ? 'Long' : 'Short', entry: (s.cls === 'Crypto' ? 64000 + Math.round(r(5) * 4000) : 19000 + Math.round(r(5) * 1200)).toLocaleString(), pnl: (pnl >= 0 ? '+' : '') + (pnl * (s.cls === 'Crypto' ? 220 : 130)).toFixed(0), pnlPos: pnl >= 0, conf });
+    }
+    const head = this.d({ display: 'flex', padding: '0 4px 8px', borderBottom: '1px solid var(--border)' }, ...['Date', 'Dir', 'Entry', 'P&L', 'Conf'].map((h, i) =>
+      this.sp({ key: h, flex: i === 0 ? '0 0 70px' : (i === 2 ? '0 0 90px' : 1), textAlign: i >= 2 ? 'right' : 'left', fontSize: '10px', fontWeight: 700, letterSpacing: '0.05em', color: 'var(--muted)', textTransform: 'uppercase' }, h)));
+    const body = rows.map((r, i) => this.d({ key: i, display: 'flex', alignItems: 'center', padding: '9px 4px', borderBottom: '1px solid var(--border)' },
+      this.sp({ flex: '0 0 70px', fontSize: '13px', color: 'var(--body)', fontVariantNumeric: 'tabular-nums' }, r.date),
+      this.d({ flex: 1 }, this.sp({ fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '5px', background: r.dir === 'Long' ? 'var(--profit-soft)' : 'var(--loss-soft)', color: r.dir === 'Long' ? 'var(--profit)' : 'var(--loss)' }, r.dir)),
+      this.sp({ flex: '0 0 90px', textAlign: 'right', fontSize: '13px', color: 'var(--head)', fontVariantNumeric: 'tabular-nums' }, r.entry),
+      this.sp({ flex: 1, textAlign: 'right', fontSize: '13px', fontWeight: 700, color: r.pnlPos ? 'var(--profit)' : 'var(--loss)', fontVariantNumeric: 'tabular-nums' }, '$' + r.pnl),
+      this.d({ flex: 1, display: 'flex', justifyContent: 'flex-end' }, this.sp({ fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '5px', background: 'var(--mkt-purple-soft)', color: 'var(--mkt-purple)' }, r.conf + '%'))));
+    return this.d({}, head, ...body);
+  }
+  drawerSection(label, body) {
+    return this.d({}, this.sp({ display: 'block', fontSize: '12px', fontWeight: 700, letterSpacing: '0.04em', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '12px' }, label), body);
+  }
+  detailDrawer() {
+    const id = this.state.detailId;
+    const open = !!id;
+    const s = id ? this.byId(id) : null;
+    const backdrop = this.d({ onClick: () => this.setState({ detailId: null }), style: { position: 'fixed', inset: 0, zIndex: 400, background: 'var(--dim,rgba(15,23,36,.5))', opacity: open ? 1 : 0, pointerEvents: open ? 'auto' : 'none', transition: 'opacity .22s' } });
+    let panelChildren = null;
+    if (s) {
+      const subbed = this.isSub(s.id);
+      const header = this.d({ display: 'flex', alignItems: 'flex-start', gap: '14px', padding: '22px 24px', borderBottom: '1px solid var(--border)' },
+        this.avatar(s.ini, s.grad, 44, 15),
+        this.d({ flex: 1, minWidth: 0 },
+          this.sp({ display: 'block', fontSize: '18px', fontWeight: 700, color: 'var(--head)', letterSpacing: '-0.01em' }, s.name),
+          this.sp({ display: 'block', fontSize: '13px', color: 'var(--muted)', marginTop: '3px' }, 'by ' + s.seller + ' · ' + s.subs.toLocaleString() + ' subscribers')),
+        this.sp({ fontSize: '24px', fontWeight: 800, color: this.scoreColor(s.score), fontVariantNumeric: 'tabular-nums', lineHeight: '1' }, '' + s.score),
+        this.btn({ onClick: () => this.setState({ detailId: null }), 'aria-label': 'Close', style: { width: '34px', height: '34px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '9px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--muted)', cursor: 'pointer' } }, this.ic(['M18 6 6 18', 'm6 6 12 12'], 'currentColor', 17)));
+      const statusChips = this.d({ display: 'flex', flexWrap: 'wrap', gap: '8px' },
+        this.chipText('Live ' + s.live + ' months', 'green'), this.chipText(s.subs.toLocaleString() + ' subscribers', 'blue'),
+        this.chipText(s.asset + ' · ' + s.tf + ' · ' + s.style, 'gray'), this.chipText('Full audit trail', 'green'));
+      const kpis = this.d({ display: 'flex', gap: '12px' },
+        this.kpiCard('Total return', '+' + s.ret + '%', 'var(--profit)'), this.kpiCard('Win rate', s.win + '%', 'var(--head)'),
+        this.kpiCard('Max drawdown', s.dd + '%', 'var(--loss)'), this.kpiCard('Sharpe ratio', '' + s.sharpe, 'var(--head)'));
+      const equity = this.d({ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px 16px', height: '150px' }, this.curveSvg(s.id + 'big', 520, 118, 'var(--mkt-green)'));
+      const footer = this.d({ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', padding: '16px 24px', borderTop: '1px solid var(--border)', background: 'var(--card)' },
+        this.d({}, this.sp({ display: 'block', fontSize: '20px', fontWeight: 800, color: 'var(--head)' }, s.price === 0 ? 'Free' : '$' + s.price + ' / month'), this.sp({ fontSize: '12px', color: 'var(--muted)' }, subbed ? 'Currently subscribed' : 'Cancel anytime')),
+        this.d({ display: 'flex', gap: '10px' },
+          this.btn({ onClick: () => this.toast('Opening public audit log…'), style: { height: '46px', padding: '0 18px', borderRadius: '10px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--body)', fontFamily: 'var(--sans)', fontSize: '14px', fontWeight: 600, cursor: 'pointer' } }, 'View audit log'),
+          this.btn({ onClick: () => this.subscribeClick(s.id), style: { height: '46px', padding: '0 26px', borderRadius: '10px', border: 'none', background: subbed ? 'var(--mkt-green)' : 'var(--mkt-purple)', color: '#fff', fontFamily: 'var(--sans)', fontSize: '15px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' } }, subbed ? this.ic(['M20 6 9 17l-5-5'], '#fff', 16, 2.6) : null, subbed ? 'Subscribed' : 'Subscribe')));
+      const body = this.d({ flex: 1, minHeight: 0, overflowY: 'auto', padding: '22px 24px', display: 'flex', flexDirection: 'column', gap: '26px' },
+        statusChips, kpis,
+        this.drawerSection('Live equity curve', equity),
+        this.drawerSection('Monthly returns', this.monthlyHeat(s.id)),
+        this.drawerSection('Win/Loss DNA — what predicts wins', this.dnaRows(s.id)),
+        this.drawerSection('Recent signals (last 8)', this.recentSignals(s)),
+        this.drawerSection('About the seller', this.sellerCard(s)));
+      panelChildren = this.d({ display: 'flex', flexDirection: 'column', height: '100%' }, header, body, footer);
+    }
+    const panel = this.e('div', { style: { position: 'fixed', top: 0, right: 0, height: '100vh', width: '580px', maxWidth: '94vw', zIndex: 401, background: 'var(--page)', borderLeft: '1px solid var(--border)', boxShadow: '-16px 0 48px -12px rgba(15,23,36,.28)', display: 'flex', flexDirection: 'column', transform: open ? 'translateX(0)' : 'translateX(100%)', transition: 'transform .28s cubic-bezier(.32,.72,0,1)' } }, panelChildren);
+    return this.e(React.Fragment, {}, backdrop, panel);
+  }
+  chipText(text, kind) { return this.chip(text, kind); }
+  sellerCard(s) {
+    return this.d({ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px 18px', display: 'flex', gap: '14px', alignItems: 'center' },
+      this.avatar(s.ini, s.grad, 44, 15),
+      this.d({ flex: 1 },
+        this.d({ display: 'flex', alignItems: 'center', gap: '8px' },
+          this.sp({ fontSize: '15px', fontWeight: 700, color: 'var(--head)' }, s.seller),
+          s.subs > 300 ? this.sp({ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 700, color: 'var(--profit)', background: 'var(--profit-soft)', padding: '2px 8px', borderRadius: '5px', border: '1px solid color-mix(in srgb,var(--profit) 24%,transparent)' }, this.ic(['M20 6 9 17l-5-5'], 'var(--profit)', 12, 2.6), 'Verified') : null),
+        this.sp({ display: 'block', fontSize: '12.5px', color: 'var(--muted)', marginTop: '4px' }, s.subs.toLocaleString() + ' subscribers · ' + (s.id === 'es-scalp' ? '3' : '1') + ' strategies published · Member since 2024')));
+  }
+
+  // ── MANAGE DRAWER ──
+  manageDrawer() {
+    const open = this.state.manageOpen;
+    const subbed = this.strategies().filter(s => this.isSub(s.id));
+    const backdrop = this.d({ onClick: () => this.setState({ manageOpen: false, confirmCancel: null }), style: { position: 'fixed', inset: 0, zIndex: 410, background: 'rgba(15,23,36,.5)', opacity: open ? 1 : 0, pointerEvents: open ? 'auto' : 'none', transition: 'opacity .22s' } });
+    const total = subbed.reduce((a, s) => a + (this.state.paused[s.id] ? 0 : s.price), 0);
+    const rows = subbed.map(s => {
+      const paused = !!this.state.paused[s.id];
+      const meta = this.state.subMeta[s.id] || {};
+      const confirming = this.state.confirmCancel === s.id;
+      const actions = confirming
+        ? this.d({ marginTop: '12px', padding: '12px 14px', background: 'var(--loss-soft)', border: '1px solid color-mix(in srgb,var(--loss) 26%,transparent)', borderRadius: '10px' },
+            this.sp({ display: 'block', fontSize: '13px', color: 'var(--head)', marginBottom: '10px' }, 'Cancel ' + s.name + '? Signals stop immediately. No charge after next billing date.'),
+            this.d({ display: 'flex', gap: '8px' },
+              this.btn({ onClick: () => this.setState({ confirmCancel: null }), style: { height: '36px', padding: '0 14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--body)', fontFamily: 'var(--sans)', fontSize: '13px', fontWeight: 600, cursor: 'pointer' } }, 'Keep subscription'),
+              this.btn({ onClick: () => this.setState(st => { const subs = { ...st.subs }; delete subs[s.id]; return { subs, confirmCancel: null, toastMsg: 'Subscription cancelled' }; }), style: { height: '36px', padding: '0 14px', borderRadius: '8px', border: 'none', background: 'var(--loss)', color: '#fff', fontFamily: 'var(--sans)', fontSize: '13px', fontWeight: 700, cursor: 'pointer' } }, 'Yes, cancel')))
+        : this.d({ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' },
+            this.btn({ onClick: () => this.setState(st => ({ paused: { ...st.paused, [s.id]: !st.paused[s.id] } })), style: { height: '36px', padding: '0 14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--body)', fontFamily: 'var(--sans)', fontSize: '13px', fontWeight: 600, cursor: 'pointer' } }, paused ? 'Resume signals' : 'Pause signals'),
+            this.btn({ onClick: () => { this.setState({ manageOpen: false }); this.openFlow(s.id); }, style: { height: '36px', padding: '0 14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--body)', fontFamily: 'var(--sans)', fontSize: '13px', fontWeight: 600, cursor: 'pointer' } }, 'Change account'),
+            this.btn({ onClick: () => this.setState({ confirmCancel: s.id }), style: { height: '36px', padding: '0 14px', borderRadius: '8px', border: '1px solid var(--tv-red-border,#FECACA)', background: 'transparent', color: 'var(--loss)', fontFamily: 'var(--sans)', fontSize: '13px', fontWeight: 600, cursor: 'pointer' } }, 'Cancel'));
+      return this.d({ key: s.id, padding: '18px 0', borderBottom: '1px solid var(--border)' },
+        this.d({ display: 'flex', gap: '13px' },
+          this.avatar(s.ini, s.grad, 40, 14),
+          this.d({ flex: 1, minWidth: 0 },
+            this.d({ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }, paused ? this.liveDot('var(--warn)') : this.liveDot(), this.sp({ fontSize: '13px', fontWeight: 600, color: paused ? 'var(--warn)' : 'var(--profit)' }, paused ? 'Paused — signals stopped' : 'Active — signals routing')),
+            this.sp({ display: 'block', fontSize: '15px', fontWeight: 700, color: 'var(--head)' }, s.name),
+            this.sp({ display: 'block', fontSize: '12.5px', color: 'var(--muted)', marginTop: '2px' }, 'by ' + s.seller + ' · Score ' + s.score + ' · ' + s.asset + ' · ' + s.tf),
+            this.d({ display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '8px', padding: '4px 10px', borderRadius: '7px', background: 'var(--subtle)', border: '1px solid var(--border)' }, this.ic(['M5 12h14', 'm12 5 7 7-7 7'], 'var(--muted)', 13), this.sp({ fontSize: '12px', fontWeight: 600, color: 'var(--body)' }, 'Routing to: ' + (meta.account || 'Alpaca paper')))),
+          this.d({ textAlign: 'right', flexShrink: 0 },
+            this.sp({ display: 'block', fontSize: '15px', fontWeight: 700, color: 'var(--head)' }, this.money(s.price)),
+            this.sp({ fontSize: '12px', color: 'var(--muted)' }, 'Next: Jul 14'))),
+        actions);
+    });
+    const panelChildren = this.d({ display: 'flex', flexDirection: 'column', height: '100%' },
+      this.d({ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: '1px solid var(--border)' },
+        this.sp({ fontSize: '18px', fontWeight: 700, color: 'var(--head)' }, 'Your subscriptions'),
+        this.btn({ onClick: () => this.setState({ manageOpen: false, confirmCancel: null }), 'aria-label': 'Close', style: { width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '9px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--muted)', cursor: 'pointer' } }, this.ic(['M18 6 6 18', 'm6 6 12 12'], 'currentColor', 17))),
+      this.d({ flex: 1, minHeight: 0, overflowY: 'auto', padding: '4px 24px' }, subbed.length ? this.d({}, ...rows) : this.d({ padding: '48px 0', textAlign: 'center', color: 'var(--muted)', fontSize: '14px' }, 'No active subscriptions')),
+      this.d({ flexShrink: 0, padding: '16px 24px', borderTop: '1px solid var(--border)', background: 'var(--card)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+        this.sp({ fontSize: '13px', color: 'var(--muted)' }, 'Total monthly spend'),
+        this.sp({ fontSize: '18px', fontWeight: 800, color: 'var(--head)' }, '$' + total + ' / month')));
+    const panel = this.e('div', { style: { position: 'fixed', top: 0, right: 0, height: '100vh', width: '480px', maxWidth: '94vw', zIndex: 411, background: 'var(--page)', borderLeft: '1px solid var(--border)', boxShadow: '-16px 0 48px -12px rgba(15,23,36,.28)', display: 'flex', flexDirection: 'column', transform: open ? 'translateX(0)' : 'translateX(100%)', transition: 'transform .28s cubic-bezier(.32,.72,0,1)' } }, open ? panelChildren : null);
+    return this.e(React.Fragment, {}, backdrop, panel);
+  }
+
+  // ── SUBSCRIBE FLOW OVERLAY ──
+  flowOverlay() {
+    const f = this.state.flow;
+    if (!f) return null;
+    const s = this.byId(f.id);
+    let card;
+    if (f.step === 1) card = this.flowStep1(s, f);
+    else if (f.step === 2) card = this.flowStep2(s, f);
+    else card = this.flowStep3(s, f);
+    return this.d({ style: {}, onClick: () => { if (f.step !== 3) this.setState({ flow: null }); }, ...{ } },
+      this.d({ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(15,23,36,.55)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', overflowY: 'auto', padding: '48px 20px', animation: 'mkt-fade .2s ease' },
+        this.e('div', { onClick: (e) => e.stopPropagation(), style: { width: f.step === 2 ? '760px' : '560px', maxWidth: '100%', animation: 'mkt-pop .26s cubic-bezier(.34,1.4,.64,1)' } }, card)));
+  }
+  flowSummaryCard(s) {
+    return this.d({ display: 'flex', alignItems: 'center', gap: '13px', padding: '14px 16px', background: 'var(--subtle)', border: '1px solid var(--border)', borderRadius: '12px' },
+      this.avatar(s.ini, s.grad, 42, 14),
+      this.d({ flex: 1, minWidth: 0 },
+        this.sp({ display: 'block', fontSize: '15px', fontWeight: 700, color: 'var(--head)' }, s.name),
+        this.sp({ display: 'block', fontSize: '12.5px', color: 'var(--muted)', marginTop: '2px' }, 'by ' + s.seller + ' · ' + s.asset + ' · ' + s.tf + ' · Score ' + s.score)),
+      this.sp({ fontSize: '17px', fontWeight: 800, color: 'var(--mkt-purple)' }, this.money(s.price)));
+  }
+  flowStep1(s, f) {
+    const accounts = this.accounts();
+    const rows = accounts.map(a => {
+      const on = f.account === a.id;
+      return this.btn({ key: a.id, onClick: () => this.setState({ flow: { ...f, account: a.id } }), style: { display: 'flex', alignItems: 'center', gap: '13px', width: '100%', textAlign: 'left', padding: '14px 16px', borderRadius: '12px', cursor: 'pointer', fontFamily: 'var(--sans)', background: on ? 'var(--mkt-purple-soft)' : 'var(--card)', border: '1.5px solid ' + (on ? 'var(--mkt-purple)' : 'var(--border)'), transition: 'all .12s' } },
+        this.d({ width: '20px', height: '20px', borderRadius: '50%', flexShrink: 0, border: '2px solid ' + (on ? 'var(--mkt-purple)' : 'var(--border-2,var(--border))'), display: 'flex', alignItems: 'center', justifyContent: 'center' }, on ? this.d({ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--mkt-purple)' }) : null),
+        this.d({ width: '34px', height: '34px', borderRadius: '8px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--subtle)', border: '1px solid var(--border)', fontSize: '12px', fontWeight: 700, color: 'var(--body)' }, a.ini),
+        this.d({ flex: 1, minWidth: 0 }, this.sp({ display: 'block', fontSize: '15px', fontWeight: 600, color: 'var(--head)' }, a.name), this.sp({ fontSize: '12.5px', color: 'var(--muted)' }, a.bal + ' · ' + a.mode + ' trading')),
+        this.sp({ fontSize: '11px', fontWeight: 700, padding: '4px 10px', borderRadius: '6px', background: a.mode === 'Live' ? 'var(--profit-soft)' : 'var(--tv-badge-paper-bg,#EEF2FF)', color: a.mode === 'Live' ? 'var(--profit)' : 'var(--tv-badge-paper-text,#4338CA)', border: '1px solid ' + (a.mode === 'Live' ? 'color-mix(in srgb,var(--profit) 26%,transparent)' : 'var(--tv-badge-paper-border,#C7D2FE)') }, a.mode));
+    });
+    return this.d({ background: 'var(--page)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 24px 64px -16px rgba(15,23,36,.4)' },
+      this.d({ display: 'flex', alignItems: 'center', gap: '12px', padding: '18px 24px', background: 'var(--subtle)', borderBottom: '1px solid var(--border)' },
+        this.d({ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--mkt-purple)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 700 }, '1'),
+        this.sp({ flex: 1, fontSize: '17px', fontWeight: 700, color: 'var(--head)' }, 'Choose your trading account'),
+        this.sp({ fontSize: '12px', fontWeight: 600, color: 'var(--muted)' }, 'Step 1 of 2'),
+        this.btn({ onClick: () => this.setState({ flow: null }), 'aria-label': 'Close', style: { width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', border: 'none', background: 'transparent', color: 'var(--muted)', cursor: 'pointer' } }, this.ic(['M18 6 6 18', 'm6 6 12 12'], 'currentColor', 17))),
+      this.d({ padding: '22px 24px', display: 'flex', flexDirection: 'column', gap: '18px', background: 'var(--card)' },
+        this.sp({ fontSize: '13.5px', color: 'var(--body)' }, 'Signals from this strategy will be routed to your selected account.'),
+        this.flowSummaryCard(s),
+        this.d({}, this.sp({ display: 'block', fontSize: '12px', fontWeight: 700, letterSpacing: '0.04em', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '10px' }, 'Connected accounts'),
+          this.d({ display: 'flex', flexDirection: 'column', gap: '10px' }, ...rows,
+            this.btn({ onClick: () => this.toast('Opening Settings → Brokers…'), style: { display: 'inline-flex', alignItems: 'center', gap: '7px', alignSelf: 'flex-start', marginTop: '2px', background: 'none', border: 'none', color: 'var(--mkt-purple)', fontFamily: 'var(--sans)', fontSize: '13.5px', fontWeight: 600, cursor: 'pointer', padding: '4px 0' } }, this.ic(['M12 5v14', 'M5 12h14'], 'currentColor', 15), 'Add broker account'))),
+        this.btn({ onClick: () => this.setState({ flow: { ...f, step: 2 } }), style: { height: '50px', width: '100%', border: 'none', borderRadius: '11px', background: 'var(--mkt-purple)', color: '#fff', fontFamily: 'var(--sans)', fontSize: '16px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' } }, 'Continue to payment', this.ic(['M5 12h14', 'm12 5 7 7-7 7'], '#fff', 17)),
+        this.sp({ textAlign: 'center', fontSize: '12.5px', color: 'var(--muted)' }, 'You can change the routing account at any time from Manage subscriptions')));
+  }
+  stripeField(label, placeholder, val) {
+    return this.d({}, this.sp({ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--head)', marginBottom: '7px' }, label),
+      this.e('input', { type: 'text', defaultValue: val || '', placeholder: placeholder, style: { width: '100%', height: '46px', padding: '0 14px', fontFamily: 'var(--sans)', fontSize: '15px', color: 'var(--head)', background: 'var(--card)', border: '1px solid var(--border-2,var(--border))', borderRadius: '9px', outline: 'none' } }));
+  }
+  flowStep2(s, f) {
+    const acct = this.accounts().find(a => a.id === f.account);
+    const left = this.d({ flex: '0 0 300px', padding: '24px', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '16px' },
+      this.sp({ fontSize: '12px', fontWeight: 700, letterSpacing: '0.04em', color: 'var(--muted)', textTransform: 'uppercase' }, 'Order summary'),
+      this.d({ display: 'flex', gap: '12px', alignItems: 'flex-start' }, this.avatar(s.ini, s.grad, 44, 14),
+        this.d({ flex: 1 }, this.sp({ display: 'block', fontSize: '15px', fontWeight: 700, color: 'var(--head)' }, s.name), this.sp({ fontSize: '12.5px', color: 'var(--muted)' }, 'by ' + s.seller + ' · Monthly subscription')),
+        this.sp({ fontSize: '16px', fontWeight: 700, color: 'var(--head)' }, '$' + s.price)),
+      this.d({ height: '1px', background: 'var(--border)' }),
+      ...[['Subtotal', '$' + s.price + '.00'], ['TraderVault fee', '$0.00'], ['Tax', '$0.00']].map(([k, v], i) => this.d({ key: i, display: 'flex', justifyContent: 'space-between', fontSize: '13.5px', color: 'var(--body)' }, this.sp({}, k), this.sp({ fontWeight: 600, color: 'var(--head)', fontVariantNumeric: 'tabular-nums' }, v))),
+      this.d({ height: '1px', background: 'var(--border)' }),
+      this.d({ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }, this.sp({ fontSize: '15px', fontWeight: 700, color: 'var(--head)' }, 'Due today'), this.sp({ fontSize: '20px', fontWeight: 800, color: 'var(--head)', fontVariantNumeric: 'tabular-nums' }, '$' + s.price + '.00')),
+      this.d({ display: 'flex', gap: '9px', padding: '12px 13px', background: 'var(--subtle)', border: '1px solid var(--border)', borderRadius: '10px' }, this.ic(['M5 12h14', 'm12 5 7 7-7 7'], 'var(--muted)', 15),
+        this.sp({ fontSize: '12.5px', color: 'var(--body)', lineHeight: '1.5' }, 'Signals will route to ', this.sp({ fontWeight: 700, color: 'var(--head)' }, acct.name), ' immediately after payment.')));
+    const cardIcons = this.d({ display: 'flex', gap: '6px', marginTop: '8px' }, ...['VISA', 'MC', 'AMEX'].map(t => this.sp({ key: t, fontSize: '10px', fontWeight: 800, color: '#1A1F71', background: '#fff', border: '1px solid var(--border)', borderRadius: '5px', padding: '3px 7px', letterSpacing: '0.02em' }, t)));
+    const right = this.d({ flex: 1, padding: '24px', display: 'flex', flexDirection: 'column', gap: '15px' },
+      this.sp({ fontSize: '12px', fontWeight: 700, letterSpacing: '0.04em', color: 'var(--muted)', textTransform: 'uppercase' }, 'Payment details'),
+      this.stripeField('Email', 'you@example.com', 'uxokdc@gmail.com'),
+      this.d({}, this.stripeField('Card number', '1234 1234 1234 1234'), cardIcons),
+      this.d({ display: 'flex', gap: '12px' }, this.d({ flex: 1 }, this.stripeField('Expiry', 'MM / YY')), this.d({ flex: 1 }, this.stripeField('CVC', 'CVC'))),
+      this.stripeField('Name on card', 'David Cervantes'),
+      this.btn({ onClick: () => this.completeSubscribe(), style: { height: '52px', width: '100%', border: 'none', borderRadius: '10px', background: 'var(--stripe)', color: '#fff', fontFamily: 'var(--sans)', fontSize: '16px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '9px', marginTop: '2px' } }, this.ic(['M5 11V8a7 7 0 0 1 14 0v3', 'M5 11a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2z'], '#fff', 17), 'Subscribe — $' + s.price + '/month'),
+      this.sp({ fontSize: '11.5px', color: 'var(--muted)', textAlign: 'center', lineHeight: '1.55' }, 'By subscribing you agree to Terms. Cancel anytime from your subscriptions page. Billed monthly until cancelled.'),
+      this.d({ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px' }, this.d({ width: '18px', height: '18px', borderRadius: '5px', background: 'var(--stripe)' }), this.sp({ fontSize: '12px', fontWeight: 600, color: 'var(--muted)' }, 'Powered by Stripe')));
+    return this.d({ background: 'var(--card)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 24px 64px -16px rgba(15,23,36,.4)' },
+      this.d({ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid var(--border)' },
+        this.d({ display: 'flex', alignItems: 'center', gap: '10px' }, this.d({ width: '26px', height: '26px', borderRadius: '7px', background: 'var(--stripe)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '15px', fontWeight: 800 }, 'S'), this.sp({ fontSize: '15px', fontWeight: 700, color: 'var(--head)' }, 'Secured by Stripe')),
+        this.d({ display: 'flex', alignItems: 'center', gap: '14px' },
+          this.d({ display: 'flex', alignItems: 'center', gap: '6px' }, this.ic(['M5 11V8a7 7 0 0 1 14 0v3', 'M5 11a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2z'], 'var(--muted)', 15), this.sp({ fontSize: '12.5px', fontWeight: 600, color: 'var(--muted)' }, 'SSL encrypted')),
+          this.btn({ onClick: () => this.setState({ flow: { ...f, step: 1 } }), style: { background: 'none', border: 'none', color: 'var(--muted)', fontFamily: 'var(--sans)', fontSize: '13px', fontWeight: 600, cursor: 'pointer' } }, '← Back'))),
+      this.d({ display: 'flex', alignItems: 'stretch' }, left, right));
+  }
+  flowStep3(s, f) {
+    const acct = this.accounts().find(a => a.id === f.account);
+    const rows = [['Strategy', s.name, ['M22 12h-4l-3 9L9 3l-3 9H2']], ['Routing to', acct.name, ['M5 12h14', 'm12 5 7 7-7 7']], ['Billing', '$' + s.price + '/mo · next Jul 14', ['M5 11V8a7 7 0 0 1 14 0v3', 'M5 11a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2z']], ['Notifications', 'Signal alerts on', ['M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9', 'M10.3 21a1.94 1.94 0 0 0 3.4 0']]];
+    return this.d({ background: 'var(--card)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 24px 64px -16px rgba(15,23,36,.4)' },
+      this.d({ padding: '40px 36px 32px', textAlign: 'center', borderBottom: '1px solid var(--border)' },
+        this.d({ width: '72px', height: '72px', borderRadius: '50%', margin: '0 auto 20px', background: 'var(--profit-soft)', border: '1px solid color-mix(in srgb,var(--profit) 26%,transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }, this.ic(['M20 6 9 17l-5-5'], 'var(--profit)', 34, 2.4)),
+        this.sp({ display: 'block', fontSize: '24px', fontWeight: 800, color: 'var(--head)', letterSpacing: '-0.01em' }, "You're subscribed"),
+        this.sp({ display: 'block', fontSize: '15px', color: 'var(--body)', marginTop: '10px', lineHeight: '1.6', maxWidth: '420px', marginLeft: 'auto', marginRight: 'auto' }, 'Signals from ', this.sp({ fontWeight: 700, color: 'var(--head)' }, s.name), ' are now routing to your ', this.sp({ fontWeight: 700, color: 'var(--head)' }, acct.name), ' account. Your first signal could arrive at any time.')),
+      this.d({ padding: '20px 36px', display: 'flex', flexDirection: 'column', gap: '0' }, ...rows.map(([k, v, icon], i) =>
+        this.d({ key: i, display: 'flex', alignItems: 'center', gap: '12px', padding: '13px 0', borderBottom: i < rows.length - 1 ? '1px solid var(--border)' : 'none' },
+          this.ic(icon, 'var(--muted)', 17), this.sp({ flex: 1, fontSize: '14px', color: 'var(--muted)' }, k), this.sp({ fontSize: '14px', fontWeight: 700, color: 'var(--head)' }, v)))),
+      this.d({ padding: '20px 36px 28px', display: 'flex', flexDirection: 'column', gap: '11px' },
+        this.btn({ onClick: () => { window.location.href = 'Chart.dc.html'; }, style: { height: '50px', width: '100%', border: 'none', borderRadius: '11px', background: 'var(--mkt-purple)', color: '#fff', fontFamily: 'var(--sans)', fontSize: '15px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' } }, 'View live signals', this.ic(['M5 12h14', 'm12 5 7 7-7 7'], '#fff', 17)),
+        this.btn({ onClick: () => this.setState({ flow: null }), style: { height: '50px', width: '100%', borderRadius: '11px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--body)', fontFamily: 'var(--sans)', fontSize: '15px', fontWeight: 600, cursor: 'pointer' } }, 'Back to Marketplace')));
+  }
+
+  renderVals() {
+    const goto = (file) => () => { try { window.location.href = file; } catch (e) {} };
+    return {
+      marketplaceEl: this.marketplaceEl(),
+      goOverview: goto('Overview.dc.html'), goStrategies: goto('Strategies.dc.html'), goAnalysis: goto('Analysis.dc.html'),
+      goChart: goto('Chart.dc.html'), goAudit: goto('Audit.dc.html'), goMarketplace: () => {},
+      goSoon: () => this.toast('That page is coming soon'),
+    };
+  }
+}
+</script>
+</body>
+</html>

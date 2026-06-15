@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="tokens.css">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; height: 100%; }
+    body { background: #07090F; font-family: var(--tv-font-sans); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+    .cs::-webkit-scrollbar { width: 6px; }
+    .cs::-webkit-scrollbar-thumb { background: var(--tv-border-2); border-radius: 3px; }
+    .ns::-webkit-scrollbar { width: 5px; }
+    .ns::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+    /* === Overview design language bridge === */
+    :root {
+      --head:#1E293B; --body:#475569; --muted:#64718A;
+      --accent:#7C3AED; --accent-on:#FFFFFF; --accent-soft:rgba(124,58,237,.12);
+      --lime:#C8FF00; --navy:#101B25;
+      --bg:var(--tv-bg); --card:var(--tv-surface); --subtle:var(--tv-surface-2);
+      --border:var(--tv-border); --input:var(--tv-border-2);
+      --profit:#15803D; --loss:#DC2626; --warn:#F59E0B;
+      --sans:var(--tv-font-sans);
+      --mono:'JetBrains Mono',ui-monospace,monospace;
+    }
+    .tv-dark {
+      --head:#F1F4F7; --body:#AEB9C4; --muted:#8492A0;
+      --accent:#C8FF00; --accent-on:#101B25; --accent-soft:rgba(200,255,0,.16);
+      --bg:#0B131B; --card:#101B25; --subtle:#18242F; --border:#28333D; --input:#374151;
+      --profit:#22C55E; --loss:#F87171;
+      --tv-bg:#0B131B; --tv-surface:#101B25; --tv-surface-2:#18242F;
+      --tv-border:rgba(255,255,255,0.07); --tv-border-2:#374151;
+      --tv-text:#F1F4F7; --tv-text-2:#AEB9C4; --tv-muted:#8492A0; --tv-dimmer:#8492A0;
+    }
+    @keyframes tvpulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+  </style>
+</helmet>
+
+<dc-import name="_Shell" active-page="strategies" page-title="Strategies" page-subtitle="{{ topbarSub }}" on-nav-overview="{{ goOverview }}" on-nav-strategies="{{ goStrategies }}" on-nav-analysis="{{ goAnalysis }}" on-nav-chart="{{ goChart }}" on-nav-journal="{{ goSoon }}" on-nav-audit="{{ goAudit }}" on-nav-accounts="{{ goSoon }}" on-nav-configure="{{ goSoon }}" on-nav-signal="{{ goSoon }}" on-nav-settings="{{ goSoon }}" hint-size="100%,100%">
+
+  <div class="cs" style="height:100%; overflow-y:auto;">
+
+      <!-- Summary bar §4 -->
+      <div style="padding:16px 20px 0;">
+        <div style="background:var(--card); border:1px solid var(--border); border-radius:var(--tv-radius-lg); display:grid; grid-template-columns:repeat(5,1fr); overflow:hidden;">
+          <sc-for list="{{ summaryStats }}" as="stat" hint-placeholder-count="5">
+            <div style="padding:11px 16px; border-right:{{ stat.borderRight }}; position:relative;">
+              <div style="font-size:22px; font-weight:700; color:{{ stat.valueColor }}; font-variant-numeric:tabular-nums; letter-spacing:-0.02em; line-height:1.1;">{{ stat.value }}</div>
+              <div style="font-size:11px; font-weight:500; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted); margin-top:3px;">{{ stat.label }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- Toolbar §5 -->
+      <div style="padding:12px 20px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+        <!-- Search -->
+        <div style="position:relative; flex-shrink:0;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--tv-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute; left:9px; top:50%; transform:translateY(-50%); pointer-events:none;" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" value="{{ searchVal }}" onInput="{{ onSearch }}" placeholder="Search strategies…" style="min-width:190px; height:32px; padding:0 11px 0 30px; font-family:inherit; font-size:12px; color:var(--tv-text); background:var(--tv-surface); border:1px solid var(--tv-border-2); border-radius:var(--tv-radius-md); outline:none;" style-focus="border-color:var(--tv-teal); box-shadow:0 0 0 3px rgba(61,213,168,0.15)" />
+        </div>
+        <!-- Filter pills (React element) -->
+        {{ filterPillsEl }}
+        <!-- Spacer -->
+        <div style="flex:1;"></div>
+        <!-- Sort -->
+        <div style="position:relative; display:flex; align-items:center; gap:6px;">
+          <span style="font-size:11px; color:var(--muted); white-space:nowrap;">Sort by</span>
+          <select onInput="{{ onSort }}" aria-label="Sort strategies" style="height:34px; padding:0 28px 0 10px; font-family:inherit; font-size:12px; color:var(--body); background:var(--card); border:1px solid var(--border); border-radius:8px; cursor:pointer; outline:none; appearance:none; -webkit-appearance:none;">
+            <option value="winrate">Win rate</option>
+            <option value="pnl">P&amp;L</option>
+            <option value="modified">Modified</option>
+            <option value="name">Name</option>
+          </select>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute; right:9px; pointer-events:none;" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+        <!-- Split button (moved from topbar) -->
+        <div style="position:relative; flex:none;">
+          <sc-if value="{{ splitOpen }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ onCloseSplit }}" style="position:fixed;inset:0;z-index:30;"></div>
+          </sc-if>
+          <div style="display:flex;align-items:stretch;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.12);">
+            <button type="button" onClick="{{ onNewStrategy }}" style="display:flex;align-items:center;gap:7px;height:36px;padding:0 14px;background:var(--accent);color:var(--accent-on);border:none;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;" style-hover="filter:brightness(0.92)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+              New strategy
+            </button>
+            <div style="width:1px;background:rgba(0,0,0,0.15);flex-shrink:0;"></div>
+            <button type="button" onClick="{{ onToggleSplit }}" aria-haspopup="true" aria-expanded="{{ splitExpanded }}" aria-label="More strategy creation options" style="display:flex;align-items:center;justify-content:center;width:34px;height:36px;background:var(--accent);color:var(--accent-on);border:none;cursor:pointer;" style-hover="filter:brightness(0.92)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <sc-if value="{{ splitOpen }}" hint-placeholder-val="{{ false }}">
+            <div role="menu" style="position:absolute;top:calc(100% + 6px);right:0;min-width:240px;z-index:40;background:var(--card);border:1px solid var(--border);border-radius:8px;box-shadow:0 12px 32px -8px rgba(0,0,0,0.18);overflow:hidden;">
+              <sc-for list="{{ splitItems }}" as="si" hint-placeholder-count="3">
+                <button role="menuitem" type="button" onClick="{{ si.onClick }}" style="display:flex;align-items:flex-start;gap:11px;width:100%;padding:10px 14px;background:none;border:none;font-family:inherit;cursor:pointer;text-align:left;" style-hover="background:var(--subtle)">
+                  <span style="margin-top:1px;color:var(--muted);flex-shrink:0;">{{ si.icon }}</span>
+                  <span style="display:flex;flex-direction:column;gap:2px;">
+                    <span style="font-size:13px;font-weight:500;color:var(--head);">{{ si.title }}</span>
+                    <span style="font-size:11px;color:var(--muted);">{{ si.sub }}</span>
+                  </span>
+                </button>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+
+      <!-- Card stack -->
+      <div style="padding:0 20px 24px; display:flex; flex-direction:column; gap:10px;">
+        <sc-for list="{{ cards }}" as="card" hint-placeholder-count="5">
+          <div style="{{ card.wrap }}" style-hover="border-color:var(--tv-border-2); box-shadow:0 2px 10px rgba(0,0,0,0.05)">
+
+            <!-- Card main row §6.1 -->
+            <div onClick="{{ card.onToggle }}" style="padding:14px 16px 14px 18px; display:flex; align-items:center; gap:14px; cursor:pointer;">
+
+              <!-- Icon block (React element) -->
+              {{ card.icon }}
+
+              <!-- Name + badge + meta -->
+              <div style="flex:1; min-width:0;">
+                <div style="display:flex; align-items:center; gap:7px; flex-wrap:wrap; margin-bottom:5px;">
+                  <span style="font-size:13px; font-weight:700; color:var(--head); white-space:nowrap;">{{ card.name }}</span>
+                  <span style="{{ card.badgeStyle }}">{{ card.badgeText }}</span>
+                  <sc-if value="{{ card.showScore }}" hint-placeholder-val="{{ false }}">
+                    <span style="{{ card.scoreStyle }}">{{ card.scoreLabel }}</span>
+                  </sc-if>
+                  <sc-if value="{{ card.showFlag }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size:9px; font-weight:700; padding:2px 7px; border-radius:4px; background:var(--tv-red-bg); color:var(--tv-red-text); border:1px solid var(--tv-red-border); text-transform:uppercase; letter-spacing:0.05em;">Needs review</span>
+                  </sc-if>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                  <span style="display:flex; align-items:center; gap:4px; font-size:11px; color:var(--tv-muted);">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                    {{ card.lastModified }}
+                  </span>
+                  <span style="display:flex; align-items:center; gap:4px; font-size:11px; color:var(--tv-muted);">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h4l3 9-4 2a11 11 0 0 0 5 5l2-4 9 3v4a2 2 0 0 1-2 2A16 16 0 0 1 6 5a2 2 0 0 1 2-2z"/></svg>
+                    {{ card.version }}
+                  </span>
+                  <sc-if value="{{ card.showBroker }}" hint-placeholder-val="{{ true }}">
+                    <span style="display:flex; align-items:center; gap:4px; font-size:11px; color:var(--tv-muted);">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg>
+                      {{ card.broker }}
+                    </span>
+                  </sc-if>
+                </div>
+              </div>
+
+              <!-- Stats block (React element — no nested sc-for) -->
+              {{ card.statsEl }}
+
+              <!-- Actions §6.3 -->
+              <div onClick="{{ card.stopProp }}" style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+                <button type="button" onClick="{{ card.onHistory }}" aria-label="Version history" style="width:28px; height:28px; display:flex; align-items:center; justify-content:center; border-radius:var(--tv-radius-md); border:1px solid var(--tv-border-2); background:var(--tv-surface); color:var(--tv-muted); cursor:pointer;" style-hover="background:var(--tv-surface-2)">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+                </button>
+                <sc-if value="{{ card.showOptimize }}" hint-placeholder-val="{{ false }}">
+                  <button type="button" onClick="{{ card.onOptimize }}" style="height:28px; padding:0 10px; border:none; border-radius:var(--tv-radius-md); font-family:inherit; font-size:11px; font-weight:600; cursor:pointer; background:var(--tv-purple); color:#FFFFFF; white-space:nowrap;" style-hover="filter:brightness(1.08)">Optimize</button>
+                </sc-if>
+                <button type="button" onClick="{{ card.onBt }}" disabled="{{ card.btDisabled }}" style="{{ card.btStyle }}" style-hover="filter:brightness(0.95)">
+                  <sc-if value="{{ card.btSpinner }}" hint-placeholder-val="{{ false }}">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="animation:tv-spin 0.8s linear infinite; flex-shrink:0;" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                  </sc-if>
+                  {{ card.btLabel }}
+                </button>
+                <button type="button" aria-label="More options" style="width:28px; height:28px; display:flex; align-items:center; justify-content:center; border-radius:var(--tv-radius-md); border:1px solid var(--tv-border-2); background:var(--tv-surface); color:var(--tv-muted); cursor:pointer;" style-hover="background:var(--tv-surface-2)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Detail row §6.2 -->
+            <sc-if value="{{ card.expanded }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:11px 16px; background:var(--tv-surface-2); border-top:1px solid var(--tv-border); display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start;">
+                <div style="display:flex; flex-direction:column; gap:5px; min-width:140px;">
+                  <span style="font-size:9px; font-weight:700; color:var(--tv-dimmer); text-transform:uppercase; letter-spacing:0.08em;">Indicators</span>
+                  {{ card.indicatorChips }}
+                </div>
+                <div style="display:flex; flex-direction:column; gap:5px; min-width:200px;">
+                  <span style="font-size:9px; font-weight:700; color:var(--tv-dimmer); text-transform:uppercase; letter-spacing:0.08em;">Lifecycle</span>
+                  {{ card.lifecycle }}
+                </div>
+                <div style="display:flex; flex-direction:column; gap:5px;">
+                  <span style="font-size:9px; font-weight:700; color:var(--tv-dimmer); text-transform:uppercase; letter-spacing:0.08em;">Asset</span>
+                  <span style="font-size:12px; color:var(--tv-text-2);">{{ card.asset }}</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:5px;">
+                  <span style="font-size:9px; font-weight:700; color:var(--tv-dimmer); text-transform:uppercase; letter-spacing:0.08em;">Timeframe</span>
+                  <span style="font-size:12px; color:var(--tv-text-2);">{{ card.timeframe }}</span>
+                </div>
+                <sc-if value="{{ card.showLastBacktest }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex; flex-direction:column; gap:5px;">
+                    <span style="font-size:9px; font-weight:700; color:var(--tv-dimmer); text-transform:uppercase; letter-spacing:0.08em;">Last backtest</span>
+                    <span style="font-size:12px; color:var(--tv-text-2);">{{ card.lastBacktest }}</span>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+          </div>
+        </sc-for>
+
+        <!-- Empty state -->
+        <sc-if value="{{ showEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:48px 24px; text-align:center; background:var(--tv-surface); border:1px solid var(--tv-border); border-radius:11px;">
+            <div style="font-size:13px; font-weight:600; color:var(--tv-text-2); margin-bottom:4px;">No strategies match</div>
+            <div style="font-size:11px; color:var(--tv-muted);">Try adjusting your search or filter</div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+
+  <!-- ══ VERSION HISTORY DRAWER §8 ══ -->
+  <sc-if value="{{ vhOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ onCloseVh }}" style="position:fixed; inset:0; z-index:150; background:var(--tv-dim-overlay);"></div>
+    <aside role="dialog" aria-modal="true" aria-label="Version history" onClick="{{ vhStop }}" style="position:fixed; top:0; right:0; bottom:0; z-index:151; width:300px; background:var(--tv-surface); border-left:1px solid var(--tv-border); box-shadow:-24px 0 60px -20px rgba(15,23,36,0.28); display:flex; flex-direction:column;">
+      <div style="flex-shrink:0; padding:11px 14px; border-bottom:1px solid var(--tv-border); display:flex; align-items:center; gap:10px;">
+        <button type="button" onClick="{{ onCloseVh }}" aria-label="Close version history" style="width:30px; height:30px; flex-shrink:0; display:flex; align-items:center; justify-content:center; border-radius:var(--tv-radius-md); border:1px solid var(--tv-border-2); background:var(--tv-surface); color:var(--tv-muted); cursor:pointer;" style-hover="background:var(--tv-surface-2)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+        <div style="min-width:0;">
+          <div style="font-size:13px; font-weight:600; color:var(--tv-text);">Version history</div>
+          <div style="font-size:11px; color:var(--tv-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ vhCardName }}</div>
+        </div>
+      </div>
+      <div style="flex:1; min-height:0; overflow-y:auto; padding:8px;">
+        <sc-for list="{{ vhItems }}" as="vi" hint-placeholder-count="3">
+          {{ vi.el }}
+        </sc-for>
+      </div>
+      <div style="flex-shrink:0; border-top:1px solid var(--tv-border); padding:10px 14px; display:flex; align-items:flex-start; gap:8px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--tv-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:1px;" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        <span style="font-size:11px; color:var(--tv-muted); line-height:1.5;">Restoring a version creates a new version — nothing is ever deleted.</span>
+      </div>
+    </aside>
+  </sc-if>
+
+  <!-- ══ TOAST S-02 ══ -->
+  <sc-if value="{{ toastVisible }}" hint-placeholder-val="{{ false }}">
+    <div role="status" aria-live="polite" style="position:fixed; bottom:20px; right:20px; z-index:300; background:var(--tv-text); color:var(--tv-bg); padding:10px 16px; border-radius:var(--tv-radius-md); font-size:12px; font-weight:500; box-shadow:0 8px 24px rgba(15,23,36,0.20); display:flex; align-items:center; gap:8px; max-width:340px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+      {{ toastMsg }}
+    </div>
+  </sc-if>
+
+  <!-- ══ STRATEGY BUILDER DRAWER §3 ══ -->
+  <sc-if value="{{ drawerOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ onCloseDrawer }}" style="position:fixed; inset:0; z-index:150; background:var(--tv-dim-overlay);"></div>
+    <aside role="dialog" aria-modal="true" aria-label="Strategy builder" onClick="{{ drawerStop }}" style="position:fixed; top:0; right:0; bottom:0; z-index:151; width:max(34vw,408px); background:var(--tv-surface); border-left:1px solid var(--tv-border); box-shadow:-24px 0 60px -20px rgba(15,23,36,0.28); display:flex; flex-direction:column; overflow:hidden;">
+      {{ builderEl }}
+    </aside>
+  </sc-if>
+
+</dc-import>
+
+<style>
+@keyframes tv-spin { to { transform: rotate(360deg); } }
+</style>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { search: '', filter: 'all', sort: 'winrate', splitOpen: false, drawerOpen: false, expanded: {}, btState: {}, vhOpen: false, vhCardId: null, vhHover: null, toastMsg: null, dark: this.initDark(),
+    builderStep: 'mode', builderMode: null, builderName: '', pickedIndicators: [], configuringIndicator: null, builderPicking: false, indSearch: '', buyMode: 'all', sellMode: 'any', logicEdit: null, logicSnap: null, tmStop: 'atr', tmTp: '2r', tmRisk: '1' };
+  initDark() { try { return localStorage.getItem('tv-theme') === 'dark'; } catch(e) { return false; } }
+  toggleTheme() {
+    const d = !this.state.dark;
+    try { localStorage.setItem('tv-theme', d ? 'dark' : 'light'); } catch(e) {}
+    this.setState({ dark: d });
+  }
+
+  componentDidMount() {
+    this._clock = setInterval(() => { if (this._clockEl) this._clockEl.textContent = this.fmtClock(); }, 1000);
+    if (this._clockEl) this._clockEl.textContent = this.fmtClock();
+    window.addEventListener('keydown', this.onEsc);
+  }
+  componentWillUnmount() { clearInterval(this._clock); window.removeEventListener('keydown', this.onEsc); }
+  onEsc = (e) => {
+    if (e.key !== 'Escape') return;
+    if (this.state.vhOpen) this.setState({ vhOpen: false, vhHover: null });
+    else if (this.state.drawerOpen) this.setState({ drawerOpen: false });
+    else if (this.state.splitOpen) this.setState({ splitOpen: false });
+  };
+
+  showToast(msg) {
+    this.setState({ toastMsg: msg });
+    if (this._toastTimer) clearTimeout(this._toastTimer);
+    this._toastTimer = setTimeout(() => this.setState({ toastMsg: null }), 3500);
+  }
+  componentWillUnmount() { clearInterval(this._clock); window.removeEventListener('keydown', this.onEsc); if (this._toastTimer) clearTimeout(this._toastTimer); }
+
+  // ── Version history data ─────────────────────────────────────────────────
+  versionData() {
+    return {
+      momentum: [
+        { id:'v2.4', isCurrent:true,  date:'Jun 11 · 14:32', desc:'Tuned ATR multiplier, tightened entry filter' },
+        { id:'v2.3', isCurrent:false, date:'Jun 8 · 09:15',  desc:'Added RSI confirmation signal' },
+        { id:'v2.2', isCurrent:false, date:'Jun 3 · 16:44',  desc:'Switched from SMA to EMA crossover' },
+        { id:'v2.1', isCurrent:false, date:'May 28 · 11:20', desc:'Initial live deployment' },
+        { id:'v1.0', isCurrent:false, date:'May 20 · 08:55', desc:'Original backtest version' },
+      ],
+      meanrev: [
+        { id:'v1.1', isCurrent:true,  date:'Jun 10 · 10:05', desc:'Widened Bollinger band threshold' },
+        { id:'v1.0', isCurrent:false, date:'Jun 5 · 13:30',  desc:'Initial paper deployment' },
+      ],
+      vwap: [
+        { id:'v3.0', isCurrent:true,  date:'Jun 9 · 08:22', desc:'Aggressive entry — caused drawdown' },
+        { id:'v2.9', isCurrent:false, date:'Jun 6 · 15:10', desc:'Added volume filter' },
+        { id:'v2.8', isCurrent:false, date:'Jun 2 · 12:00', desc:'VWAP band tightened' },
+      ],
+      gap:     [{ id:'v0.1', isCurrent:true,  date:'Jun 10 · 09:00', desc:'Initial draft' }],
+      default: [],
+    };
+  }
+
+  buildVersionItemEl(v, cardId) {
+    const isHov  = this.state.vhHover === v.id;
+    const isCur  = v.isCurrent;
+    const bg     = isCur  ? 'rgba(61,213,168,0.12)' : isHov ? 'var(--tv-surface-2)' : 'transparent';
+    const bdr    = isCur  ? '1px solid rgba(61,213,168,0.30)' : isHov ? '1px solid var(--tv-border)' : '1px solid transparent';
+    const onRestore = (e) => {
+      e.stopPropagation();
+      const card = this.mockData().find(c => c.id === cardId);
+      this.showToast(card ? `"${card.name}" restored to ${v.id} — new draft created` : `Restored to ${v.id}`);
+    };
+    return React.createElement('div', {
+      key: v.id,
+      style:{display:'flex',flexDirection:'column',gap:'5px',padding:'10px 11px',borderRadius:'var(--tv-radius-md)',border:bdr,background:bg,cursor:'default',marginBottom:'4px'},
+      onMouseEnter: () => this.setState({ vhHover: v.id }),
+      onMouseLeave: () => this.setState(s => s.vhHover === v.id ? { vhHover: null } : null),
+    },
+      React.createElement('div', { style:{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'8px'} },
+        React.createElement('div', { style:{display:'flex',alignItems:'center',gap:'7px'} },
+          React.createElement('span', { style:{fontSize:'12px',fontWeight:700,color:'var(--tv-text)',fontVariantNumeric:'tabular-nums'} }, v.id),
+          isCur ? React.createElement('span', { style:{fontSize:'9px',fontWeight:700,padding:'2px 6px',borderRadius:'3px',background:'var(--tv-teal)',color:'#0F1724',textTransform:'uppercase',letterSpacing:'0.05em'} }, 'Current') : null
+        ),
+        React.createElement('span', { style:{fontSize:'10px',color:'var(--tv-muted)',whiteSpace:'nowrap',fontVariantNumeric:'tabular-nums'} }, v.date)
+      ),
+      React.createElement('div', { style:{fontSize:'11px',color:'var(--tv-text-2)',lineHeight:'1.4'} }, v.desc),
+      (isHov && !isCur) ? React.createElement('div', { style:{display:'flex',alignItems:'center',gap:'6px',marginTop:'2px'} },
+        React.createElement('button', { type:'button', onClick:onRestore, style:{height:'26px',padding:'0 10px',fontFamily:'inherit',fontSize:'11px',fontWeight:600,color:'var(--tv-text-2)',background:'var(--tv-surface)',border:'1px solid var(--tv-border-2)',borderRadius:'var(--tv-radius-sm)',cursor:'pointer'} }, 'Restore'),
+        React.createElement('button', { type:'button', disabled:true, title:'Coming soon', 'aria-label':'Compare versions — Coming soon', style:{height:'26px',padding:'0 10px',fontFamily:'inherit',fontSize:'11px',fontWeight:500,color:'var(--tv-dimmer)',background:'transparent',border:'1px solid var(--tv-border)',borderRadius:'var(--tv-radius-sm)',cursor:'not-allowed',opacity:0.5} }, 'Compare')
+      ) : null
+    );
+  }
+  fmtClock() { const d = new Date(); const p = n => String(n).padStart(2,'0'); return p(d.getUTCHours())+':'+p(d.getUTCMinutes())+':'+p(d.getUTCSeconds())+' UTC'; }
+
+  // ── Sidebar nav (Overview pattern: nav() helper + individual items) ──────
+  buildSidebarNavVals() {
+    const active = 'strategies';
+    const grey = '#8B95A4';
+    const A = {
+      overview:  { accent:'#CAFF33', bg:'rgba(202,255,51,0.12)' },
+      strategies:{ accent:'#3DD5A8', bg:'rgba(61,213,168,0.12)' },
+      analysis:  { accent:'#3DD5A8', bg:'rgba(61,213,168,0.12)' },
+      chart:     { accent:'#FBB23A', bg:'rgba(251,178,58,0.10)' },
+      journal:   { accent:'#FBB23A', bg:'rgba(251,178,58,0.10)' },
+      audit:     { accent:'#FBB23A', bg:'rgba(251,178,58,0.10)' },
+      accounts:  { accent:'#F87171', bg:'rgba(248,113,113,0.10)' },
+      configure: { accent:'#F87171', bg:'rgba(248,113,113,0.10)' },
+      signal:    { accent:'#F87171', bg:'rgba(248,113,113,0.10)' },
+      settings:  { accent:'#C4CBD4', bg:'rgba(255,255,255,0.06)' },
+    };
+    const nav = (id) => {
+      const a = active === id;
+      const { accent, bg } = A[id] || A.overview;
+      return `display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;text-decoration:none;cursor:pointer;transition:background .12s;white-space:nowrap;overflow:hidden;color:${a ? accent : grey};background:${a ? bg : 'transparent'};font-weight:${a ? 500 : 400};box-shadow:${a ? `inset 3px 0 0 0 ${accent}` : 'none'};`;
+    };
+    return {
+      navOverview: nav('overview'), navStrategies: nav('strategies'), navAnalysis: nav('analysis'),
+      navChart: nav('chart'), navJournal: nav('journal'), navAudit: nav('audit'),
+      navAccounts: nav('accounts'), navConfigure: nav('configure'), navSignal: nav('signal'),
+      navSettings: nav('settings'),
+      sectionStyle: 'font-size:9px;font-weight:700;color:var(--tv-sidebar-label);text-transform:uppercase;letter-spacing:0.11em;padding:11px 9px 4px;',
+      labelStyle: 'flex:1;',
+    };
+  }
+
+  // ── Nav ─────────────────────────────────────────────────────────────────
+  ic(paths, s=14) { return React.createElement('svg',{width:s,height:s,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round','aria-hidden':true},...paths.map((d,i)=>React.createElement('path',{key:i,d}))); }
+  ci(cx,cy,r,k) { return React.createElement('circle',{key:k,cx,cy,r}); }
+  ri(x,y,w,h,rx,k) { return React.createElement('rect',{key:k,x,y,width:w,height:h,rx}); }
+
+  navData() {
+    const m = this.ic.bind(this);
+    const OVERVIEW  = React.createElement('svg',{width:14,height:14,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round','aria-hidden':true}, this.ri(4,4,6,7,1,'a'),this.ri(4,14,6,6,1,'b'),this.ri(14,4,6,6,1,'c'),this.ri(14,11,6,9,1,'d'));
+    const STRAT     = m(['M6 3h12','M5 8h14','M5 16h14','M6 21h12','M9 12h6']);
+    const ANALYSIS  = m(['M3 3v18h18','m7 14 4-4 3 3 5-6']);
+    const CHART     = m(['M3 3v18h18','M7 10h3v7H7z','M14 6h3v11h-3z']);
+    const JOURNAL   = m(['M4 19.5A2.5 2.5 0 0 1 6.5 17H20','M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z']);
+    const AUDIT     = m(['M4 6.4 5.2 7.6 7.6 5.2','M11 6h9','M4 12.4 5.2 13.6 7.6 11.2','M11 12h9','M4 18.4 5.2 19.6 7.6 17.2','M11 18h9']);
+    const ACCOUNTS  = m(['M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2','M9 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8','M22 21v-2a4 4 0 0 0-3-3.87']);
+    const CONFIGURE = m(['M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446','M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18','M12 8v4l3 3']);
+    const SIGNAL    = m(['M4.9 19.1A10 10 0 0 1 4.9 5','M7.8 16.2a6 6 0 0 1 0-8.4','M12 12m-2 0a2 2 0 1 0 4 0 2 2 0 0 0-4 0','M16.2 7.8a6 6 0 0 1 0 8.4','M19.1 4.9a10 10 0 0 1 0 14.2']);
+    const SETTINGS  = m(['M10.3 4.3c.4-1.7 2.9-1.7 3.3 0a1.7 1.7 0 0 0 2.6 1.1c1.5-.9 3.3.8 2.4 2.4a1.7 1.7 0 0 0 1 2.5c1.8.4 1.8 2.9 0 3.3a1.7 1.7 0 0 0-1 2.6c.9 1.5-.8 3.3-2.4 2.4a1.7 1.7 0 0 0-2.6 1c-.4 1.8-2.9 1.8-3.3 0a1.7 1.7 0 0 0-2.6-1c-1.5.9-3.3-.8-2.4-2.4a1.7 1.7 0 0 0-1-2.6c-1.8-.4-1.8-2.9 0-3.3a1.7 1.7 0 0 0 1-2.6c-.9-1.5.8-3.3 2.4-2.4 1 .6 2.3.1 2.6-1z','M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z']);
+
+    return [
+      { key:'overview', label:'Overview',       icon:OVERVIEW,  accent:'var(--tv-sidebar-green)', bg:'var(--tv-nav-hover)' },
+      { sectionLabel: 'STRATEGIES & ANALYSIS' },
+      { key:'strategies', label:'Strategies',   icon:STRAT,     accent:'var(--tv-teal)',   bg:'var(--tv-strategies-active)', badge:'5' },
+      { key:'analysis',   label:'Analysis',     icon:ANALYSIS,  accent:'var(--tv-teal)',   bg:'var(--tv-analysis-active)' },
+      { sectionLabel: 'TRADING' },
+      { key:'chart',    label:'Chart signals', icon:CHART,    accent:'var(--tv-amber)',  bg:'var(--tv-trading-active)' },
+      { key:'journal',  label:'Journal',         icon:JOURNAL,  accent:'var(--tv-amber)',  bg:'var(--tv-trading-active)' },
+      { key:'audit',    label:'Audit log',       icon:AUDIT,    accent:'var(--tv-amber)',  bg:'var(--tv-trading-active)' },
+      { sectionLabel: 'COPY TRADING' },
+      { key:'accounts',  label:'Accounts',       icon:ACCOUNTS,  accent:'var(--tv-coral)', bg:'var(--tv-copy-active)', badge:'3' },
+      { key:'configure', label:'Configure',      icon:CONFIGURE, accent:'var(--tv-coral)', bg:'var(--tv-copy-active)' },
+      { key:'signal',    label:'Signal sync',    icon:SIGNAL,    accent:'var(--tv-coral)', bg:'var(--tv-copy-active)' },
+      { divider: true },
+      { key:'settings',  label:'Settings',       icon:SETTINGS,  accent:'var(--tv-sidebar-text)', bg:'rgba(255,255,255,0.06)' },
+    ];
+  }
+
+  buildNavRows() {
+    const active = 'strategies';
+    return this.navData().map((n, i) => {
+      if (n.sectionLabel) return { isLabel:true, isDivider:false, isItem:false, text:n.sectionLabel, key:'lbl'+i };
+      if (n.divider)      return { isLabel:false, isDivider:true, isItem:false, key:'div'+i };
+      const isActive = n.key === active;
+      const neutral = n.key === 'overview' || n.key === 'settings';
+      return {
+        isLabel:false, isDivider:false, isItem:true, key:n.key,
+        label:n.label, icon:n.icon, isActive,
+        ariaCurrent: isActive ? 'page' : 'false',
+        accent: n.accent,
+        bg: isActive ? n.bg : 'transparent',
+        iconColor: isActive ? n.accent : (neutral ? 'var(--tv-sidebar-muted)' : n.accent),
+        labelColor: isActive ? n.accent : 'var(--tv-sidebar-muted)',
+        labelWeight: isActive ? 500 : 400,
+        hasBadge: !!n.badge, badge: n.badge || '',
+        badgeBg: isActive ? 'rgba(61,213,168,0.18)' : 'var(--tv-nav-badge-bg)',
+        badgeColor: isActive ? n.accent : 'var(--tv-sidebar-muted)',
+      };
+    });
+  }
+
+  // ── Mock data ────────────────────────────────────────────────────────────
+  mockData() {
+    return [
+      { id:'momentum', name:'Momentum Breakout',   status:'live',   flagged:false, version:'v2.4', broker:'Alpaca',  lastModified:'2h ago',  score:87, pnl:'+$8,432', pnlPos:true,  winRate:'67.4%',  wr:67.4, trades:'312', signals:'48', indicators:['EMA(9)','EMA(21)','ATR(14)','RSI(14)'], timeframe:'5m',     asset:'NASDAQ top 20', lastBacktest:'Jun 11 · 12mo range' },
+      { id:'meanrev',  name:'Mean Reversion RSI',  status:'paper',  flagged:false, version:'v1.1', broker:'Alpaca',  lastModified:'5h ago',  score:72, pnl:'+$3,218', pnlPos:true,  winRate:'58.1%',  wr:58.1, trades:'247', signals:'31', indicators:['RSI(14)','BB(20)','MACD'],           timeframe:'15m',    asset:'S&P 500 ETF',   lastBacktest:'Jun 10 · 6mo range' },
+      { id:'vwap',     name:'VWAP Scalper',        status:'paper',  flagged:true,  version:'v3.0', broker:'Alpaca',  lastModified:'1d ago',  score:43, pnl:'-$1,247', pnlPos:false, winRate:'41.2%',  wr:41.2, trades:'189', signals:'22', indicators:['VWAP','Volume','RSI(7)'],            timeframe:'1m',     asset:'TSLA,NVDA,AMD', lastBacktest:'Jun 9 · 3mo range' },
+      { id:'gap',      name:'Overnight Gap Fade',  status:'draft',  flagged:false, version:'v0.1', broker:'—',       lastModified:'3d ago',  score:null, pnl:'—',     pnlPos:null,  winRate:'—',      wr:0,    trades:'0',   signals:'0',  indicators:[],                                   timeframe:'Daily',  asset:'US Equities',   lastBacktest:null },
+      { id:'default',  name:'Default Strategy',   status:'locked', flagged:false, version:'v1.0', broker:'—',       lastModified:'System',  score:null, pnl:'—',     pnlPos:null,  winRate:'—',      wr:0,    trades:'—',   signals:'—', indicators:[],                                   timeframe:'—',      asset:'—',             lastBacktest:null },
+    ];
+  }
+
+  // ── Status icon (React element) ──────────────────────────────────────────
+  statusIcon(status, flagged) {
+    const colors = {
+      live:   { bg:'rgba(90,197,122,0.15)',  stroke:'var(--tv-green)' },
+      paper:  flagged ? { bg:'rgba(248,113,113,0.12)', stroke:'var(--tv-coral)' } : { bg:'rgba(99,102,241,0.10)', stroke:'#6366F1' },
+      draft:  { bg:'rgba(251,178,58,0.12)', stroke:'var(--tv-amber)' },
+      locked: { bg:'var(--tv-surface-2)',   stroke:'var(--tv-muted)' },
+    }[status] || { bg:'var(--tv-surface-2)', stroke:'var(--tv-muted)' };
+
+    const paths = {
+      live:   ['M3 3v18h18','M7 10h3v7H7z','M14 6h3v11h-3z'],
+      paper:  ['M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18'],
+      draft:  ['M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7','M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z'],
+      locked: ['M5 11V7a7 7 0 0 1 14 0v4','M5 11a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H5z','M12 16a1 1 0 1 0 0-2 1 1 0 0 0 0 2z'],
+    }[status] || ['M12 12m-7 0a7 7 0 1 0 14 0 7 7 0 0 0-14 0'];
+
+    return React.createElement('div', { style:{width:'38px',height:'38px',borderRadius:'10px',background:colors.bg,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,color:colors.stroke} },
+      React.createElement('svg', { width:18, height:18, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:1.8, strokeLinecap:'round', strokeLinejoin:'round', 'aria-hidden':true },
+        ...paths.map((d,i) => React.createElement('path',{key:i,d}))
+      )
+    );
+  }
+
+  // ── Stats block (React element — avoids nested sc-for) ─────────────────
+  buildStatsEl(s, pnlColor, wrColor) {
+    const base = {padding:'8px 12px',display:'flex',flexDirection:'column',alignItems:'flex-start',minWidth:'68px'};
+    const bdl  = {...base, borderLeft:'1px solid var(--tv-border)'};
+    const cells = [
+      { st:base, val:s.pnl,     vc:pnlColor,             lbl:'P&L · 7D' },
+      { st:bdl,  val:s.winRate, vc:wrColor,              lbl:'Win rate' },
+      { st:bdl,  val:s.trades,  vc:'var(--tv-text)',      lbl:'Trades' },
+      { st:bdl,  val:s.signals, vc:'var(--tv-text)',      lbl:'Signals' },
+    ];
+    return React.createElement('div', { style:{display:'flex',alignItems:'stretch',flexShrink:0,border:'1px solid var(--tv-border)',borderRadius:'var(--tv-radius-md)',overflow:'hidden'} },
+      cells.map((c,i) => React.createElement('div', { key:i, style:c.st },
+        React.createElement('div', { style:{fontSize:'14px',fontWeight:700,color:c.vc,fontVariantNumeric:'tabular-nums'} }, c.val),
+        React.createElement('div', { style:{fontSize:'9px',fontWeight:600,color:'var(--tv-dimmer)',textTransform:'uppercase',letterSpacing:'0.06em',marginTop:'1px'} }, c.lbl)
+      ))
+    );
+  }
+
+  // ── Filter pills (React element — avoids dynamic style-hover holes) ─────
+  buildFilterPillsEl(data, active) {
+    const counts = { all:data.filter(s=>s.status!=='locked').length, live:data.filter(s=>s.status==='live').length, paper:data.filter(s=>s.status==='paper').length, draft:data.filter(s=>s.status==='draft').length };
+    const defs = [
+      { key:'all',   label:'All',   on:{background:'var(--tv-surface-2)',color:'var(--tv-text)',borderColor:'var(--tv-border-2)'} },
+      { key:'live',  label:'Live',  on:{background:'var(--tv-green-bg)',color:'var(--tv-green-text)',borderColor:'var(--tv-green-border)'} },
+      { key:'paper', label:'Paper', on:{background:'#EEF2FF',color:'#4338CA',borderColor:'#C7D2FE'} },
+      { key:'draft', label:'Draft', on:{background:'var(--tv-amber-bg)',color:'var(--tv-amber-text)',borderColor:'var(--tv-amber-border)'} },
+    ];
+    const base = {padding:'5px 12px',borderRadius:'var(--tv-radius-sm)',fontSize:'11px',fontWeight:600,border:'1px solid var(--tv-border)',background:'var(--tv-surface)',color:'var(--tv-muted)',cursor:'pointer',fontFamily:'inherit'};
+    return React.createElement('div', { style:{display:'flex',alignItems:'center',gap:'6px'} },
+      defs.map(d => {
+        const isActive = active === d.key;
+        return React.createElement('button', {
+          key:d.key, type:'button',
+          style: isActive ? {...base, ...d.on} : base,
+          onClick: () => this.setState({ filter: d.key }),
+        }, `${d.label} ${counts[d.key]}`);
+      })
+    );
+  }
+
+  // ── Indicator chips ──────────────────────────────────────────────────────
+  indicatorChips(indicators) {
+    if (!indicators || indicators.length === 0)
+      return React.createElement('span', { style:{fontSize:'11px',color:'var(--tv-dimmer)'} }, '—');
+    return React.createElement('div', { style:{display:'flex',flexWrap:'wrap',gap:'5px'} },
+      indicators.map(ind => React.createElement('span', { key:ind, style:{fontSize:'10px',fontWeight:500,padding:'2px 7px',borderRadius:'4px',background:'var(--tv-surface-3)',border:'1px solid var(--tv-border-2)',color:'var(--tv-text-2)'} }, ind))
+    );
+  }
+
+  // ── Lifecycle trail ──────────────────────────────────────────────────────
+  lifecycle(status) {
+    const steps = ['Built','Backtested','Optimized','Live'];
+    const done = { live:4, paper:2, draft:1, locked:0 }[status] || 0;
+    return React.createElement('div', { style:{display:'flex',alignItems:'center',flexWrap:'wrap',gap:'4px'} },
+      steps.map((step, i) => React.createElement('div', { key:step, style:{display:'flex',alignItems:'center',gap:'4px'} },
+        React.createElement('span', { style:{fontSize:'10px',fontWeight:600,padding:'3px 8px',borderRadius:'4px',background:i<done?'var(--tv-green-bg)':'var(--tv-surface-3)',color:i<done?'var(--tv-green-text)':'var(--tv-dimmer)',border:`1px solid ${i<done?'var(--tv-green-border)':'var(--tv-border)'}`} }, step),
+        i < steps.length-1 ? React.createElement('span', { style:{fontSize:'10px',color:'var(--tv-border-2)'} }, '›') : null
+      ))
+    );
+  }
+
+  // ── Build card row ───────────────────────────────────────────────────────
+  buildCard(s) {
+    const id = s.id;
+    const bt = this.state.btState[id] || 'default';
+    const expanded = this.state.expanded[id] || false;
+
+    const borderLeft = { live:'var(--tv-green)', paper:'#818CF8', draft:'var(--tv-amber)', locked:'var(--tv-muted)' }[s.status] || 'var(--tv-muted)';
+
+    const badgeMap = {
+      live:   { bg:'var(--tv-green-bg)', color:'var(--tv-green-text)', border:'var(--tv-green-border)', text:'LIVE' },
+      paper:  { bg:'#EEF2FF', color:'#4338CA', border:'#C7D2FE', text:'PAPER' },
+      draft:  { bg:'var(--tv-amber-bg)', color:'var(--tv-amber-text)', border:'var(--tv-amber-border)', text:'DRAFT' },
+      locked: { bg:'var(--tv-surface-2)', color:'var(--tv-muted)', border:'var(--tv-border-2)', text:'DEFAULT' },
+    }[s.status] || { bg:'var(--tv-surface-2)', color:'var(--tv-muted)', border:'var(--tv-border-2)', text:'—' };
+
+    const pnlColor  = s.pnlPos === true ? 'var(--tv-green-text)' : s.pnlPos === false ? 'var(--tv-red-text)' : 'var(--tv-dimmer)';
+    const wrColor   = s.wr >= 50 ? 'var(--tv-green-text)' : s.wr > 0 ? 'var(--tv-amber-text)' : 'var(--tv-dimmer)';
+
+    const scoreColor = s.score == null ? null : s.score >= 80 ? { bg:'var(--tv-green-bg)', c:'var(--tv-green-text)', b:'var(--tv-green-border)' } : s.score >= 60 ? { bg:'var(--tv-amber-bg)', c:'var(--tv-amber-text)', b:'var(--tv-amber-border)' } : { bg:'var(--tv-red-bg)', c:'var(--tv-red-text)', b:'var(--tv-red-border)' };
+    const scoreStyle = scoreColor ? `display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:${scoreColor.bg};color:${scoreColor.c};border:1px solid ${scoreColor.b};` : '';
+
+    const statsEl = this.buildStatsEl(s, pnlColor, wrColor);
+
+    // Backtest button state machine
+    const btLabels = { default:'Run backtest', running:'Running…', complete:'View results', rerun:'Re-run' };
+    const isDraft = s.status === 'draft';
+    const btLabel = isDraft && bt === 'default' ? 'Run first backtest' : btLabels[bt];
+    const btIsPrimary = (isDraft && bt === 'default') || bt === 'complete';
+    const btSecBase = 'height:30px;padding:0 12px;border:1px solid var(--tv-border-2);border-radius:8px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;';
+    const btStyle   = s.status === 'locked' ? btSecBase+'background:var(--tv-surface);color:var(--body);' :
+      btIsPrimary ? btSecBase+'background:var(--accent);color:var(--accent-on);border-color:transparent;' : btSecBase+'background:var(--tv-surface);color:var(--body);';
+    const btDisabled = bt === 'running';
+
+    const lockedViewStyle = btSecBase + 'background:var(--tv-surface-2);color:var(--tv-text-2);';
+
+    return {
+      id, expanded,
+      wrap: `background:var(--tv-surface);border:1px solid var(--tv-border);border-left:3px solid ${borderLeft};border-radius:11px;overflow:hidden;cursor:pointer;`,
+      icon: this.statusIcon(s.status, s.flagged),
+      iconWrap: 'display:contents;',
+      name: s.name, version: s.version, broker: s.broker,
+      lastModified: s.lastModified,
+      showBroker: s.broker !== '—',
+      badgeStyle: `font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:0.05em;background:${badgeMap.bg};color:${badgeMap.color};border:1px solid ${badgeMap.border};`,
+      badgeText: badgeMap.text,
+      showScore: !!scoreColor, scoreStyle, scoreLabel: s.score ? `Score ${s.score}` : '',
+      showFlag: s.flagged,
+      statsEl,
+      btStyle, btLabel, btDisabled, btSpinner: bt === 'running',
+      showOptimize: s.status === 'paper' && s.flagged,
+      indicatorChips: this.indicatorChips(s.indicators),
+      lifecycle: this.lifecycle(s.status),
+      asset: s.asset, timeframe: s.timeframe,
+      showLastBacktest: !!s.lastBacktest, lastBacktest: s.lastBacktest || '',
+      onToggle: () => this.setState(st => ({ expanded: { ...st.expanded, [id]: !st.expanded[id] } })),
+      stopProp: (e) => e.stopPropagation(),
+      onBt: (e) => { e.stopPropagation(); if (s.status === 'locked') return; this.runBacktest(id); },
+      onOptimize: (e) => { e.stopPropagation(); this.openBuilder(); },
+      onHistory: (e) => { e.stopPropagation(); this.setState({ vhOpen: true, vhCardId: id, vhHover: null }); },
+    };
+  }
+
+  runBacktest(id) {
+    const cur = this.state.btState[id] || 'default';
+    if (cur === 'running') return;
+    if (cur === 'complete') { this.setState(s => ({ btState: { ...s.btState, [id]: 'rerun' } })); setTimeout(() => this.setState(s => ({ btState: { ...s.btState, [id]: 'complete' } })), 2500); return; }
+    this.setState(s => ({ btState: { ...s.btState, [id]: 'running' } }));
+    setTimeout(() => this.setState(s => s.btState[id] === 'running' ? { btState: { ...s.btState, [id]: 'complete' } } : null), 2500);
+  }
+
+  // ── Summary stats ────────────────────────────────────────────────────────
+  buildSummary(data) {
+    const live  = data.filter(s=>s.status==='live');
+    const paper = data.filter(s=>s.status==='paper');
+    const draft = data.filter(s=>s.status==='draft');
+    const running = data.filter(s=>s.status==='live'||s.status==='paper');
+    const pnlRaw = live.concat(paper).reduce((acc,s)=>{ const n=parseFloat(s.pnl.replace(/[^0-9.-]/g,'')); return acc+(isNaN(n)?0:(s.pnlPos?n:-n)); },0);
+    const pnlStr = (pnlRaw>=0?'+':'') + '$' + Math.abs(pnlRaw).toLocaleString('en-US',{maximumFractionDigits:0});
+    const wrNums = running.filter(s=>parseFloat(s.winRate)>0).map(s=>parseFloat(s.winRate));
+    const avgWr  = wrNums.length ? (wrNums.reduce((a,b)=>a+b,0)/wrNums.length).toFixed(1)+'%' : '—';
+    const avgWrNum = wrNums.length ? wrNums.reduce((a,b)=>a+b,0)/wrNums.length : 0;
+    const sigs = running.reduce((a,s)=>a+parseInt(s.signals)||0,0);
+    const border = '1px solid var(--tv-border)';
+    return [
+      { value: pnlStr,  label:'Total P&L · 7D', valueColor: pnlRaw>=0?'var(--tv-green-text)':'var(--tv-red-text)',  borderRight:border },
+      { value: running.reduce((a,s)=>a+parseInt(s.trades)||0,0)+'', label:'Total trades',  valueColor:'var(--tv-text)', borderRight:border },
+      { value: avgWr,   label:'Avg win rate',   valueColor: avgWrNum>=50?'var(--tv-green-text)':avgWrNum>0?'var(--tv-amber-text)':'var(--tv-dimmer)', borderRight:border },
+      { value: sigs+'', label:'Signals fired',  valueColor:'var(--tv-text)', borderRight:border },
+      { value: running.length+'', label:'Running now',  valueColor:'var(--tv-text)', borderRight:'none' },
+    ];
+  }
+
+  // ── Filter pills ─────────────────────────────────────────────────────────
+  buildFilterPills(data, active) {
+    const counts = { all:data.length, live:data.filter(s=>s.status==='live').length, paper:data.filter(s=>s.status==='paper').length, draft:data.filter(s=>s.status==='draft').length };
+    const defs = [
+      { key:'all',   label:'All',   activeStyle:'background:var(--tv-surface-2);color:var(--tv-text);border-color:var(--tv-border-2);' },
+      { key:'live',  label:'Live',  activeStyle:'background:var(--tv-green-bg);color:var(--tv-green-text);border-color:var(--tv-green-border);' },
+      { key:'paper', label:'Paper', activeStyle:'background:#EEF2FF;color:#4338CA;border-color:#C7D2FE;' },
+      { key:'draft', label:'Draft', activeStyle:'background:var(--tv-amber-bg);color:var(--tv-amber-text);border-color:var(--tv-amber-border);' },
+    ];
+    const base = 'padding:5px 12px;border-radius:var(--tv-radius-sm);font-size:11px;font-weight:600;border:1px solid var(--tv-border);background:var(--tv-surface);color:var(--tv-muted);cursor:pointer;font-family:inherit;';
+    return defs.map(d => ({
+      label: `${d.label} ${counts[d.key]}`,
+      style: base + (active===d.key ? d.activeStyle : ''),
+      hoverStyle: active===d.key ? '' : 'background:var(--tv-surface-2);color:var(--tv-text-2);',
+      onClick: () => this.setState({ filter: d.key }),
+    }));
+  }
+
+  // ── Split button items ───────────────────────────────────────────────────
+  buildSplitItems() {
+    const sparkles = React.createElement('svg',{width:15,height:15,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:1.8,strokeLinecap:'round',strokeLinejoin:'round','aria-hidden':true},React.createElement('path',{d:'m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z'}));
+    const upload = React.createElement('svg',{width:15,height:15,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:1.8,strokeLinecap:'round',strokeLinejoin:'round','aria-hidden':true},React.createElement('path',{d:'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'}),React.createElement('polyline',{points:'17 8 12 3 7 8'}),React.createElement('line',{x1:'12',y1:'3',x2:'12',y2:'15'}));
+    const tmpl = React.createElement('svg',{width:15,height:15,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:1.8,strokeLinecap:'round',strokeLinejoin:'round','aria-hidden':true},React.createElement('rect',{x:'3',y:'3',width:'7',height:'7',rx:'1'}),React.createElement('rect',{x:'14',y:'3',width:'7',height:'7',rx:'1'}),React.createElement('rect',{x:'3',y:'14',width:'7',height:'7',rx:'1'}),React.createElement('rect',{x:'14',y:'14',width:'7',height:'7',rx:'1'}));
+    return [
+      { icon:sparkles, title:'AI suggestion',      sub:'Describe your idea, AI builds it',    onClick:()=>{ this.openBuilder(); } },
+      { icon:upload,   title:'Import Pine Script', sub:'Bring in existing strategy logic',    onClick:()=>{ this.openBuilder(); } },
+      { icon:tmpl,     title:'Start from template',sub:'Pre-built logic to modify',           onClick:()=>{ this.openBuilder(); } },
+    ];
+  }
+
+  // ═══════════════════ STRATEGY BUILDER (Spec 03) ═══════════════════
+  openBuilder() {
+    this.setState({ drawerOpen:true, splitOpen:false, builderStep:'mode', builderMode:null, builderName:'', pickedIndicators:[], configuringIndicator:null, builderPicking:false, indSearch:'', buyMode:'all', sellMode:'any', logicEdit:null, logicSnap:null, tmStop:'atr', tmTp:'2r', tmRisk:'1' });
+  }
+  chooseMode(mode) {
+    if (mode==='advanced') { this.showToast('Advanced market structure arrives in Phase 2'); return; }
+    if (mode==='import')   { this.showToast('Import — paste Pine Script or JSON (coming soon)'); return; }
+    this.setState({ builderMode: mode==='ai' ? 'ai' : 'manual', builderStep:'indicators', builderPicking:true });
+  }
+  builderGoStep(step) {
+    if (step==='conditions' && this.state.pickedIndicators.length===0) return;
+    if (step==='trademgmt' && this.state.pickedIndicators.length===0) return;
+    this.setState({ builderStep:step, configuringIndicator:null, builderPicking:false });
+  }
+  startConfigure(key, editIndex=null) {
+    const cat = this.builderCatalog()[key];
+    const base = cat.filter ? { key, opt: cat.def, editIndex } : { key, buy: cat.defBuy, sell: cat.defSell, editIndex };
+    if (editIndex!=null) {
+      const p = this.state.pickedIndicators[editIndex];
+      if (cat.filter) base.opt = p.opt; else { base.buy = p.buy; base.sell = p.sell; }
+    }
+    this.setState({ configuringIndicator: base, builderPicking:false });
+  }
+  setBuilderOpt(kind, id) { this.setState(s => ({ configuringIndicator: { ...s.configuringIndicator, [kind]: id } })); }
+  confirmIndicator() {
+    const c = this.state.configuringIndicator; if (!c) return;
+    const cat = this.builderCatalog()[c.key];
+    const rec = cat.filter ? { key:c.key, opt:c.opt } : { key:c.key, buy:c.buy, sell:c.sell };
+    this.setState(s => {
+      const list = [...s.pickedIndicators];
+      if (c.editIndex!=null) list[c.editIndex] = rec; else list.push(rec);
+      return { pickedIndicators:list, configuringIndicator:null, builderPicking:false };
+    });
+  }
+  cancelConfigure() { this.setState({ configuringIndicator:null }); }
+  removeIndicator(i) { this.setState(s => ({ pickedIndicators: s.pickedIndicators.filter((_,j)=>j!==i) })); }
+  saveDraft() { this.showToast(this.state.builderName.trim() ? `"${this.state.builderName.trim()}" saved as draft` : 'Draft saved'); }
+  saveAndBacktest() {
+    const n = this.state.builderName.trim() || 'Untitled strategy';
+    this.showToast(`"${n}" saved — running backtest…`);
+    this.setState({ drawerOpen:false });
+  }
+  builderSub() {
+    const st = this.state;
+    if (st.builderStep==='mode') return 'New strategy';
+    if (st.builderStep==='indicators') return st.configuringIndicator ? 'Add indicators — AI pre-fills best defaults' : (st.builderMode==='ai' ? 'AI mode — refine each step' : 'Manual mode — AI guides each step');
+    if (st.builderStep==='conditions') return 'Conditions';
+    if (st.builderStep==='trademgmt') return 'Trade management';
+    return '';
+  }
+
+  bIcon(paths, color, size) { const h=React.createElement; return h('svg',{width:size||18,height:size||18,viewBox:'0 0 24 24',fill:'none',stroke:color,strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round','aria-hidden':true}, paths.map((d,i)=>h('path',{key:i,d}))); }
+
+  builderCatalog() {
+    return {
+      macd: { name:'MACD', cat:'Momentum', tint:'#7C3AED', soft:'rgba(124,58,237,0.12)', paths:['M3 16l4-5 3 3 4-7 3 4 4-2'], defBuy:'cross_above', defSell:'cross_below',
+        buy:[
+          {id:'cross_above', label:'MACD crosses above signal line', desc:'Classic momentum entry — buy when bullish pressure builds', chip:'MACD × signal ↑'},
+          {id:'hist_pos',    label:'MACD histogram turns positive',   desc:'Earlier signal — triggers when histogram crosses zero', chip:'MACD hist +'},
+          {id:'cross_zero',  label:'MACD crosses above zero line',    desc:'Strong momentum only — filters weaker signals', chip:'MACD > 0'},
+        ],
+        sell:[
+          {id:'cross_below', label:'MACD crosses below signal line', desc:'Mirror of buy — natural exit when momentum reverses', chip:'MACD × signal ↓'},
+          {id:'hist_neg',    label:'MACD histogram turns negative',  desc:'Earlier exit — locks in profit sooner', chip:'MACD hist −'},
+          {id:'stop_only',   label:'Let stop loss handle exit',      desc:'No MACD sell signal — trade management exits', chip:null},
+        ] },
+      rsi: { name:'RSI', cat:'Oscillator', tint:'#3DD5A8', soft:'rgba(61,213,168,0.12)', paths:['M3 12h3l2-6 4 12 2-6h7'], defBuy:'above50', defSell:'below50',
+        buy:[
+          {id:'above50',  label:'RSI rises above 50', desc:'Momentum confirmation — buy in the upper half', chip:'RSI > 50'},
+          {id:'oversold', label:'RSI crosses up through 30', desc:'Oversold bounce — buy as it exits oversold', chip:'RSI exits 30'},
+          {id:'cross_ma', label:'RSI crosses its moving average', desc:'Smoothed signal — fewer false triggers', chip:'RSI × MA ↑'},
+        ],
+        sell:[
+          {id:'below50',    label:'RSI falls below 50', desc:'Momentum fades — exit the upper half', chip:'RSI < 50'},
+          {id:'overbought', label:'RSI crosses down through 70', desc:'Overbought reversal — take profit into strength', chip:'RSI exits 70'},
+          {id:'stop_only',  label:'Let stop loss handle exit', desc:'No RSI sell signal — trade management exits', chip:null},
+        ] },
+      ema: { name:'EMA', cat:'Trend', tint:'#6366F1', soft:'rgba(99,102,241,0.12)', paths:['M3 17l6-6 4 4 8-9'], defBuy:'price_above', defSell:'price_below',
+        buy:[
+          {id:'price_above', label:'Price closes above EMA', desc:'Trend filter — only buy above the moving average', chip:'Price > EMA'},
+          {id:'fast_cross',  label:'Fast EMA crosses above slow EMA', desc:'Golden cross — classic trend entry', chip:'EMA cross ↑'},
+          {id:'slope_up',    label:'EMA slope turns up', desc:'Earliest signal — trend just beginning', chip:'EMA slope ↑'},
+        ],
+        sell:[
+          {id:'price_below',   label:'Price closes below EMA', desc:'Trend break — exit below the moving average', chip:'Price < EMA'},
+          {id:'fast_cross_dn', label:'Fast EMA crosses below slow EMA', desc:'Death cross — trend reversal exit', chip:'EMA cross ↓'},
+          {id:'stop_only',     label:'Let stop loss handle exit', desc:'No EMA sell signal — trade management exits', chip:null},
+        ] },
+      vwap: { name:'VWAP', cat:'Volume', tint:'#10B981', soft:'rgba(16,185,129,0.12)', paths:['M3 16l5-4 4 3 8-8','M3 20h18'], defBuy:'reclaim', defSell:'lose',
+        buy:[
+          {id:'reclaim', label:'Price reclaims VWAP from below', desc:'Intraday momentum — buy the VWAP reclaim', chip:'Price > VWAP'},
+          {id:'bounce',  label:'Price bounces off VWAP', desc:'Mean-reversion entry at the VWAP line', chip:'VWAP bounce'},
+        ],
+        sell:[
+          {id:'lose',      label:'Price loses VWAP', desc:'Momentum gone — exit below VWAP', chip:'Price < VWAP'},
+          {id:'stop_only', label:'Let stop loss handle exit', desc:'No VWAP sell signal — trade management exits', chip:null},
+        ] },
+      session: { name:'Session filter', cat:'Filter', tint:'#818CF8', soft:'rgba(129,140,250,0.12)', paths:['M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z','M12 8v4l3 2'], filter:true, def:'ny',
+        opts:[
+          {id:'ny',      label:'New York session only', desc:'09:30–16:00 ET — highest US equity volume', chip:'NY session'},
+          {id:'london',  label:'London session only', desc:'03:00–11:00 ET — FX & metals liquidity', chip:'London session'},
+          {id:'overlap', label:'London / NY overlap', desc:'08:00–11:00 ET — peak volatility window', chip:'LDN/NY overlap'},
+        ] },
+    };
+  }
+
+  builderChips() {
+    const cat = this.builderCatalog(); const buy=[]; const sell=[];
+    this.state.pickedIndicators.forEach(p => {
+      const c = cat[p.key]; if (!c) return;
+      if (c.filter) { const o = c.opts.find(x=>x.id===p.opt); if (o && o.chip) buy.push(o.chip); }
+      else { const bo=c.buy.find(x=>x.id===p.buy); if (bo&&bo.chip) buy.push(bo.chip); const so=c.sell.find(x=>x.id===p.sell); if (so&&so.chip) sell.push(so.chip); }
+    });
+    return { buy, sell };
+  }
+
+  builderEl() {
+    const h=React.createElement; const st=this.state; const step=st.builderStep;
+    const header = h('div',{style:{flexShrink:0,height:'56px',padding:'0 14px',borderBottom:'1px solid var(--tv-border)',display:'flex',alignItems:'center',gap:'12px'}},
+      h('button',{type:'button',onClick:()=>this.setState({drawerOpen:false}),'aria-label':'Close strategy builder',style:{width:'34px',height:'34px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'var(--tv-radius-md)',border:'1px solid var(--tv-border-2)',background:'var(--tv-surface)',color:'var(--tv-muted)',cursor:'pointer'}}, this.bIcon(['M18 6 6 18','m6 6 12 12'],'currentColor',15)),
+      h('div',{style:{minWidth:0}},
+        h('div',{style:{fontSize:'15px',fontWeight:700,color:'var(--tv-text)'}},'Strategy builder'),
+        h('div',{style:{fontSize:'12px',color:'var(--tv-muted)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}, this.builderSub())),
+      h('div',{style:{flex:1}}),
+      h('button',{type:'button','aria-label':'More options',style:{width:'34px',height:'34px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'var(--tv-radius-md)',border:'1px solid var(--tv-border-2)',background:'var(--tv-surface)',color:'var(--tv-muted)',cursor:'pointer'}}, this.bIcon(['M5 12h.01','M12 12h.01','M19 12h.01'],'currentColor',16))
+    );
+    const children=[header, this.builderNameBand()];
+    if (step!=='mode') children.push(this.builderStepperEl());
+    if (step==='indicators' || step==='conditions') children.push(this.builderLiveBarEl(step==='conditions'));
+    children.push(h('div',{className:'cs',style:{flex:1,minHeight:0,overflowY:'auto'}}, this.builderBody()));
+    const ft=this.builderFooterEl(); if (ft) children.push(ft);
+    return h('div',{style:{display:'flex',flexDirection:'column',height:'100%',background:'var(--tv-surface)'}}, ...children);
+  }
+
+  builderNameBand() {
+    const h=React.createElement; const st=this.state;
+    const saved = st.builderName.trim().length>0;
+    return h('div',{style:{flexShrink:0,padding:'12px 16px',background:'color-mix(in srgb, var(--tv-surface) 88%, var(--tv-sidebar-green) 7%)',borderBottom:'1px solid var(--tv-border)',display:'flex',alignItems:'center',gap:'12px'}},
+      h('input',{type:'text',value:st.builderName,placeholder:'Name your strategy…',onChange:(e)=>this.setState({builderName:e.target.value}),
+        style:{flex:1,minWidth:0,height:'44px',padding:'0 14px',fontFamily:'inherit',fontSize:'18px',fontWeight:600,color:'var(--tv-text)',background:'var(--tv-surface)',border:'1px solid var(--tv-border-2)',borderRadius:'var(--tv-radius-md)',outline:'none'}}),
+      saved? h('span',{style:{display:'inline-flex',alignItems:'center',gap:'6px',flexShrink:0,fontSize:'12px',color:'var(--tv-muted)'}},
+        h('span',{style:{width:'7px',height:'7px',borderRadius:'50%',background:'var(--tv-green)'}}), 'Saved') : null
+    );
+  }
+
+  builderStepperEl() {
+    const h=React.createElement; const st=this.state; const purple='#7C3AED';
+    const order={indicators:0,conditions:1,trademgmt:2}; const cur=order[st.builderStep] ?? 0;
+    const steps=[{key:'indicators',label:'Indicators'},{key:'conditions',label:'Conditions'},{key:'trademgmt',label:'Trade mgmt'}];
+    const canGo=(k)=> k==='indicators' || st.pickedIndicators.length>0;
+    const tab=(s,i)=>{
+      const state = i<cur?'done':i===cur?'active':'todo';
+      const circle = state==='done'
+        ? h('span',{style:{width:'20px',height:'20px',borderRadius:'50%',background:'var(--tv-green)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}, this.bIcon(['M20 6 9 17l-5-5'],'#fff',12))
+        : h('span',{style:{width:'20px',height:'20px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:'11px',fontWeight:700, background: state==='active'?purple:'transparent', color: state==='active'?'#fff':'var(--tv-muted)', border: state==='active'?'none':'1.5px solid var(--tv-border-2)'}}, String(i+1));
+      return h('button',{key:s.key,type:'button',disabled:!canGo(s.key),onClick:()=>this.builderGoStep(s.key),
+        style:{display:'flex',alignItems:'center',gap:'7px',padding:'12px 4px',background:'none',border:'none',borderBottom: state==='active'?('2px solid '+purple):'2px solid transparent',cursor:canGo(s.key)?'pointer':'not-allowed',fontFamily:'inherit',marginBottom:'-1px'}},
+        circle, h('span',{style:{fontSize:'13px',fontWeight: state==='active'?700:500,color: state==='active'?purple:state==='done'?'var(--tv-text)':'var(--tv-muted)',whiteSpace:'nowrap'}}, s.label));
+    };
+    return h('div',{style:{flexShrink:0,padding:'0 16px',borderBottom:'1px solid var(--tv-border)',display:'flex',alignItems:'center',gap:'22px'}},
+      ...steps.map(tab),
+      h('div',{style:{flex:1}}),
+      h('span',{style:{display:'inline-flex',alignItems:'center',gap:'6px',fontSize:'13px',fontWeight:600,color:purple}}, h('span',{style:{width:'7px',height:'7px',borderRadius:'50%',background:purple}}),'AI')
+    );
+  }
+
+  builderLiveBarEl(showSell) {
+    const h=React.createElement; const st=this.state; const {buy,sell}=this.builderChips();
+    const bandBg='color-mix(in srgb, var(--tv-surface) 84%, var(--tv-sidebar-green) 9%)';
+    const chip=(text,kind)=>{
+      const sty = kind==='sell' ? {background:'var(--tv-red-bg)',color:'var(--tv-red-text)',border:'1px solid var(--tv-red-border)'} : {background:'var(--tv-green-bg)',color:'var(--tv-green-text)',border:'1px solid var(--tv-green-border)'};
+      return h('span',{key:text,style:{padding:'3px 9px',borderRadius:'5px',fontSize:'11px',fontWeight:600,whiteSpace:'nowrap',...sty}}, text);
+    };
+    const sep=(t,k)=>h('span',{key:'sep'+k,style:{fontSize:'10px',fontWeight:700,color:'var(--tv-muted)',letterSpacing:'0.04em'}}, t);
+    const badge=(t,purple)=>h('span',{key:'bdg',style:{padding:'3px 9px',borderRadius:'5px',fontSize:'11px',fontWeight:700,whiteSpace:'nowrap', background: purple?'rgba(124,58,237,0.10)':'var(--tv-red-bg)', color: purple?'#7C3AED':'var(--tv-red-text)', border:'1px solid '+(purple?'rgba(124,58,237,0.25)':'var(--tv-red-border)')}}, t);
+    const buyLine=[h('span',{key:'bw',style:{fontSize:'11px',fontWeight:700,color:'var(--tv-green-text)',textTransform:'uppercase',letterSpacing:'0.04em',whiteSpace:'nowrap'}},'BUY WHEN')];
+    if (buy.length===0) buyLine.push(h('span',{key:'ph',style:{fontSize:'12px',fontStyle:'italic',color:'var(--tv-muted)'}},'Add an indicator below to start'));
+    else { const sepW=st.buyMode==='any'?'OR':'AND'; const maj=Math.max(1,Math.ceil(buy.length/2)); const bb=st.buyMode==='all'?('All '+buy.length+' agree'):st.buyMode==='most'?('Any '+maj+' of '+buy.length):('Any 1 of '+buy.length); buy.forEach((c,i)=>{ if(i>0) buyLine.push(sep(sepW,'b'+i)); buyLine.push(chip(c,'buy')); }); buyLine.push(badge(bb, true)); }
+    const rows=[h('div',{key:'lbl',style:{fontSize:'10px',fontWeight:700,color:'var(--tv-muted)',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:'8px'}},'Live conditions'),
+      h('div',{key:'buy',style:{display:'flex',alignItems:'center',gap:'7px',flexWrap:'wrap'}}, ...buyLine)];
+    if (showSell && sell.length>0) {
+      const sellLine=[h('span',{key:'sw',style:{fontSize:'11px',fontWeight:700,color:'var(--tv-red-text)',textTransform:'uppercase',letterSpacing:'0.04em',whiteSpace:'nowrap'}},'SELL WHEN')];
+      const sepW=st.sellMode==='all'?'AND':'OR'; const smaj=Math.max(1,Math.ceil(sell.length/2)); const sb=st.sellMode==='any'?'First wins':st.sellMode==='most'?('Any '+smaj+' of '+sell.length):'All must clear';
+      sell.forEach((c,i)=>{ if(i>0) sellLine.push(sep(sepW,'s'+i)); sellLine.push(chip(c,'sell')); });
+      sellLine.push(badge(sb, false));
+      rows.push(h('div',{key:'sell',style:{display:'flex',alignItems:'center',gap:'7px',flexWrap:'wrap',marginTop:'8px'}}, ...sellLine));
+    }
+    return h('div',{style:{flexShrink:0,padding:'12px 16px',background:bandBg,borderBottom:'1px solid var(--tv-border)'}}, ...rows);
+  }
+
+  builderBody() {
+    const s=this.state.builderStep;
+    if (s==='mode') return this.builderModeSelect();
+    if (s==='indicators') return this.builderIndicatorsBody();
+    if (s==='conditions') return this.builderConditionsBody();
+    if (s==='trademgmt') return this.builderTradeMgmtBody();
+    return null;
+  }
+
+  builderTagChips(list, purple) {
+    const h=React.createElement;
+    return h('div',{style:{display:'flex',flexWrap:'wrap',gap:'6px',marginTop:'10px'}},
+      list.map(t=>h('span',{key:t,style:{fontSize:'11px',fontWeight:500,padding:'3px 9px',borderRadius:'5px', background: purple?'rgba(124,58,237,0.08)':'var(--tv-surface-2)', color: purple?'#7C3AED':'var(--tv-text-2)', border:'1px solid '+(purple?'rgba(124,58,237,0.22)':'var(--tv-border)')}}, t)));
+  }
+  builderModeSelect() {
+    const h=React.createElement;
+    const heading=h('div',{key:'hd'},
+      h('div',{style:{fontSize:'18px',fontWeight:700,color:'var(--tv-text)'}},'How do you trade?'),
+      h('div',{style:{fontSize:'13px',color:'var(--tv-muted)',marginTop:'4px',lineHeight:'1.5'}},'Choose the approach that matches how you think about your strategy.'));
+    const aiCard=h('button',{key:'ai',type:'button',onClick:()=>this.chooseMode('ai'),
+      style:{display:'flex',alignItems:'flex-start',gap:'14px',width:'100%',textAlign:'left',padding:'16px',borderRadius:'var(--tv-radius-lg)',cursor:'pointer',fontFamily:'inherit', border:'1px solid rgba(124,58,237,0.30)', background:'linear-gradient(135deg, rgba(124,58,237,0.06), rgba(61,213,168,0.05))'}},
+      h('span',{style:{width:'40px',height:'40px',borderRadius:'10px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(135deg,#7C3AED,#3DD5A8)'}}, this.bIcon(['m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z'],'#fff',20)),
+      h('div',{},
+        h('div',{style:{display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap'}},
+          h('span',{style:{fontSize:'14px',fontWeight:700,color:'#7C3AED'}},'Describe it — AI builds the logic'),
+          h('span',{style:{fontSize:'9px',fontWeight:700,padding:'2px 7px',borderRadius:'4px',background:'#7C3AED',color:'#fff',letterSpacing:'0.05em'}},'RECOMMENDED')),
+        h('div',{style:{fontSize:'13px',color:'var(--tv-text-2)',marginTop:'5px',lineHeight:'1.5'}},'Tell AI your strategy in plain English. Works for everything from simple MACD setups to complex multi-timeframe SMC concepts.')));
+    const divider=h('div',{key:'dv',style:{display:'flex',alignItems:'center',gap:'12px',margin:'2px 0'}},
+      h('div',{style:{flex:1,height:'1px',background:'var(--tv-border)'}}),
+      h('span',{style:{fontSize:'12px',color:'var(--tv-muted)',whiteSpace:'nowrap'}},'or choose a specific approach'),
+      h('div',{style:{flex:1,height:'1px',background:'var(--tv-border)'}}));
+    const indCard=h('button',{key:'ind',type:'button',onClick:()=>this.chooseMode('manual'),
+      style:{display:'flex',alignItems:'flex-start',gap:'14px',width:'100%',textAlign:'left',padding:'16px',borderRadius:'var(--tv-radius-lg)',cursor:'pointer',fontFamily:'inherit',border:'1px solid var(--tv-border)',background:'var(--tv-surface)'}},
+      h('span',{style:{width:'40px',height:'40px',borderRadius:'10px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:'var(--tv-surface-2)',color:'var(--tv-text-2)'}}, this.bIcon(['M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z'],'currentColor',19)),
+      h('div',{style:{flex:1,minWidth:0}},
+        h('div',{style:{fontSize:'14px',fontWeight:700,color:'var(--tv-text)'}},'Build with indicators'),
+        h('div',{style:{fontSize:'13px',color:'var(--tv-text-2)',marginTop:'5px',lineHeight:'1.5'}},'Add MACD, RSI, EMA and other technical indicators one at a time. AI pre-fills buy and sell conditions for each.'),
+        this.builderTagChips(['MACD','RSI','EMA','VWAP','Bollinger Bands','ATR','+ more'], false)),
+      h('span',{style:{flexShrink:0,color:'var(--tv-muted)',marginTop:'4px'}}, this.bIcon(['m9 18 6-6-6-6'],'currentColor',18)));
+    const advCard=h('button',{key:'adv',type:'button',onClick:()=>this.chooseMode('advanced'),
+      style:{display:'flex',alignItems:'flex-start',gap:'14px',width:'100%',textAlign:'left',padding:'16px',borderRadius:'var(--tv-radius-lg)',cursor:'pointer',fontFamily:'inherit',border:'1px solid var(--tv-border)',background:'var(--tv-surface)'}},
+      h('span',{style:{width:'40px',height:'40px',borderRadius:'10px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:'#101B25',color:'var(--tv-sidebar-green)'}}, this.bIcon(['M3 21h18','M5 21V10l7-5 7 5v11','M9 21v-6h6v6'],'currentColor',18)),
+      h('div',{style:{flex:1,minWidth:0}},
+        h('div',{style:{display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap'}},
+          h('span',{style:{fontSize:'14px',fontWeight:700,color:'var(--tv-text)'}},'Advanced / market structure'),
+          h('span',{style:{fontSize:'9px',fontWeight:700,padding:'2px 7px',borderRadius:'4px',background:'rgba(124,58,237,0.10)',color:'#7C3AED',border:'1px solid rgba(124,58,237,0.25)',letterSpacing:'0.04em'}},'Phase 2')),
+        h('div',{style:{fontSize:'13px',color:'var(--tv-text-2)',marginTop:'5px',lineHeight:'1.5'}},'Multi-timeframe, sequential logic, Smart Money Concepts. Liquidity sweeps, Fair Value Gaps, Order Blocks, Break of Structure.'),
+        this.builderTagChips(['Liquidity','FVG','Order Blocks','BOS / CHoCH','Multi-timeframe','Sequential logic'], true)),
+      h('span',{style:{flexShrink:0,color:'var(--tv-muted)',marginTop:'4px'}}, this.bIcon(['m9 18 6-6-6-6'],'currentColor',18)));
+    const impCard=h('button',{key:'imp',type:'button',onClick:()=>this.chooseMode('import'),
+      style:{display:'flex',alignItems:'center',gap:'14px',width:'100%',textAlign:'left',padding:'16px',borderRadius:'var(--tv-radius-lg)',cursor:'pointer',fontFamily:'inherit',border:'1px solid var(--tv-border)',background:'var(--tv-surface)'}},
+      h('span',{style:{flexShrink:0,color:'var(--tv-text-2)'}}, this.bIcon(['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4','M7 10l5-5 5 5','M12 5v12'],'currentColor',18)),
+      h('div',{style:{flex:1,minWidth:0,fontSize:'14px',color:'var(--tv-text)'}}, h('span',{style:{fontWeight:700}},'Import Pine Script or JSON'), ' — bring in existing strategy logic'),
+      h('span',{style:{flexShrink:0,color:'var(--tv-muted)'}}, this.bIcon(['m9 18 6-6-6-6'],'currentColor',18)));
+    return h('div',{style:{padding:'18px 16px 28px',display:'flex',flexDirection:'column',gap:'14px'}}, heading, aiCard, divider, indCard, advCard, impCard);
+  }
+
+  builderIndicatorRowPicker(key) {
+    const h=React.createElement; const c=this.builderCatalog()[key];
+    return h('button',{key,type:'button',onClick:()=>this.startConfigure(key),
+      style:{display:'flex',alignItems:'center',gap:'12px',width:'100%',textAlign:'left',padding:'12px 14px',background:'var(--tv-surface)',border:'none',borderBottom:'1px solid var(--tv-border)',cursor:'pointer',fontFamily:'inherit'}},
+      h('span',{style:{width:'34px',height:'34px',borderRadius:'9px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:c.soft,color:c.tint}}, this.bIcon(c.paths,c.tint,18)),
+      h('span',{style:{flex:1,fontSize:'15px',fontWeight:700,color:'var(--tv-text)'}}, c.name),
+      h('span',{style:{fontSize:'13px',color:'var(--tv-muted)'}}, c.cat));
+  }
+  builderPicker() {
+    const h=React.createElement; const st=this.state;
+    const all=['macd','rsi','ema','vwap','session']; const q=st.indSearch.trim().toLowerCase(); const cat=this.builderCatalog();
+    const list = q? all.filter(k=>cat[k].name.toLowerCase().includes(q)||cat[k].cat.toLowerCase().includes(q)) : all;
+    return h('div',{},
+      h('div',{style:{fontSize:'13px',color:'var(--tv-text-2)',lineHeight:'1.5',marginBottom:'14px'}},'Pick an indicator — AI will ask about your buy ',h('em',{},'and'),' sell conditions together.'),
+      h('div',{style:{border:'1px solid var(--tv-border-2)',borderRadius:'var(--tv-radius-lg)',overflow:'hidden'}},
+        h('div',{style:{position:'relative',padding:'10px',borderBottom:'1px solid var(--tv-border)'}},
+          h('span',{style:{position:'absolute',left:'24px',top:'50%',transform:'translateY(-50%)',pointerEvents:'none',color:'var(--tv-muted)'}}, this.bIcon(['M11 11m-8 0a8 8 0 1 0 16 0 8 8 0 0 0-16 0','m21 21-4.3-4.3'],'currentColor',16)),
+          h('input',{type:'text',value:st.indSearch,placeholder:'Search indicators… MACD, RSI, EMA, VWAP',onChange:(e)=>this.setState({indSearch:e.target.value}),
+            style:{width:'100%',height:'40px',padding:'0 12px 0 36px',fontFamily:'inherit',fontSize:'14px',color:'var(--tv-text)',background:'var(--tv-surface)',border:'1px solid var(--tv-border)',borderRadius:'var(--tv-radius-md)',outline:'none'}})),
+        ...list.map(k=>this.builderIndicatorRowPicker(k)),
+        list.length===0? h('div',{style:{padding:'16px',textAlign:'center',fontSize:'13px',color:'var(--tv-muted)'}},'No indicators match') : null
+      ));
+  }
+
+  builderSummaryCard(p, i) {
+    const h=React.createElement; const c=this.builderCatalog()[p.key]; if(!c) return null;
+    let chips;
+    if (c.filter){ const o=c.opts.find(x=>x.id===p.opt); chips=[o&&o.chip?{t:o.chip,k:'filter'}:null]; }
+    else { const bo=c.buy.find(x=>x.id===p.buy); const so=c.sell.find(x=>x.id===p.sell); chips=[bo&&bo.chip?{t:bo.chip,k:'buy'}:null, so&&so.chip?{t:so.chip,k:'sell'}:null]; }
+    const chipEl=(o)=>{ if(!o) return null; const sty=o.k==='sell'?{background:'var(--tv-red-bg)',color:'var(--tv-red-text)',border:'1px solid var(--tv-red-border)'}:o.k==='buy'?{background:'var(--tv-green-bg)',color:'var(--tv-green-text)',border:'1px solid var(--tv-green-border)'}:{background:c.soft,color:c.tint,border:'1px solid '+c.soft}; return h('span',{key:o.t,style:{padding:'2px 8px',borderRadius:'5px',fontSize:'11px',fontWeight:600,...sty}}, o.t); };
+    return h('div',{key:i,style:{display:'flex',alignItems:'center',gap:'12px',padding:'12px 14px',background:'var(--tv-surface)',border:'1px solid var(--tv-border)',borderRadius:'var(--tv-radius-lg)'}},
+      h('span',{style:{width:'34px',height:'34px',borderRadius:'9px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:c.soft,color:c.tint}}, this.bIcon(c.paths,c.tint,18)),
+      h('div',{style:{flex:1,minWidth:0}},
+        h('div',{style:{fontSize:'14px',fontWeight:700,color:'var(--tv-text)',marginBottom:'4px'}}, c.name),
+        h('div',{style:{display:'flex',flexWrap:'wrap',gap:'5px'}}, ...chips.map(chipEl))),
+      h('button',{type:'button',onClick:()=>this.startConfigure(p.key,i),'aria-label':'Edit '+c.name,style:{width:'30px',height:'30px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'var(--tv-radius-md)',border:'1px solid var(--tv-border-2)',background:'var(--tv-surface)',color:'var(--tv-muted)',cursor:'pointer'}}, this.bIcon(['M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7','M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z'],'currentColor',14)),
+      h('button',{type:'button',onClick:()=>this.removeIndicator(i),'aria-label':'Remove '+c.name,style:{width:'30px',height:'30px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'var(--tv-radius-md)',border:'1px solid var(--tv-border-2)',background:'var(--tv-surface)',color:'var(--tv-muted)',cursor:'pointer'}}, this.bIcon(['M18 6 6 18','m6 6 12 12'],'currentColor',14)));
+  }
+
+  builderOptionRow(opt, selected, kind) {
+    const h=React.createElement;
+    const accent = kind==='sell'?'#F87171':kind==='filter'?'#7C3AED':'#5AC57A';
+    const softBg = kind==='sell'?'var(--tv-red-bg)':kind==='filter'?'rgba(124,58,237,0.08)':'var(--tv-green-bg)';
+    const softBd = kind==='sell'?'var(--tv-red-border)':kind==='filter'?'rgba(124,58,237,0.30)':'var(--tv-green-border)';
+    return h('button',{key:opt.id,type:'button',onClick:()=>this.setBuilderOpt(kind==='filter'?'opt':kind, opt.id),
+      style:{display:'flex',alignItems:'flex-start',gap:'11px',width:'100%',textAlign:'left',padding:'12px 14px',borderRadius:'var(--tv-radius-md)',cursor:'pointer',fontFamily:'inherit', background: selected?softBg:'var(--tv-surface)', border: selected?('1px solid '+softBd):'1px solid var(--tv-border)'}},
+      h('span',{style:{width:'20px',height:'20px',borderRadius:'50%',flexShrink:0,marginTop:'1px',display:'flex',alignItems:'center',justifyContent:'center', background: selected?accent:'transparent', border: selected?'none':'2px solid var(--tv-border-2)'}}, selected? this.bIcon(['M20 6 9 17l-5-5'],'#fff',12):null),
+      h('span',{style:{display:'flex',flexDirection:'column',gap:'3px'}},
+        h('span',{style:{fontSize:'13px',fontWeight:700,color:'var(--tv-text)'}}, opt.label),
+        h('span',{style:{fontSize:'12px',color:'var(--tv-muted)',lineHeight:'1.4'}}, opt.desc)));
+  }
+  builderConfigPanel() {
+    const h=React.createElement; const cfg=this.state.configuringIndicator; const c=this.builderCatalog()[cfg.key];
+    const hint = c.filter
+      ? h('span',{},'Pick the session window to restrict trading hours. AI applies it to ',h('span',{style:{color:'#7C3AED',fontWeight:600}},'both buy and sell'),'.')
+      : (()=>{ const b=c.buy.find(x=>x.id===c.defBuy); return h('span',{},'I’ve pre-selected the classic pair: ',h('span',{style:{color:'#7C3AED',fontWeight:600}}, b.label.replace(/ line$/,'')+' → Buy'),' and ',h('span',{style:{color:'#7C3AED',fontWeight:600}},'crosses below → Sell'),'. Change either if needed.'); })();
+    const hintBar=h('div',{style:{display:'flex',alignItems:'flex-start',gap:'11px',padding:'12px 14px',borderRadius:'var(--tv-radius-md)',background:'linear-gradient(135deg, rgba(124,58,237,0.06), rgba(61,213,168,0.05))',marginBottom:'14px'}},
+      h('span',{style:{width:'26px',height:'26px',borderRadius:'7px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(135deg,#7C3AED,#3DD5A8)'}}, this.bIcon(['m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z'],'#fff',14)),
+      h('div',{style:{fontSize:'13px',color:'var(--tv-text-2)',lineHeight:'1.5'}}, hint));
+    const sectionHead=(label,right,color,paths)=>h('div',{style:{display:'flex',alignItems:'center',gap:'9px',margin:'4px 0 8px'}},
+      h('span',{style:{width:'24px',height:'24px',borderRadius:'7px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background: color==='red'?'var(--tv-red-bg)':'var(--tv-green-bg)',color: color==='red'?'var(--tv-red-text)':'var(--tv-green-text)'}}, this.bIcon(paths,'currentColor',14)),
+      h('span',{style:{fontSize:'14px',fontWeight:700,color:'var(--tv-text)'}}, label),
+      h('span',{style:{flex:1}}),
+      h('span',{style:{fontSize:'12px',color:'var(--tv-muted)'}}, right));
+    let inner;
+    if (c.filter) {
+      inner=h('div',{}, sectionHead('Session','window','green',['M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z','M12 8v4l3 2']),
+        h('div',{style:{display:'flex',flexDirection:'column',gap:'8px'}}, ...c.opts.map(o=>this.builderOptionRow(o, cfg.opt===o.id, 'filter'))));
+    } else {
+      inner=h('div',{},
+        sectionHead('Buy','entry condition','green',['M12 19V5','m5 12 7-7 7 7']),
+        h('div',{style:{display:'flex',flexDirection:'column',gap:'8px'}}, ...c.buy.map(o=>this.builderOptionRow(o, cfg.buy===o.id, 'buy'))),
+        h('div',{style:{height:'1px',background:'var(--tv-border)',margin:'16px 0'}}),
+        sectionHead('Sell','exit condition','red',['M12 5v14','m5 12 7 7 7-7']),
+        h('div',{style:{display:'flex',flexDirection:'column',gap:'8px'}}, ...c.sell.map(o=>this.builderOptionRow(o, cfg.sell===o.id, 'sell'))));
+    }
+    const actions=h('div',{style:{display:'flex',gap:'10px',marginTop:'16px'}},
+      h('button',{type:'button',onClick:()=>this.cancelConfigure(),style:{height:'40px',padding:'0 16px',fontFamily:'inherit',fontSize:'13px',fontWeight:600,color:'var(--tv-text-2)',background:'var(--tv-surface)',border:'1px solid var(--tv-border-2)',borderRadius:'var(--tv-radius-md)',cursor:'pointer'}},'Cancel'),
+      h('button',{type:'button',onClick:()=>this.confirmIndicator(),style:{flex:1,height:'40px',display:'flex',alignItems:'center',justifyContent:'center',gap:'7px',fontFamily:'inherit',fontSize:'13px',fontWeight:700,color:'var(--tv-text)',background:'var(--tv-surface-2)',border:'1px solid var(--tv-border-2)',borderRadius:'var(--tv-radius-md)',cursor:'pointer'}}, this.bIcon(['M20 6 9 17l-5-5'],'currentColor',15),(cfg.editIndex!=null?'Save changes':'Confirm — add to strategy')));
+    return h('div',{style:{borderLeft:'3px solid #7C3AED',paddingLeft:'14px'}}, hintBar, inner, actions);
+  }
+  builderIndicatorsBody() {
+    const h=React.createElement; const st=this.state; const children=[];
+    if (st.pickedIndicators.length>0 && !st.builderPicking) {
+      children.push(h('div',{key:'sum',style:{display:'flex',flexDirection:'column',gap:'10px',marginBottom:'14px'}}, ...st.pickedIndicators.map((p,i)=>this.builderSummaryCard(p,i))));
+    }
+    if (st.configuringIndicator) {
+      children.push(h('div',{key:'cfg'}, this.builderConfigPanel()));
+      children.push(h('button',{key:'add',type:'button',disabled:true,style:{marginTop:'14px',width:'100%',padding:'13px',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',fontFamily:'inherit',fontSize:'13px',fontWeight:600,color:'var(--tv-muted)',background:'transparent',border:'1.5px dashed var(--tv-border-2)',borderRadius:'var(--tv-radius-lg)',cursor:'not-allowed',opacity:0.6}}, this.bIcon(['M12 5v14','M5 12h14'],'currentColor',16),'Add another indicator'));
+    } else if (st.builderPicking || st.pickedIndicators.length===0) {
+      children.push(h('div',{key:'pick'}, this.builderPicker()));
+    } else {
+      children.push(h('button',{key:'add',type:'button',onClick:()=>this.setState({builderPicking:true}),style:{width:'100%',padding:'13px',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',fontFamily:'inherit',fontSize:'13px',fontWeight:600,color:'var(--tv-text-2)',background:'transparent',border:'1.5px dashed var(--tv-border-2)',borderRadius:'var(--tv-radius-lg)',cursor:'pointer'}}, this.bIcon(['M12 5v14','M5 12h14'],'currentColor',16),'Add another indicator'));
+    }
+    return h('div',{style:{padding:'16px'}}, ...children);
+  }
+
+  builderCondNames() {
+    const cat=this.builderCatalog(); const buy=[]; const sell=[];
+    const short=(k,c)=> k==='session'?'Session':c.name;
+    this.state.pickedIndicators.forEach(p=>{ const c=cat[p.key]; if(!c) return;
+      if(c.filter){ buy.push(short(p.key,c)); }
+      else { const bo=c.buy.find(x=>x.id===p.buy); if(bo&&bo.chip) buy.push(short(p.key,c)); const so=c.sell.find(x=>x.id===p.sell); if(so&&so.chip) sell.push(short(p.key,c)); }
+    });
+    return { buy, sell };
+  }
+  builderLogicOptionRow(opt, selected, isBuy) {
+    const h=React.createElement;
+    const accent=isBuy?'var(--tv-green)':'#F87171';
+    const softBg=isBuy?'var(--tv-green-bg)':'var(--tv-red-bg)';
+    const softBd=isBuy?'var(--tv-green-border)':'var(--tv-red-border)';
+    const tagSty={green:{background:'var(--tv-green-bg)',color:'var(--tv-green-text)',border:'1px solid var(--tv-green-border)'},purple:{background:'rgba(124,58,237,0.10)',color:'#7C3AED',border:'1px solid rgba(124,58,237,0.25)'},amber:{background:'var(--tv-amber-bg)',color:'var(--tv-amber-text)',border:'1px solid var(--tv-amber-border)'}}[opt.tagKind];
+    return h('button',{key:opt.id,type:'button',onClick:()=>this.setState(isBuy?{buyMode:opt.id}:{sellMode:opt.id}),
+      style:{display:'flex',alignItems:'flex-start',gap:'11px',width:'100%',textAlign:'left',padding:'12px 14px',borderRadius:'var(--tv-radius-md)',cursor:'pointer',fontFamily:'inherit', background:selected?softBg:'var(--tv-surface)', border:selected?('1px solid '+softBd):'1px solid var(--tv-border)'}},
+      h('span',{style:{width:'20px',height:'20px',borderRadius:'50%',flexShrink:0,marginTop:'1px',display:'flex',alignItems:'center',justifyContent:'center', background:selected?accent:'transparent', border:selected?'none':'2px solid var(--tv-border-2)'}}, selected? this.bIcon(['M20 6 9 17l-5-5'],'#fff',12):null),
+      h('span',{style:{display:'flex',flexDirection:'column',gap:'4px',minWidth:0}},
+        h('span',{style:{display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap'}},
+          h('span',{style:{fontSize:'13px',fontWeight:700,color:'var(--tv-text)'}}, opt.label),
+          h('span',{style:{fontSize:'9px',fontWeight:700,padding:'2px 7px',borderRadius:'4px',whiteSpace:'nowrap',...tagSty}}, opt.tag)),
+        h('span',{style:{fontSize:'12px',color:'var(--tv-muted)',lineHeight:'1.4'}}, opt.desc)));
+  }
+  builderLogicCard(kind) {
+    const h=React.createElement; const st=this.state; const isBuy=kind==='buy';
+    const names=this.builderCondNames(); const list=isBuy?names.buy:names.sell; const n=list.length; const maj=Math.max(1,Math.ceil(n/2));
+    const mode=isBuy?st.buyMode:st.sellMode; const editing=st.logicEdit===kind;
+    const accent=isBuy?'var(--tv-green)':'#F87171';
+    const titleColor=isBuy?'var(--tv-green-text)':'var(--tv-red-text)';
+    const softBg=isBuy?'var(--tv-green-bg)':'var(--tv-red-bg)';
+    const softBd=isBuy?'var(--tv-green-border)':'var(--tv-red-border)';
+    const sub=isBuy
+      ? (mode==='all'?('All '+n+' conditions must agree'):mode==='most'?('Any '+maj+' of '+n+' conditions must agree'):('Any 1 of '+n+' conditions fires'))
+      : (mode==='any'?'First exit condition wins':mode==='most'?('Any '+maj+' of '+n+' exit conditions wins'):'All exit conditions must clear');
+    const body=isBuy
+      ? (mode==='all'?('All '+n+' conditions must be true at the same time to trigger a buy'):mode==='most'?('At least '+maj+' of '+n+' conditions must be true to trigger a buy'):'Any single condition is enough to trigger a buy')
+      : (mode==='any'?'First exit condition to fire closes the trade immediately':mode==='most'?('Exits once at least '+maj+' of '+n+' exit conditions are true'):'Trade closes only when every exit condition is true');
+    const arrow=isBuy?['M12 19V5','m5 12 7-7 7 7']:['M12 5v14','m5 12 7 7 7-7'];
+    const options=isBuy?[
+      {id:'all', label:'All must agree', tag:'Strictest', tagKind:'green', desc:(list.join(' AND ')||'All conditions')+' — all true at once.'},
+      {id:'most',label:'Most must agree', tag:'Flexible', tagKind:'purple', desc:'At least '+maj+' of '+n+' must be true.'},
+      {id:'any', label:'Any one triggers entry', tag:'Most signals', tagKind:'amber', desc:(list.join(' OR ')||'Any condition')+' — any one fires.'},
+    ]:[
+      {id:'any', label:'Any one triggers exit', tag:'Safest', tagKind:'green', desc:(list.join(' OR ')||'Any condition')+' — first to fire exits.'},
+      {id:'most',label:'Most must agree', tag:'Flexible', tagKind:'purple', desc:'At least '+maj+' of '+n+' must be true to exit.'},
+      {id:'all', label:'All must clear', tag:'Holds longest', tagKind:'amber', desc:(list.join(' AND ')||'All conditions')+' — all true to exit.'},
+    ];
+    const hintTail=isBuy
+      ? (mode==='all'?('Requiring all '+n+' gives you the highest signal quality with your setup.'):mode==='most'?'Requiring a majority balances signal quality with trade frequency.':'Any one firing maximises how often you trade.')
+      : (mode==='any'?'Exiting on the first signal protects profits fastest.':mode==='most'?'Waiting for a majority avoids premature exits.':'Holding until all clear keeps you in winners longest.');
+    const header=h('div',{style:{display:'flex',alignItems:'center',gap:'12px',padding:'14px 16px'}},
+      h('span',{style:{width:'34px',height:'34px',borderRadius:'9px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:softBg,color:titleColor}}, this.bIcon(arrow,'currentColor',17)),
+      h('div',{style:{flex:1,minWidth:0}},
+        h('div',{style:{fontSize:'15px',fontWeight:700,color:titleColor}}, isBuy?'Buy logic':'Sell logic'),
+        h('div',{style:{fontSize:'12px',color:'var(--tv-muted)',marginTop:'2px'}}, sub)),
+      h('button',{type:'button',onClick:()=>this.showToast('AI is reviewing your '+kind+' logic…'),style:{display:'flex',alignItems:'center',gap:'5px',height:'30px',padding:'0 11px',fontFamily:'inherit',fontSize:'12px',fontWeight:600,color:'#7C3AED',background:'rgba(124,58,237,0.08)',border:'1px solid rgba(124,58,237,0.22)',borderRadius:'var(--tv-radius-md)',cursor:'pointer',whiteSpace:'nowrap'}}, this.bIcon(['m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z'],'currentColor',13),'Ask AI'),
+      h('button',{type:'button',onClick:()=>this.setState(s=> s.logicEdit===kind ? {logicEdit:null} : {logicEdit:kind, logicSnap:(isBuy?s.buyMode:s.sellMode)}),style:{display:'flex',alignItems:'center',gap:'5px',height:'30px',padding:'0 11px',fontFamily:'inherit',fontSize:'12px',fontWeight:600,color:editing?'#7C3AED':'var(--tv-text-2)',background:editing?'rgba(124,58,237,0.08)':'var(--tv-surface)',border:'1px solid '+(editing?'rgba(124,58,237,0.25)':'var(--tv-border-2)'),borderRadius:'var(--tv-radius-md)',cursor:'pointer',whiteSpace:'nowrap'}}, this.bIcon(['M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7','M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z'],'currentColor',13),'Edit'));
+    let lower;
+    if (editing) {
+      lower=h('div',{style:{borderTop:'1px solid var(--tv-border)',padding:'14px 16px',display:'flex',flexDirection:'column',gap:'10px'}},
+        h('div',{style:{display:'flex',alignItems:'flex-start',gap:'11px',padding:'12px 14px',borderRadius:'var(--tv-radius-md)',background:'linear-gradient(135deg, rgba(124,58,237,0.06), rgba(61,213,168,0.05))'}},
+          h('span',{style:{width:'26px',height:'26px',borderRadius:'7px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(135deg,#7C3AED,#3DD5A8)'}}, this.bIcon(['m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z'],'#fff',14)),
+          h('div',{style:{fontSize:'13px',color:'var(--tv-text-2)',lineHeight:'1.5'}}, 'You have ', h('span',{style:{color:'#7C3AED',fontWeight:600}}, n+(isBuy?' buy conditions':' exit conditions')), '. ', hintTail)),
+        ...options.map(o=>this.builderLogicOptionRow(o, mode===o.id, isBuy)),
+        h('div',{style:{display:'flex',gap:'10px',marginTop:'4px'}},
+          h('button',{type:'button',onClick:()=>this.setState(s=>(isBuy?{logicEdit:null,buyMode:s.logicSnap}:{logicEdit:null,sellMode:s.logicSnap})),style:{height:'40px',padding:'0 16px',fontFamily:'inherit',fontSize:'13px',fontWeight:600,color:'var(--tv-text-2)',background:'var(--tv-surface)',border:'1px solid var(--tv-border-2)',borderRadius:'var(--tv-radius-md)',cursor:'pointer'}},'Cancel'),
+          h('button',{type:'button',onClick:()=>this.setState({logicEdit:null}),style:{flex:1,height:'40px',display:'flex',alignItems:'center',justifyContent:'center',gap:'7px',fontFamily:'inherit',fontSize:'13px',fontWeight:700,color:'var(--tv-text)',background:'var(--tv-surface-2)',border:'1px solid var(--tv-border-2)',borderRadius:'var(--tv-radius-md)',cursor:'pointer'}}, this.bIcon(['M20 6 9 17l-5-5'],'currentColor',15),'Confirm')));
+    } else {
+      lower=h('div',{style:{display:'flex',alignItems:'center',gap:'10px',padding:'11px 16px',background:softBg,borderTop:'1px solid '+softBd}},
+        h('span',{style:{width:'20px',height:'20px',borderRadius:'50%',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:accent}}, this.bIcon(['M20 6 9 17l-5-5'],'#fff',12)),
+        h('span',{style:{fontSize:'13px',color:'var(--tv-text)',fontWeight:500}}, body));
+    }
+    return h('div',{style:{border:'1px solid var(--tv-border)',borderLeft:'3px solid '+accent,borderRadius:'var(--tv-radius-lg)',overflow:'hidden',background:'var(--tv-surface)'}}, header, lower);
+  }
+  builderConditionsBody() {
+    const h=React.createElement;
+    return h('div',{style:{padding:'16px',display:'flex',flexDirection:'column',gap:'12px'}}, this.builderLogicCard('buy'), this.builderLogicCard('sell'));
+  }
+
+  builderSegmented(label, val, opts, onPick) {
+    const h=React.createElement;
+    return h('div',{style:{display:'flex',flexDirection:'column',gap:'8px'}},
+      h('div',{style:{fontSize:'13px',fontWeight:700,color:'var(--tv-text)'}}, label),
+      h('div',{style:{display:'flex',gap:'8px',flexWrap:'wrap'}}, ...opts.map(o=>{
+        const sel=val===o.id;
+        return h('button',{key:o.id,type:'button',onClick:()=>onPick(o.id), style:{padding:'9px 14px',fontFamily:'inherit',fontSize:'13px',fontWeight:600,borderRadius:'var(--tv-radius-md)',cursor:'pointer', background: sel?'rgba(124,58,237,0.08)':'var(--tv-surface)', color: sel?'#7C3AED':'var(--tv-text-2)', border:'1px solid '+(sel?'rgba(124,58,237,0.30)':'var(--tv-border-2)')}}, o.label);
+      })));
+  }
+  builderTradeMgmtBody() {
+    const h=React.createElement; const st=this.state;
+    return h('div',{style:{padding:'18px 16px',display:'flex',flexDirection:'column',gap:'22px'}},
+      h('div',{style:{fontSize:'13px',color:'var(--tv-text-2)',lineHeight:'1.5'}},'Set how each trade is sized and exited. AI suggests sensible defaults — adjust to your risk appetite.'),
+      this.builderSegmented('Stop loss', st.tmStop, [{id:'atr',label:'ATR-based'},{id:'fixed',label:'Fixed %'},{id:'none',label:'None'}], (v)=>this.setState({tmStop:v})),
+      this.builderSegmented('Take profit', st.tmTp, [{id:'1r',label:'1R'},{id:'2r',label:'2R'},{id:'3r',label:'3R'},{id:'trail',label:'Trailing'}], (v)=>this.setState({tmTp:v})),
+      this.builderSegmented('Risk per trade', st.tmRisk, [{id:'0.5',label:'0.5%'},{id:'1',label:'1%'},{id:'2',label:'2%'}], (v)=>this.setState({tmRisk:v})));
+  }
+
+  builderFooterEl() {
+    const h=React.createElement; const st=this.state; const step=st.builderStep;
+    if (step==='mode') return null;
+    const ghost={height:'40px',padding:'0 16px',fontFamily:'inherit',fontSize:'13px',fontWeight:600,color:'var(--tv-text-2)',background:'var(--tv-surface)',border:'1px solid var(--tv-border-2)',borderRadius:'var(--tv-radius-md)',cursor:'pointer'};
+    const saveBtn=h('button',{key:'save',type:'button',onClick:()=>this.saveDraft(),style:{display:'flex',alignItems:'center',gap:'7px',height:'40px',padding:'0 16px',fontFamily:'inherit',fontSize:'13px',fontWeight:600,color:'var(--tv-text-2)',background:'var(--tv-surface-2)',border:'1px solid var(--tv-border-2)',borderRadius:'var(--tv-radius-md)',cursor:'pointer'}}, this.bIcon(['M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z','M17 21v-8H7v8','M7 3v5h8'],'currentColor',14),'Save');
+    let left, right;
+    if (step==='indicators') {
+      const ready = st.pickedIndicators.length>0 && !st.configuringIndicator;
+      left=h('button',{type:'button',onClick:()=>this.setState({drawerOpen:false}),style:ghost},'Cancel');
+      right=[saveBtn, h('button',{key:'next',type:'button',disabled:!ready,onClick:()=>this.builderGoStep('conditions'), style:{display:'flex',alignItems:'center',gap:'7px',height:'40px',padding:'0 18px',fontFamily:'inherit',fontSize:'13px',fontWeight:700,color:'#fff',background: ready?'#7C3AED':'#C4B5FD',border:'none',borderRadius:'var(--tv-radius-md)',cursor: ready?'pointer':'not-allowed'}}, 'Next: Conditions', this.bIcon(['M5 12h14','m12 5 7 7-7 7'],'#fff',14))];
+    } else {
+      left=h('button',{type:'button',onClick:()=>this.builderGoStep(step==='trademgmt'?'conditions':'indicators'),style:{...ghost,display:'flex',alignItems:'center',gap:'7px'}}, this.bIcon(['M19 12H5','m12 19-7-7 7-7'],'currentColor',14),'Back');
+      right=[saveBtn, h('button',{key:'bt',type:'button',onClick:()=>this.saveAndBacktest(), style:{display:'flex',alignItems:'center',gap:'7px',height:'40px',padding:'0 18px',fontFamily:'inherit',fontSize:'13px',fontWeight:700,color:'#101B25',background:'var(--lime)',border:'none',borderRadius:'var(--tv-radius-md)',cursor:'pointer'}}, this.bIcon(['M9 3h6','M10 3v5l-4 9a2 2 0 0 0 2 3h8a2 2 0 0 0 2-3l-4-9V3'],'#101B25',14), 'Save & backtest', this.bIcon(['M5 12h14','m12 5 7 7-7 7'],'#101B25',14))];
+    }
+    return h('div',{style:{flexShrink:0,padding:'12px 16px',borderTop:'1px solid var(--tv-border)',display:'flex',alignItems:'center',gap:'10px'}}, left, h('div',{style:{flex:1}}), ...right);
+  }
+
+  renderVals() {
+    const st = this.state;
+    const all = this.mockData();
+
+    // Filter + search
+    let items = st.filter === 'all' ? all : all.filter(s => s.status === 'locked' || s.status === st.filter);
+    if (st.search) items = items.filter(s => s.status === 'locked' || s.name.toLowerCase().includes(st.search.toLowerCase()));
+
+    // Sort (locked always last)
+    const sorted = [...items].sort((a,b) => {
+      if (a.status==='locked') return 1; if (b.status==='locked') return -1;
+      if (st.sort==='winrate') return b.wr - a.wr;
+      if (st.sort==='pnl') { const pa=a.pnlPos===false?-Math.abs(parseFloat(a.pnl.replace(/[^0-9.]/g,''))):parseFloat(a.pnl.replace(/[^0-9.]/g,''))||0; const pb=b.pnlPos===false?-Math.abs(parseFloat(b.pnl.replace(/[^0-9.]/g,''))):parseFloat(b.pnl.replace(/[^0-9.]/g,''))||0; return pb-pa; }
+      if (st.sort==='name') return a.name.localeCompare(b.name);
+      return 0;
+    });
+
+    const live  = all.filter(s=>s.status==='live').length;
+    const paper = all.filter(s=>s.status==='paper').length;
+    const draft = all.filter(s=>s.status==='draft').length;
+    const total = all.filter(s=>s.status!=='locked').length;
+
+    return {
+      ...this.buildSidebarNavVals(),
+      clockRef: (el) => { this._clockEl = el; if (el) el.textContent = this.fmtClock(); },
+      topbarSub: `${total} strategies · ${live} live · ${paper} paper · ${draft} draft`,
+      summaryStats: this.buildSummary(all),
+      filterPillsEl: this.buildFilterPillsEl(all, st.filter),
+      cards: sorted.map(s => this.buildCard(s)),
+      showEmpty: sorted.length === 0,
+      searchVal: st.search,
+      onSearch: (e) => this.setState({ search: e.target.value }),
+      onSort: (e) => this.setState({ sort: e.target.value }),
+      splitOpen: st.splitOpen, splitExpanded: st.splitOpen ? 'true' : 'false',
+      onToggleSplit: () => this.setState(s => ({ splitOpen: !s.splitOpen })),
+      onCloseSplit: () => this.setState({ splitOpen: false }),
+      onNewStrategy: () => this.openBuilder(),
+      splitItems: this.buildSplitItems(),
+      drawerOpen: st.drawerOpen,
+      builderEl: st.drawerOpen ? this.builderEl() : null,
+      onCloseDrawer: () => this.setState({ drawerOpen: false }),
+      drawerStop: (e) => e.stopPropagation(),
+      goOverview: () => { try { window.location.href = 'Overview.dc.html'; } catch(e){} },
+      goStrategies: () => {},
+      goAnalysis: () => { try { window.location.href = 'Analysis.dc.html'; } catch(e){} },
+      goChart: () => { try { window.location.href = 'Chart.dc.html'; } catch(e){} },
+      goAudit: () => { try { window.location.href = 'Audit.dc.html'; } catch(e){} },
+      goSoon: () => this.showToast('That page is coming soon'),
+      themeClass: this.state.dark ? 'tv-dark' : '',
+      themeIsLight: !this.state.dark,
+      themeIsDark: this.state.dark,
+      onToggleTheme: () => this.toggleTheme(),
+      // nav click stubs (pages not yet built — no-op for now)
+      onNavOverview: () => {}, onNavStrategies: () => {}, onNavAnalysis: () => {},
+      onNavChart: () => {}, onNavJournal: () => {}, onNavAudit: () => {},
+      onNavAccounts: () => {}, onNavConfigure: () => {}, onNavSignal: () => {}, onNavSettings: () => {},
+      // version history drawer
+      vhOpen: st.vhOpen,
+      vhCardName: (() => { const c = this.mockData().find(x => x.id === st.vhCardId); return c ? c.name : ''; })(),
+      vhItems: st.vhOpen ? (this.versionData()[st.vhCardId] || []).map(v => ({ id: v.id, el: this.buildVersionItemEl(v, st.vhCardId) })) : [],
+      onCloseVh: () => this.setState({ vhOpen: false, vhHover: null }),
+      vhStop: (e) => e.stopPropagation(),
+      toastVisible: !!st.toastMsg,
+      toastMsg: st.toastMsg || '',
+    };
+  }
+}
+</script>
+</body>
+</html>

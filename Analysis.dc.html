@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="tokens.css">
+  <style>
+    /* analysis-only soft tokens not defined by _Shell */
+    :root { --profit-soft:rgba(21,128,61,.12); --loss-soft:rgba(220,38,38,.12); }
+    .tv-dark { --profit-soft:rgba(34,197,94,.15); --loss-soft:rgba(248,113,113,.15); }
+  </style>
+</helmet>
+<dc-import name="_Shell"
+  active-page="analysis"
+  page-title="Analysis"
+  page-subtitle="{{ sub }}"
+  on-nav-overview="{{ goOverview }}"
+  on-nav-strategies="{{ goStrategies }}"
+  on-nav-analysis="{{ goAnalysis }}"
+  on-nav-chart="{{ goChart }}"
+  on-nav-journal="{{ goSoon }}"
+  on-nav-audit="{{ goAudit }}"
+  on-nav-accounts="{{ goSoon }}"
+  on-nav-configure="{{ goSoon }}"
+  on-nav-signal="{{ goSoon }}"
+  on-nav-settings="{{ goSoon }}"
+  hint-size="100%,100%">
+  {{ analysisEl }}
+</dc-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  state = { anaCollapsed: [], aiInsightsOpen: false, toastMsg: null, toastKind: 'success' };
+
+  componentWillUnmount() { if (this._toastTimer) clearTimeout(this._toastTimer); }
+  toast(msg, kind) {
+    this.setState({ toastMsg: msg, toastKind: kind || 'success' });
+    if (this._toastTimer) clearTimeout(this._toastTimer);
+    this._toastTimer = setTimeout(() => this.setState({ toastMsg: null }), 3200);
+  }
+
+  e(t, p, ...k) { return React.createElement(t, p, ...k); }
+  d(style, ...k) { return React.createElement('div', { style }, ...k); }
+  sp(style, ...k) { return React.createElement('span', { style }, ...k); }
+  btn(p, ...k) { return React.createElement('button', { type: 'button', ...p }, ...k); }
+
+  analysisGroups() {
+    return [
+      {id:'g1',name:'Momentum Breakout',logic:'MACD · RSI · Session filter',tileBg:'linear-gradient(135deg,#6366F1,#2DD4BF)',insight:{b:'Best on ES 5m',t:' (score 74). The 5m timeframe consistently outperforms 15m for this logic — faster signal, same win rate. Instance 1 is your strongest candidate to deploy.'},instances:[
+        {n:1,asset:'ES Futures',tf:'5m',preset:'Intraday',cfg:'1.5× ATR stop · 2R TP · 1% risk · 3M data · Jun 11',ret:'+34.2%',retPos:true,wr:'67.4%',dd:'-8.3%',score:74,status:'live'},
+        {n:2,asset:'ES Futures',tf:'15m',preset:'Swing',cfg:'2× ATR stop · 3R TP · 1% risk · 6M data · Jun 10',ret:'+18.7%',retPos:true,wr:'58.1%',dd:'-5.1%',score:61,status:'paper'},
+        {n:3,asset:'NQ Futures',tf:'5m',preset:'Intraday',cfg:'1.5× ATR stop · 2R TP · 0.5% risk · 3M data · Jun 8',ret:'+28.6%',retPos:true,wr:'63.1%',dd:'-9.7%',score:58,status:'draft'},
+      ]},
+      {id:'g2',name:'VWAP Scalper',logic:'VWAP · EMA · Volume filter',tileBg:'linear-gradient(135deg,#0D9488,#2DD4BF)',insight:{b:'EUR/USD works, GBP/USD does not.',t:' Same logic, very different results. The spread on GBP/USD is likely eating your edge on a scalping timeframe. Consider removing the GBP/USD instance.'},instances:[
+        {n:1,asset:'EUR/USD',tf:'1H',preset:'Swing',cfg:'ATR stop · 2R TP · 1% risk · 6M data · Jun 9',ret:'+22.3%',retPos:true,wr:'61.2%',dd:'-7.1%',score:71,status:'paper'},
+        {n:2,asset:'GBP/USD',tf:'1H',preset:'Swing',cfg:'ATR stop · 2R TP · 1% risk · 3M data · Jun 8',ret:'-4.8%',retPos:false,wr:'41.2%',dd:'-12.4%',score:44,status:'draft'},
+      ]},
+      {id:'g3',name:'Mean Reversion RSI',logic:'RSI · Bollinger Bands · Session filter',tileBg:'linear-gradient(135deg,#D97706,#F59E0B)',insight:{b:'Only 1 instance —',t:' not enough data for cross-instance comparison. Run 2–3 more configurations (different timeframes or assets) to see if this logic generalises.'},instances:[
+        {n:1,asset:'NQ Futures',tf:'5m',preset:'Intraday',cfg:'ATR stop · 2R TP · 1% risk · 6M data · Jun 10',ret:'+18.7%',retPos:true,wr:'58.1%',dd:'-5.1%',score:61,status:'paper'},
+      ]},
+    ];
+  }
+
+  buildAnalysisEl() {
+    const st = this.state;
+    const sg = (size,col,...kids) => this.e('svg',{width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:col,strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round',style:{flexShrink:0}},...kids);
+    const sp = (d) => this.e('path',{d});
+    const spark = [sp('M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z'),sp('M20 3v4'),sp('M22 5h-4'),sp('M4 17v2'),sp('M5 18H3')];
+    const groups = this.analysisGroups();
+    const gicon = {
+      g1:[this.e('circle',{cx:12,cy:12,r:3}),sp('M12 2a4 4 0 0 0-4 4 4 4 0 0 0-4 4 4 4 0 0 0 0 4 4 4 0 0 0 4 4 4 4 0 0 0 8 0 4 4 0 0 0 4-4 4 4 0 0 0 0-4 4 4 0 0 0-4-4 4 4 0 0 0-4-4Z')],
+      g2:[sp('M22 12h-4l-3 9L9 3l-3 9H2')],
+      g3:[sp('m16 3 4 4-4 4'),sp('M20 7H4'),sp('m8 21-4-4 4-4'),sp('M4 17h16')]
+    };
+    const scoreColor = (s) => s>=70?'var(--profit)':s>=60?'var(--accent)':s>=50?'var(--warn)':'var(--loss)';
+    const ringColor = (z) => z==='live'?'var(--profit)':z==='paper'?'#6366F1':'var(--muted)';
+    const stBadge = {live:{bg:'var(--profit-soft)',c:'var(--profit)',t:'LIVE'},paper:{bg:'#EEF2FF',c:'#4338CA',t:'PAPER'},draft:{bg:'var(--subtle)',c:'var(--muted)',t:'DRAFT'}};
+    const action = (inst) => inst.status==='live'?'View':inst.status==='paper'?(inst.score>=70?'Deploy':'Tweak'):(inst.score>=55?'Deploy':'Needs work');
+    const stat = (label,val,col) => this.d({display:'flex',flexDirection:'column',alignItems:'flex-start',minWidth:'62px'},this.sp({fontSize:'13px',fontWeight:700,color:col,fontVariantNumeric:'tabular-nums',display:'block'},val),this.sp({fontSize:'9px',fontWeight:600,color:'var(--muted)',textTransform:'uppercase',letterSpacing:'0.05em',marginTop:'2px'},label));
+
+    const instRow = (g,inst) => {
+      const ss = stBadge[inst.status]; const act = action(inst);
+      const go = () => { try { window.location.href = 'AnalysisDetail.dc.html'; } catch(e) {} };
+      return this.e('div',{key:g.id+inst.n,onClick:go,style:{display:'flex',alignItems:'center',gap:'16px',padding:'12px 16px',borderTop:'1px solid var(--border)',cursor:'pointer'}},
+        this.d({width:'26px',height:'26px',borderRadius:'50%',border:`2px solid ${ringColor(inst.status)}`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0},this.sp({fontSize:'11px',fontWeight:700,color:ringColor(inst.status)},String(inst.n))),
+        this.d({flex:1,minWidth:0},this.sp({fontSize:'13px',fontWeight:700,color:'var(--head)',display:'block',marginBottom:'3px'},inst.asset+' · '+inst.tf+' · '+inst.preset),this.sp({fontSize:'12px',color:'var(--muted)',lineHeight:'1.4'},inst.cfg)),
+        this.d({display:'flex',alignItems:'center',gap:'14px',flexShrink:0},stat('Return',inst.ret,inst.retPos?'var(--profit)':'var(--loss)'),stat('Win rate',inst.wr,'var(--profit)'),stat('Max DD',inst.dd,'var(--loss)')),
+        this.sp({fontSize:'20px',fontWeight:800,color:scoreColor(inst.score),fontVariantNumeric:'tabular-nums',flexShrink:0,minWidth:'28px',textAlign:'center'},String(inst.score)),
+        this.sp({fontSize:'9px',fontWeight:700,padding:'3px 8px',borderRadius:'4px',textTransform:'uppercase',letterSpacing:'0.05em',background:ss.bg,color:ss.c,flexShrink:0,whiteSpace:'nowrap'},ss.t),
+        this.btn({onClick:(ev)=>{ev.stopPropagation(); if(act==='View')go(); else if(act==='Tweak')this.toast('Tweak '+g.name+' — opens the strategy builder','success'); else if(act==='Deploy')this.toast('Deploy '+inst.asset+' · '+inst.tf+' to paper?','warning'); else this.toast('Optimize '+g.name+' — needs more data before deploy','warning');},style:{display:'flex',alignItems:'center',gap:'7px',height:'34px',padding:'0 16px',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'10px',fontFamily:'var(--sans)',fontSize:'13px',fontWeight:700,color:'var(--head)',cursor:'pointer',whiteSpace:'nowrap',flexShrink:0}},act,sg(15,'currentColor',sp('M5 12h14'),sp('m12 5 7 7-7 7')))
+      );
+    };
+
+    const groupEl = (g) => {
+      const collapsed = st.anaCollapsed.includes(g.id);
+      return this.d({border:'1px solid var(--border)',borderRadius:'14px',overflow:'hidden',marginBottom:'16px',background:'var(--bg)'},
+        this.e('div',{onClick:()=>this.setState(s=>({anaCollapsed:s.anaCollapsed.includes(g.id)?s.anaCollapsed.filter(z=>z!==g.id):[...s.anaCollapsed,g.id]})),style:{display:'flex',alignItems:'center',gap:'13px',padding:'14px 16px',cursor:'pointer'}},
+          this.d({width:'36px',height:'36px',borderRadius:'11px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:g.tileBg},sg(20,'#fff',...(gicon[g.id]||[]))),
+          this.d({flex:1,minWidth:0},this.sp({fontSize:'14px',fontWeight:700,color:'var(--head)',display:'block',marginBottom:'2px'},g.name),this.sp({fontSize:'13px',color:'var(--muted)'},g.logic)),
+          this.sp({fontSize:'11px',fontWeight:600,padding:'4px 11px',borderRadius:'999px',background:'var(--subtle)',color:'var(--body)',border:'1px solid var(--border)',flexShrink:0,whiteSpace:'nowrap'},g.instances.length+(g.instances.length===1?' instance':' instances')),
+          sg(18,'var(--muted)',sp(collapsed?'m6 9 6 6 6-6':'m18 15-6-6-6 6'))
+        ),
+        collapsed?null:this.d({},
+          this.d({display:'flex',gap:'11px',alignItems:'flex-start',padding:'13px 18px',background:'linear-gradient(135deg, var(--accent-soft), rgba(45,212,191,0.12))',borderTop:'1px solid var(--accent-ring)'},
+            this.d({width:'26px',height:'26px',borderRadius:'50%',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(135deg,var(--accent),#2DD4BF)'},sg(14,'#fff',...spark)),
+            this.e('span',{style:{fontSize:'13px',color:'var(--body)',lineHeight:'1.5'}},this.sp({fontWeight:700,color:'var(--accent)'},g.insight.b),g.insight.t)
+          ),
+          ...g.instances.map(inst=>instRow(g,inst))
+        )
+      );
+    };
+
+    const insights = [
+      {color:'var(--profit)',soft:'var(--profit-soft)',ic:[this.e('polyline',{points:'22 7 13.5 15.5 8.5 10.5 2 17'}),this.e('polyline',{points:'16 7 22 7 22 13'})],b:'Tuesday and Wednesday NY open (9:30–11am) is your strongest window.',t:' Momentum Breakout and VWAP Scalper both peak during this window across ES and EUR/USD instances. 3 of 4 applicable instances agree.',conf:'High',pct:90},
+      {color:'var(--warn)',soft:'var(--warn-soft)',ic:[sp('M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'),this.e('line',{x1:12,y1:9,x2:12,y2:13}),sp('M12 17h.01')],b:'VWAP Scalper on GBP/USD is underperforming.',t:' Score 44 with -12.4% max drawdown. The same logic works on EUR/USD (score 71). Consider whether GBP/USD fits this strategy’s logic or remove that instance.',conf:'Medium',pct:62},
+      {color:'#6366F1',soft:'rgba(99,102,241,.12)',ic:[this.e('circle',{cx:12,cy:12,r:9}),sp('M12 7v5l3 3')],b:'Not enough data for Monday and Friday patterns.',t:' Your instances have less than 60 days of Monday/Friday data each. Run 3M+ backtests to get reliable day-of-week patterns.',conf:'Low — more data needed',pct:30},
+    ];
+    const insightCard = (i) => this.d({background:i.soft,border:`1px solid ${i.color}33`,borderRadius:'12px',padding:'13px 15px',marginBottom:'10px'},
+      this.d({display:'flex',gap:'12px',alignItems:'flex-start',marginBottom:'12px'},
+        sg(18,i.color,...i.ic),
+        this.e('span',{style:{fontSize:'13px',color:i.color,lineHeight:'1.55'}},this.sp({fontWeight:700},i.b),this.sp({opacity:0.82},i.t))
+      ),
+      this.d({display:'flex',alignItems:'center',gap:'12px'},
+        this.sp({fontSize:'12px',fontWeight:600,color:i.color},'Confidence'),
+        this.d({flex:1,height:'7px',borderRadius:'999px',background:'var(--subtle)',overflow:'hidden'},this.d({width:i.pct+'%',height:'100%',borderRadius:'999px',background:i.color})),
+        this.sp({fontSize:'12px',fontWeight:700,color:i.color,whiteSpace:'nowrap'},i.conf)
+      )
+    );
+    const aiBar = this.d({border:'1px solid var(--border)',borderRadius:'14px',overflow:'hidden',marginBottom:'18px',background:'var(--bg)'},
+      this.e('div',{onClick:()=>this.setState(s=>({aiInsightsOpen:!s.aiInsightsOpen})),style:{display:'flex',alignItems:'center',gap:'13px',padding:'14px 16px',cursor:'pointer'}},
+        this.d({width:'36px',height:'36px',borderRadius:'50%',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(135deg,var(--accent),#2DD4BF)'},sg(20,'#fff',...spark)),
+        this.d({flex:1,minWidth:0},this.sp({fontSize:'14px',fontWeight:700,color:'var(--head)',display:'block',marginBottom:'2px'},'AI insights — across all strategies'),this.sp({fontSize:'13px',color:'var(--muted)'},'Based on 6 instances · 8 months of data · updated 2 hours ago')),
+        sg(18,'var(--muted)',sp(st.aiInsightsOpen?'m18 15-6-6-6 6':'m6 9 6 6 6-6'))
+      ),
+      st.aiInsightsOpen?this.d({padding:'14px 18px 18px',borderTop:'1px solid var(--border)'},
+        ...insights.map(insightCard),
+        this.d({display:'flex',gap:'10px',alignItems:'flex-start',marginTop:'4px'},
+          sg(15,'var(--muted)',this.e('ellipse',{cx:12,cy:5,rx:9,ry:3}),sp('M3 5v14a9 3 0 0 0 18 0V5'),sp('M3 12a9 3 0 0 0 18 0')),
+          this.sp({fontSize:'12px',color:'var(--muted)',lineHeight:'1.5'},'AI is reading backtest data only — live data not yet connected. Insights will deepen as instances go live and real performance is recorded.')
+        )
+      ):null
+    );
+
+    const header = this.d({marginBottom:'18px'},this.sp({fontSize:'20px',fontWeight:700,color:'var(--head)',display:'block',marginBottom:'4px'},'Analysis'),this.sp({fontSize:'13px',color:'var(--muted)'},groups.length+' strategies · '+groups.reduce((a,g)=>a+g.instances.length,0)+' saved instances'));
+
+    const toastEl = st.toastMsg ? this.e('div',{role:'status',style:{position:'fixed',bottom:'20px',right:'20px',zIndex:300,background:'var(--head)',color:'var(--bg)',padding:'11px 16px',borderRadius:'9px',fontSize:'13px',fontWeight:500,boxShadow:'0 8px 24px rgba(15,23,36,0.22)',display:'flex',alignItems:'center',gap:'9px',maxWidth:'360px'}},
+      sg(15,st.toastKind==='warning'?'var(--warn)':'var(--profit)',this.e('circle',{cx:12,cy:12,r:10}),st.toastKind==='warning'?sp('M12 8v4M12 16h.01'):sp('M20 6 9 17l-5-5')),
+      this.sp({lineHeight:'1.4'},st.toastMsg)
+    ) : null;
+
+    return this.d({height:'100%',overflowY:'auto',padding:'20px'},header,aiBar,...groups.map(groupEl),toastEl);
+  }
+
+  renderVals() {
+    const groups = this.analysisGroups();
+    const total = groups.reduce((a,g)=>a+g.instances.length,0);
+    const goto = (file) => () => { try { window.location.href = file; } catch(e) {} };
+    return {
+      sub: `${groups.length} strategies · ${total} saved instances`,
+      analysisEl: this.buildAnalysisEl(),
+      goOverview:   goto('Overview.dc.html'),
+      goStrategies: goto('Strategies.dc.html'),
+      goChart:      goto('Chart.dc.html'),
+      goAudit:      goto('Audit.dc.html'),
+      goAnalysis:   () => {},
+      goSoon:       () => this.toast('That page is coming soon', 'warning'),
+    };
+  }
+}
+</script>
+</body>
+</html>

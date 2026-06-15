@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFFFFF; --card:#F8FAFC; --subtle:#F1F5F9; --border:#E2E8F0; --input:#CBD5E1;
+  --muted:#64718A; --body:#475569; --head:#1E293B;
+  --lime:#C8FF00; --lime-dark:#B0E000; --navy:#101B25; --navy-mid:#0C1720; --navy-light:#18242F;
+  --accent:#7C3AED; --accent-on:#FFFFFF; --accent-soft:rgba(124,58,237,.12); --accent-ring:rgba(124,58,237,.24); --link:#7C3AED;
+  --profit:#15803D; --loss:#DC2626; --warn:#F59E0B; --info:#3B82F6;
+  --warn-soft:rgba(245,158,11,.16); --warn-ink:#B45309;
+  --sb-bg:#101B25; --sb-fg:#9DAAB6; --sb-muted:#7E8C99; --sb-hover:#1B2731; --sb-border:#2A3640;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --sans:'Inter',ui-sans-serif,system-ui,sans-serif;
+}
+.tv-dark{
+  --bg:#0B131B; --card:#101B25; --subtle:#18242F; --border:#28333D; --input:#2F3C47;
+  --muted:#8492A0; --body:#AEB9C4; --head:#F1F4F7; --link:#A78BFA;
+  --navy:#18242F; --navy-mid:#101B25; --navy-light:#1C2832;
+  --accent:#C8FF00; --accent-on:#101B25; --accent-soft:rgba(200,255,0,.16); --accent-ring:rgba(200,255,0,.22);
+  --warn-soft:rgba(245,158,11,.20); --warn-ink:#FBBF24;
+  --profit:#22C55E; --loss:#F87171;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:var(--sans);color:var(--body);background:var(--bg);-webkit-font-smoothing:antialiased;}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px;border:2px solid var(--bg);}
+::-webkit-scrollbar-track{background:transparent;}
+.tv-stats{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;flex-shrink:0;}
+.tv-bottom{flex-shrink:0;}
+main > section{flex-shrink:0;}
+@media(max-width:1340px){.tv-stats{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:1024px){.tv-stats{grid-template-columns:repeat(2,1fr);}}
+.tv-bottom{display:grid;grid-template-columns:65fr 35fr;gap:12px;align-items:stretch;flex-shrink:0;}
+@media(max-width:1024px){.tv-bottom{grid-template-columns:1fr;}}
+.tv-filters{display:grid;grid-template-columns:1.6fr 2.1fr 1.1fr 0.9fr;gap:22px;align-items:end;}
+@media(max-width:900px){.tv-filters{grid-template-columns:1fr 1fr;}}
+.tv-tablewrap{overflow-x:auto;}
+@keyframes tvpulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+</style>
+</helmet>
+
+<div class="tv-root {{ themeClass }}" style="display:flex;height:100vh;width:100%;overflow:hidden;background:var(--bg);">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside style="{{ sbStyle }}">
+    <!-- Logo -->
+    <a onClick="{{ onNavOverview }}" style="display:flex;align-items:center;padding:18px 16px 16px;text-decoration:none;cursor:pointer;{{ logoJustify }}">
+      <img src="assets/tv-mark.svg" alt="TraderVault" style="{{ logoMarkStyle }}">
+      <img src="assets/tv-wordmark-dark.svg" alt="TraderVault" style="{{ logoWordmarkStyle }}">
+    </a>
+
+    <!-- Nav scroll -->
+    <nav role="menu" aria-label="Primary navigation" style="flex:1;overflow-y:auto;overflow-x:hidden;padding:6px 10px;display:flex;flex-direction:column;gap:2px;">
+
+      <a role="menuitem" aria-current="{{ navOverview.isCurrent }}" onClick="{{ onNavOverview }}" style="{{ navOverview }}" style-hover="background:rgba(202,255,51,0.13)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#CAFF33" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        <span style="{{ labelStyle }}">Overview</span>
+      </a>
+
+      <div style="{{ sectionStyle }}">STRATEGIES</div>
+
+      <a role="menuitem" onClick="{{ onNavStrategies }}" style="{{ navStrategies }}" style-hover="background:rgba(61,213,168,0.13)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#3DD5A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 6a9 9 0 0 1-9 9"/><path d="M18 9v-3h-3"/></svg>
+        <span style="{{ labelStyle }}">Strategies</span>
+      </a>
+      <a role="menuitem" onClick="{{ onNavAnalysis }}" style="{{ navAnalysis }}" style-hover="background:rgba(61,213,168,0.13)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#3DD5A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg>
+        <span style="{{ labelStyle }}">Analysis</span>
+      </a>
+
+      <div style="{{ sectionStyle }}">TRADING</div>
+
+      <a role="menuitem" onClick="{{ onNavChart }}" style="{{ navChart }}" style-hover="background:rgba(251,178,58,0.13)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FBB23A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="7"/><rect x="14" y="6" width="3" height="11"/></svg>
+        <span style="{{ labelStyle }}">Chart signals</span>
+      </a>
+      <a role="menuitem" onClick="{{ onNavAudit }}" style="{{ navAudit }}" style-hover="background:rgba(251,178,58,0.13)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FBB23A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        <span style="{{ labelStyle }}">Audit log</span>
+      </a>
+
+      <div style="{{ sectionStyle }}">MARKETPLACE</div>
+
+      <a role="menuitem" onClick="{{ onNavMarketplace }}" style="{{ navMarketplace }}" style-hover="background:rgba(248,113,113,0.13)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M2 7h20"/><path d="M12 7v15"/></svg>
+        <span style="{{ labelStyle }}">Marketplace</span>
+      </a>
+      <a role="menuitem" onClick="{{ onNavMySignals }}" style="{{ navMySignals }}" style-hover="background:rgba(248,113,113,0.13)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M4.9 19.1A10 10 0 0 1 4.9 5"/><path d="M7.8 16.2a6 6 0 0 1 0-8.4"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4"/><path d="M19.1 4.9a10 10 0 0 1 0 14.2"/></svg>
+        <span style="{{ labelStyle }}">My signals</span>
+      </a>
+
+
+    </nav>
+
+    <!-- Footer chrome -->
+    <div style="{{ footerStyle }}">
+      <div style="position:relative;padding:10px 12px;border-top:1px solid var(--sb-border);">
+        <!-- Account switcher menu (expands upward) -->
+        <div style="{{ acctMenuStyle }}">
+          <div style="padding:9px 12px 7px;font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--sb-muted);">SWITCH ACCOUNT</div>
+          <div style="height:1px;background:var(--sb-border);"></div>
+          <div style="padding:6px;display:flex;flex-direction:column;gap:2px;">
+            <button onClick="{{ onPickAlpacaPaper }}" style="{{ acctItemPaper }}" style-hover="background:var(--sb-hover)">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none;"></span>
+              <div style="min-width:0;text-align:left;flex:1;">
+                <div style="font-size:13px;font-weight:600;color:#fff;">Alpaca paper</div>
+                <div style="font-size:11px;color:var(--sb-muted);">Paper trading · $99,858.87</div>
+              </div>
+            </button>
+            <button onClick="{{ onPickAlpacaLive }}" style="{{ acctItemLive }}" style-hover="background:var(--sb-hover)">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--sb-muted);flex:none;"></span>
+              <div style="min-width:0;text-align:left;flex:1;">
+                <div style="font-size:13px;font-weight:600;color:#fff;">Alpaca live</div>
+                <div style="font-size:11px;color:var(--sb-muted);">Live trading · $24,107.40</div>
+              </div>
+            </button>
+            <button onClick="{{ onPickBinance }}" style="{{ acctItemBinance }}" style-hover="background:var(--sb-hover)">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--sb-muted);flex:none;"></span>
+              <div style="min-width:0;text-align:left;flex:1;">
+                <div style="font-size:13px;font-weight:600;color:#fff;">Binance Futures</div>
+                <div style="font-size:11px;color:var(--sb-muted);">Live trading · $12,540.18</div>
+              </div>
+            </button>
+          </div>
+          <div style="height:1px;background:var(--sb-border);"></div>
+          <button style="display:flex;align-items:center;gap:9px;width:100%;padding:10px 14px;background:none;border:none;color:var(--sb-fg);font-family:var(--sans);font-size:12px;font-weight:500;cursor:pointer;text-align:left;" style-hover="background:var(--sb-hover);color:#fff">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Connect new account
+          </button>
+        </div>
+        <!-- Account trigger -->
+        <button onClick="{{ onToggleAccts }}" style="{{ acctTriggerStyle }}" style-hover="background:var(--sb-hover)">
+          <div style="min-width:0;flex:1;text-align:left;{{ labelStyle }}">
+            <div style="font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--sb-muted);margin-bottom:5px;">ACCOUNT</div>
+            <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:6px;">Alpaca paper</div>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+              <span style="font-size:9px;font-weight:600;letter-spacing:0.06em;padding:2px 6px;border-radius:4px;background:rgba(59,130,246,.18);color:#7DB1FF;">ALPACA</span>
+              <span style="font-size:9px;font-weight:600;letter-spacing:0.06em;padding:2px 6px;border-radius:4px;background:rgba(148,163,184,.18);color:#A7B4C2;">PAPER</span>
+              <span style="font-family:var(--mono);font-size:12px;color:#fff;margin-left:auto;font-variant-numeric:tabular-nums;">$99,858.87</span>
+            </div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--sb-muted);transition:transform .15s;{{ acctChevron }}"><path d="m18 15-6-6-6 6"/></svg>
+        </button>
+      </div>
+      <div style="padding:14px 12px 14px;display:flex;flex-direction:column;gap:9px;border-top:1px solid var(--sb-border);">
+        <div style="{{ clockRowStyle }}">
+          <span style="width:6px;height:6px;border-radius:50%;background:var(--accent);flex:none;box-shadow:0 0 6px var(--accent);"></span>
+          <span style="font-family:var(--mono);font-size:13px;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:0.04em;">{{ clock }}</span>
+          <span style="font-size:10px;font-weight:600;color:var(--sb-muted);letter-spacing:0.08em;">UTC</span>
+        </div>
+        <div style="height:1px;background:var(--sb-border);margin:1px 0;"></div>
+        <button onClick="{{ onKill }}" style="{{ killStyle }}" style-hover="filter:brightness(1.05)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+          <span style="{{ labelStyle }}">{{ killLabel }}</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===================== MAIN ===================== -->
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;">
+
+    <!-- Topbar -->
+    <header style="height:56px;flex:none;display:flex;align-items:center;gap:16px;padding:0 20px;border-bottom:1px solid var(--border);background:var(--bg);">
+      <button onClick="{{ onToggleCollapse }}" title="{{ collapseTitle }}" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;flex:none;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--body);cursor:pointer;padding:0;" style-hover="background:var(--subtle);color:var(--head)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </button>
+      <div style="display:flex;align-items:center;gap:7px;font-size:14px;min-width:0;">
+        <span style="color:var(--head);font-weight:600;">Overview</span>
+      </div>
+      <div style="flex:1;"></div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--body);"><span style="width:7px;height:7px;border-radius:50%;background:var(--profit);animation:tvpulse 2s infinite;"></span>WS</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);"><span style="width:7px;height:7px;border-radius:50%;background:var(--muted);"></span>equity closed</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--body);"><span style="width:7px;height:7px;border-radius:50%;background:var(--profit);"></span>crypto 24/7</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--body);"><span style="width:7px;height:7px;border-radius:50%;background:var(--profit);"></span>forex 24/5</span>
+      </div>
+      <div style="width:1px;height:24px;background:var(--border);"></div>
+      <div style="position:relative;flex:none;">
+        <button onClick="{{ onToggleWatch }}" style="{{ watchBtnStyle }}" style-hover="background:var(--subtle)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span>Watch</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--muted);transition:transform .15s;{{ watchChevron }}"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div style="{{ watchMenuStyle }}">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 11px;">
+            <span style="font-size:15px;font-weight:600;color:var(--head);">Watchlist</span>
+            <span style="font-size:12px;color:var(--muted);">4 markets</span>
+          </div>
+          <div style="height:1px;background:var(--border);"></div>
+          <div style="padding:6px;display:flex;flex-direction:column;">
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;" style-hover="background:var(--subtle)">
+              <span style="width:30px;height:30px;border-radius:7px;background:rgba(247,147,26,.14);color:#F7931A;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:none;">BTC</span>
+              <div style="min-width:0;flex:1;">
+                <div style="font-size:13px;font-weight:600;color:var(--head);">BTC/USD</div>
+                <div style="font-size:11px;color:var(--muted);">Bitcoin</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--head);font-variant-numeric:tabular-nums;">61,258.89</div>
+                <div style="font-family:var(--mono);font-size:11px;color:var(--profit);font-variant-numeric:tabular-nums;">+0.09%</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;" style-hover="background:var(--subtle)">
+              <span style="width:30px;height:30px;border-radius:7px;background:rgba(98,126,234,.14);color:#627EEA;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:none;">ETH</span>
+              <div style="min-width:0;flex:1;">
+                <div style="font-size:13px;font-weight:600;color:var(--head);">ETH/USD</div>
+                <div style="font-size:11px;color:var(--muted);">Ethereum</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--head);font-variant-numeric:tabular-nums;">3,412.06</div>
+                <div style="font-family:var(--mono);font-size:11px;color:var(--profit);font-variant-numeric:tabular-nums;">+1.24%</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;" style-hover="background:var(--subtle)">
+              <span style="width:30px;height:30px;border-radius:7px;background:rgba(30,41,59,.08);color:var(--head);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex:none;">AAPL</span>
+              <div style="min-width:0;flex:1;">
+                <div style="font-size:13px;font-weight:600;color:var(--head);">AAPL</div>
+                <div style="font-size:11px;color:var(--muted);">Apple Inc.</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--head);font-variant-numeric:tabular-nums;">227.48</div>
+                <div style="font-family:var(--mono);font-size:11px;color:var(--loss);font-variant-numeric:tabular-nums;">-0.42%</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;" style-hover="background:var(--subtle)">
+              <span style="width:30px;height:30px;border-radius:7px;background:rgba(30,41,59,.08);color:var(--head);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex:none;">EUR</span>
+              <div style="min-width:0;flex:1;">
+                <div style="font-size:13px;font-weight:600;color:var(--head);">EUR/USD</div>
+                <div style="font-size:11px;color:var(--muted);">Euro</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--head);font-variant-numeric:tabular-nums;">1.0842</div>
+                <div style="font-family:var(--mono);font-size:11px;color:var(--profit);font-variant-numeric:tabular-nums;">+0.11%</div>
+              </div>
+            </div>
+          </div>
+          <div style="height:1px;background:var(--border);"></div>
+          <a style="display:block;text-align:center;padding:13px;font-size:14px;font-weight:600;color:var(--link);cursor:pointer;text-decoration:none;" style-hover="background:var(--subtle)">Manage watchlist</a>
+        </div>
+      </div>
+      <div style="width:1px;height:24px;background:var(--border);"></div>
+      <div style="position:relative;flex:none;">
+      <button onClick="{{ onToggleNotif }}" style="{{ bellBtnStyle }}" style-hover="background:var(--subtle)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        <span style="position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:var(--loss);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums;">57</span>
+      </button>
+        <div style="{{ notifMenuStyle }}">
+          <div style="padding:15px 18px 12px;font-size:15px;font-weight:600;color:var(--head);">Notifications</div>
+          <div style="height:1px;background:var(--border);"></div>
+          <div style="padding:6px;display:flex;flex-direction:column;">
+            <div style="display:flex;align-items:flex-start;gap:12px;padding:11px 12px;border-radius:8px;cursor:pointer;" style-hover="background:var(--subtle)">
+              <span style="width:32px;height:32px;border-radius:50%;background:var(--profit);display:flex;align-items:center;justify-content:center;flex:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <div style="min-width:0;">
+                <div style="font-size:14px;font-weight:600;color:var(--head);line-height:1.25;">BTC/USDT trade executed</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:2px;">2 min ago</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:12px;padding:11px 12px;border-radius:8px;cursor:pointer;" style-hover="background:var(--subtle)">
+              <span style="width:32px;height:32px;border-radius:50%;background:var(--warn);display:flex;align-items:center;justify-content:center;flex:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+              <div style="min-width:0;">
+                <div style="font-size:14px;font-weight:600;color:var(--head);line-height:1.25;">Signal Bot paused &mdash; volatility high</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:2px;">15 min ago</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:12px;padding:11px 12px;border-radius:8px;cursor:pointer;" style-hover="background:var(--subtle)">
+              <span style="width:32px;height:32px;border-radius:50%;background:var(--info);display:flex;align-items:center;justify-content:center;flex:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+              <div style="min-width:0;">
+                <div style="font-size:14px;font-weight:600;color:var(--head);line-height:1.25;">New strategy available</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:2px;">1 hour ago</div>
+              </div>
+            </div>
+          </div>
+          <div style="height:1px;background:var(--border);"></div>
+          <a style="display:block;text-align:center;padding:13px;font-size:14px;font-weight:600;color:var(--link);cursor:pointer;text-decoration:none;" style-hover="background:var(--subtle)">View all notifications</a>
+        </div>
+      </div>
+      <button onClick="{{ onToggleTheme }}" title="{{ themeTitle }}" style="{{ themeBtnStyle }}" style-hover="background:var(--subtle)">
+        <span style="{{ themeMoonStyle }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
+        <span style="{{ themeSunStyle }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></span>
+      </button>
+      <div style="position:relative;flex:none;">
+        <button onClick="{{ onToggleProfile }}" style="display:flex;align-items:center;gap:7px;padding:3px 7px 3px 3px;border-radius:999px;border:1px solid var(--border);background:var(--bg);cursor:pointer;" style-hover="background:var(--subtle)">
+          <span style="width:30px;height:30px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;color:var(--lime);font-size:12px;font-weight:700;flex:none;">JD</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted);transition:transform .15s;{{ profileChevron }}"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div style="{{ profileMenuStyle }}">
+          <div style="padding:14px 16px 12px;">
+            <div style="font-size:15px;font-weight:600;color:var(--head);line-height:1.2;">John Doe</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:3px;">Pro Trader</div>
+          </div>
+          <div style="height:1px;background:var(--border);"></div>
+          <div style="padding:6px;display:flex;flex-direction:column;">
+            <a style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:7px;font-size:14px;color:var(--body);text-decoration:none;cursor:pointer;" style-hover="background:var(--subtle);color:var(--head)">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;opacity:.65;"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+              My Profile
+            </a>
+            <a style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:7px;font-size:14px;color:var(--body);text-decoration:none;cursor:pointer;" style-hover="background:var(--subtle);color:var(--head)">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;opacity:.65;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              Settings
+            </a>
+            <a style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:7px;font-size:14px;color:var(--body);text-decoration:none;cursor:pointer;" style-hover="background:var(--subtle);color:var(--head)">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;opacity:.65;"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              Help &amp; Support
+            </a>
+          </div>
+          <div style="height:1px;background:var(--border);margin:0 6px;"></div>
+          <div style="padding:6px;">
+            <a onClick="{{ onLogout }}" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:7px;font-size:14px;color:var(--body);text-decoration:none;cursor:pointer;" style-hover="background:var(--subtle);color:var(--head)">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;opacity:.65;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Logout
+            </a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Scroll content -->
+    <main style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;">
+
+      <!-- Stat cards -->
+      <div class="tv-stats">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 18px;display:flex;flex-direction:column;gap:6px;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:0.07em;color:var(--muted);">CASH</div>
+          <div style="font-size:27px;font-weight:700;color:var(--head);font-variant-numeric:tabular-nums;letter-spacing:-0.01em;line-height:1.1;">$98,616.73</div>
+          <div style="font-size:12px;color:var(--muted);">Alpaca paper</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 18px;display:flex;flex-direction:column;gap:6px;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:0.07em;color:var(--muted);">EQUITY</div>
+          <div style="font-size:27px;font-weight:700;color:var(--head);font-variant-numeric:tabular-nums;letter-spacing:-0.01em;line-height:1.1;">$99,858.87</div>
+          <div style="font-size:12px;color:var(--muted);">total account value</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 18px;display:flex;flex-direction:column;gap:6px;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:0.07em;color:var(--muted);">BUYING POWER</div>
+          <div style="font-size:27px;font-weight:700;color:var(--head);font-variant-numeric:tabular-nums;letter-spacing:-0.01em;line-height:1.1;">$397,478.15</div>
+          <div style="font-size:12px;color:var(--muted);">4x margin</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 18px;display:flex;flex-direction:column;gap:6px;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:0.07em;color:var(--muted);">OPEN P&L</div>
+          <div style="display:flex;align-items:baseline;gap:8px;"><span style="font-size:27px;font-weight:700;color:var(--loss);font-variant-numeric:tabular-nums;letter-spacing:-0.01em;line-height:1.1;">-$125.67</span><span style="font-size:12px;font-weight:600;color:var(--loss);font-variant-numeric:tabular-nums;">-0.01%</span></div>
+          <div style="font-size:12px;color:var(--muted);">unrealized · live · 5s</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 18px;display:flex;flex-direction:column;gap:6px;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:0.07em;color:var(--muted);">MAX DRAWDOWN</div>
+          <div style="font-size:27px;font-weight:700;color:var(--loss);font-variant-numeric:tabular-nums;line-height:1.1;">-$1,284.50</div>
+          <div style="font-size:12px;color:var(--muted);">-1.27% peak-to-trough · today</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 18px;display:flex;flex-direction:column;gap:6px;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:0.07em;color:var(--muted);">AVG TRADE SIZE</div>
+          <div style="font-size:27px;font-weight:700;color:var(--head);font-variant-numeric:tabular-nums;line-height:1.1;">$542.18</div>
+          <div style="font-size:12px;color:var(--muted);">across 43 fills today</div>
+        </div>
+      </div>
+
+      <!-- Open Positions -->
+      <section style="background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+        <div style="display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--border);">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          <span style="font-size:12px;font-weight:700;letter-spacing:0.07em;color:var(--head);">OPEN POSITIONS</span>
+          <div style="flex:1;"></div>
+          <span style="font-size:13px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums;">{{ posCount }}</span>
+        </div>
+
+        <!-- Filter row -->
+        <div class="tv-filters" style="padding:14px 16px;border-bottom:1px solid var(--border);">
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <label style="font-size:10px;font-weight:600;letter-spacing:0.08em;color:var(--muted);">SYMBOL</label>
+            <dc-import name="SymbolSearch" placeholder="BTC / SPY / EUR…" hint-size="100%,40px"></dc-import>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <label style="font-size:10px;font-weight:600;letter-spacing:0.08em;color:var(--muted);">ASSET CLASS</label>
+            <div style="display:flex;gap:7px;flex-wrap:wrap;">
+              <sc-for list="{{ assetChips }}" as="chip" hint-placeholder-count="4">
+                <button onClick="{{ chip.onClick }}" style="{{ chip.style }}">{{ chip.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <label style="font-size:10px;font-weight:600;letter-spacing:0.08em;color:var(--muted);">SIDE</label>
+            <div style="display:flex;gap:7px;flex-wrap:wrap;">
+              <sc-for list="{{ sideChips }}" as="chip" hint-placeholder-count="2">
+                <button onClick="{{ chip.onClick }}" style="{{ chip.style }}">{{ chip.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <label style="font-size:10px;font-weight:600;letter-spacing:0.08em;color:var(--muted);">BROKER</label>
+            <div style="display:flex;gap:7px;flex-wrap:wrap;">
+              <sc-for list="{{ brokerChips }}" as="chip" hint-placeholder-count="1">
+                <button onClick="{{ chip.onClick }}" style="{{ chip.style }}">{{ chip.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="tv-tablewrap">
+          <table style="width:100%;border-collapse:collapse;min-width:920px;">
+            <thead>
+              <tr style="background:var(--subtle);">
+                <th style="text-align:left;padding:9px 16px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">POSITION</th>
+                <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">SIDE</th>
+                <th style="text-align:right;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">QTY / LOT</th>
+                <th style="text-align:right;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">CASH $</th>
+                <th style="text-align:right;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">ENTRY → MARK</th>
+                <th style="text-align:center;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">SL ($)</th>
+                <th style="text-align:right;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">TP ($)</th>
+                <th style="text-align:right;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">R:R</th>
+                <th style="text-align:right;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">DD $</th>
+                <th style="text-align:right;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">P&L $</th>
+                <th style="width:36px;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ posRows }}" as="row" hint-placeholder-count="3">
+                <tr style="border-bottom:1px solid var(--border);" style-hover="background:var(--subtle)">
+                  <td style="padding:12px 16px;">
+                    <div style="font-size:14px;font-weight:600;color:var(--head);">{{ row.sym }}</div>
+                    <div style="font-size:10px;letter-spacing:0.04em;color:var(--muted);margin-top:2px;">{{ row.broker }}</div>
+                  </td>
+                  <td style="padding:12px 12px;"><span style="{{ row.sideStyle }}">{{ row.side }}</span></td>
+                  <td style="padding:12px 12px;text-align:right;font-family:var(--mono);font-size:13px;color:var(--head);font-variant-numeric:tabular-nums;">{{ row.qty }}</td>
+                  <td style="padding:12px 12px;text-align:right;font-family:var(--mono);font-size:13px;color:var(--head);font-variant-numeric:tabular-nums;">{{ row.cash }}</td>
+                  <td style="padding:12px 12px;text-align:right;white-space:nowrap;">
+                    <span style="font-family:var(--mono);font-size:13px;color:var(--body);font-variant-numeric:tabular-nums;">{{ row.entry }}</span>
+                    <span style="color:var(--muted);margin:0 4px;">→</span>
+                    <span style="font-family:var(--mono);font-size:13px;color:var(--head);font-variant-numeric:tabular-nums;">{{ row.mark }}</span>
+                    <span style="font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.06em;color:var(--muted);background:var(--subtle);padding:2px 4px;border-radius:3px;margin-left:6px;">BKR</span>
+                  </td>
+                  <td style="padding:12px 12px;text-align:center;"><span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:5px;background:var(--warn-soft);color:var(--warn-ink);font-size:10px;font-weight:600;letter-spacing:0.05em;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>NO SL</span></td>
+                  <td style="padding:12px 12px;text-align:right;color:var(--muted);font-family:var(--mono);font-size:13px;">—</td>
+                  <td style="padding:12px 12px;text-align:right;color:var(--muted);font-family:var(--mono);font-size:13px;">—</td>
+                  <td style="padding:12px 12px;text-align:right;font-family:var(--mono);font-size:13px;color:var(--loss);font-variant-numeric:tabular-nums;">{{ row.dd }}</td>
+                  <td style="padding:12px 12px;text-align:right;">
+                    <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--loss);font-variant-numeric:tabular-nums;">{{ row.pl }}</div>
+                    <div style="font-family:var(--mono);font-size:10px;color:var(--loss);font-variant-numeric:tabular-nums;margin-top:1px;">{{ row.plPct }}</div>
+                  </td>
+                  <td style="padding:12px 14px 12px 4px;text-align:right;"><button onClick="{{ row.onRemove }}" style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:5px;border:none;background:none;color:var(--muted);cursor:pointer;" style-hover="background:rgba(239,68,68,.12);color:var(--loss)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          <sc-if value="{{ posEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:34px;text-align:center;font-size:13px;color:var(--muted);">No open positions match your filters.</div>
+          </sc-if>
+        </div>
+      </section>
+
+      <!-- Bottom two-column -->
+      <div class="tv-bottom">
+        <!-- Left column -->
+        <div style="display:flex;flex-direction:column;gap:12px;min-width:0;">
+          <!-- Strategy Performance -->
+          <section style="background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--border);">
+              <span style="font-size:12px;font-weight:700;letter-spacing:0.07em;color:var(--head);">STRATEGY PERFORMANCE</span>
+              <div style="flex:1;"></div>
+              <div style="display:flex;gap:2px;background:var(--subtle);padding:3px;border-radius:8px;">
+                <button onClick="{{ onPerfToday }}" style="{{ perfToday }}">TODAY</button>
+                <button onClick="{{ onPerf7d }}" style="{{ perf7d }}">7D</button>
+                <button onClick="{{ onPerf30d }}" style="{{ perf30d }}">30D</button>
+              </div>
+            </div>
+            <div class="tv-tablewrap">
+              <table style="width:100%;border-collapse:collapse;min-width:560px;">
+                <thead>
+                  <tr style="background:var(--subtle);">
+                    <th style="text-align:left;padding:9px 16px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">STRATEGY</th>
+                    <th style="text-align:right;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">RECENT 5M</th>
+                    <th style="text-align:right;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">SIGNALS</th>
+                    <th style="text-align:right;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">TRADES</th>
+                    <th style="text-align:right;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">WIN RATE</th>
+                    <th style="text-align:right;padding:9px 16px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">P&L</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <sc-for list="{{ strategies }}" as="strat" hint-placeholder-count="2">
+                    <tr style="border-bottom:1px solid var(--border);" style-hover="background:var(--subtle)">
+                      <td style="padding:13px 16px;">
+                        <div style="display:flex;align-items:center;gap:9px;">
+                          <span style="width:8px;height:8px;border-radius:50%;flex:none;{{ strat.dotStyle }}"></span>
+                          <span style="font-size:14px;font-weight:500;color:var(--head);">{{ strat.name }}</span>
+                          <sc-if value="{{ strat.tag }}" hint-placeholder-val="{{ false }}">
+                            <span style="font-size:9px;font-weight:600;letter-spacing:0.06em;padding:2px 6px;border-radius:4px;background:var(--subtle);color:var(--body);border:1px solid var(--border);">{{ strat.tag }}</span>
+                          </sc-if>
+                        </div>
+                      </td>
+                      <td style="padding:13px 12px;text-align:right;font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;">{{ strat.recent }}</td>
+                      <td style="padding:13px 12px;text-align:right;font-family:var(--mono);font-size:13px;color:var(--head);font-variant-numeric:tabular-nums;">{{ strat.signals }}</td>
+                      <td style="padding:13px 12px;text-align:right;font-family:var(--mono);font-size:13px;color:var(--head);font-variant-numeric:tabular-nums;">{{ strat.trades }}</td>
+                      <td style="padding:13px 12px;text-align:right;font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;">{{ strat.win }}</td>
+                      <td style="padding:13px 16px;text-align:right;font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums;{{ strat.plStyle }}">{{ strat.pl }}</td>
+                    </tr>
+                  </sc-for>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- P&L by Symbol x Strategy -->
+          <section style="background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;flex:1;display:flex;flex-direction:column;">
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--border);">
+              <span style="font-size:12px;font-weight:700;letter-spacing:0.07em;color:var(--head);">P&L BY SYMBOL × STRATEGY</span>
+              <div style="flex:1;"></div>
+              <span style="font-size:11px;font-weight:600;letter-spacing:0.06em;color:var(--muted);">TODAY</span>
+            </div>
+            <div style="flex:1;overflow-x:auto;">
+              <div style="min-width:440px;">
+                <div style="display:grid;grid-template-columns:1.3fr repeat(4,1fr) 1.1fr;gap:6px;padding:9px 16px;background:var(--subtle);border-bottom:1px solid var(--border);">
+                  <span style="font-size:10px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">SYMBOL</span>
+                  <sc-for list="{{ pnlColCells }}" as="col" hint-placeholder-count="4">
+                    <span style="font-size:10px;font-weight:600;letter-spacing:0.05em;color:var(--muted);text-align:right;">{{ col.label }}</span>
+                  </sc-for>
+                  <span style="font-size:10px;font-weight:600;letter-spacing:0.05em;color:var(--muted);text-align:right;">TOTAL</span>
+                </div>
+                <sc-for list="{{ pnlRows }}" as="row" hint-placeholder-count="6">
+                  <div style="display:grid;grid-template-columns:1.3fr repeat(4,1fr) 1.1fr;gap:6px;padding:11px 16px;border-bottom:1px solid var(--border);align-items:center;" style-hover="background:var(--subtle)">
+                    <span style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--head);">{{ row.sym }}</span>
+                    <sc-for list="{{ row.cells }}" as="cell" hint-placeholder-count="4">
+                      <span style="{{ cell.style }}">{{ cell.text }}</span>
+                    </sc-for>
+                    <span style="{{ row.totalStyle }}">{{ row.total }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Right column: Signal Feed -->
+        <section style="background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;min-width:0;">
+          <div style="display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--border);">
+            <span style="font-size:12px;font-weight:700;letter-spacing:0.07em;color:var(--head);">SIGNAL FEED</span>
+            <div style="flex:1;"></div>
+            <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);"><span style="width:6px;height:6px;border-radius:50%;background:var(--profit);animation:tvpulse 2s infinite;"></span>live · last 25</span>
+          </div>
+          <div style="display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--border);">
+            <button onClick="{{ onTabPlaced }}" style="{{ tabPlaced }}">PLACED <span style="{{ badgePlaced }}">{{ placedCount }}</span></button>
+            <button onClick="{{ onTabSkipped }}" style="{{ tabSkipped }}">SKIPPED <span style="{{ badgeSkipped }}">{{ skippedCount }}</span></button>
+            <button onClick="{{ onTabAll }}" style="{{ tabAll }}">ALL <span style="{{ badgeAll }}">{{ allCount }}</span></button>
+          </div>
+          <div style="display:grid;grid-template-columns:64px 1fr 50px 52px 48px 1fr;gap:8px;padding:9px 16px;background:var(--subtle);border-bottom:1px solid var(--border);">
+            <span style="font-size:10px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">TIME</span>
+            <span style="font-size:10px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">SYMBOL</span>
+            <span style="font-size:10px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">DIR</span>
+            <span style="font-size:10px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">SESS</span>
+            <span style="font-size:10px;font-weight:600;letter-spacing:0.05em;color:var(--muted);text-align:right;">CONF</span>
+            <span style="font-size:10px;font-weight:600;letter-spacing:0.05em;color:var(--muted);text-align:right;">OUTCOME</span>
+          </div>
+          <div style="flex:1;overflow-y:auto;min-height:200px;">
+            <sc-if value="{{ signalEmpty }}" hint-placeholder-val="{{ true }}">
+              <div style="padding:56px 16px;text-align:center;font-size:13px;color:var(--muted);">no placed signals — try All or Skipped</div>
+            </sc-if>
+            <sc-for list="{{ signalRows }}" as="sig" hint-placeholder-count="0">
+              <div style="display:grid;grid-template-columns:64px 1fr 50px 52px 48px 1fr;gap:8px;padding:9px 16px;border-bottom:1px solid var(--border);align-items:center;" style-hover="background:var(--subtle)">
+                <span style="font-family:var(--mono);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;">{{ sig.time }}</span>
+                <span style="font-family:var(--mono);font-size:12px;font-weight:500;color:var(--head);">{{ sig.sym }}</span>
+                <span style="font-size:10px;font-weight:700;letter-spacing:0.04em;{{ sig.dirColor }}">{{ sig.dir }}</span>
+                <span style="font-size:10px;font-weight:600;color:var(--body);">{{ sig.sess }}</span>
+                <span style="font-family:var(--mono);font-size:11px;color:var(--body);text-align:right;font-variant-numeric:tabular-nums;">{{ sig.conf }}</span>
+                <span style="font-size:10px;text-align:right;{{ sig.outcomeStyle }}">{{ sig.outcome }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+      </div>
+
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.state = {
+      activeNav:'overview',
+      strategiesExpanded:true,
+      collapsed:false,
+      profileOpen:false,
+      notifOpen:false,
+      watchOpen:false,
+      dark:false,
+      acctOpen:false,
+      isTablet:false,
+      clock:this.fmtClock(new Date()),
+      perfWindow:'today',
+      signalTab:'placed',
+      killArmed:false,
+      symbolQuery:'',
+      assetFilter:{},
+      sideFilter:{},
+      brokerFilter:{},
+      positions:[
+        {id:'aapl',sym:'AAPL',broker:'ALPACA · ALPACA PAPER',side:'LONG',qty:'2',cash:'$597.17',entry:'$298.59',mark:'$295.70',dd:'-$22.35',pl:'-$5.77',plPct:'-0.97%',assetClass:'US_EQUITY'},
+        {id:'amzn',sym:'AMZN',broker:'ALPACA · ALPACA PAPER',side:'LONG',qty:'2',cash:'$535.94',entry:'$267.97',mark:'$242.02',dd:'-$65.49',pl:'-$51.90',plPct:'-9.68%',assetClass:'US_EQUITY'},
+        {id:'eth',sym:'ETH/USD',broker:'ALPACA · ALPACA PAPER',side:'LONG',qty:'0.09975',cash:'$226.15',entry:'$2,267.20',mark:'$1,585.50',dd:'-$75.09',pl:'-$68.00',plPct:'-30.07%',assetClass:'CRYPTO'},
+      ],
+    };
+    this.signals = this.buildSignals();
+    this.placed = this.buildPlaced();
+  }
+  buildPlaced(){
+    const p=n=>String(n).padStart(2,'0');
+    const raw=[
+      {sym:'NVDA',   dir:'LONG', sess:'NY',     conf:'0.82', fill:'filled @ $131.92'},
+      {sym:'AAPL',   dir:'LONG', sess:'NY',     conf:'0.74', fill:'filled @ $298.59'},
+      {sym:'BTC/USD',dir:'LONG', sess:'ASIA',   conf:'0.79', fill:'filled @ $61,140'},
+      {sym:'SPY',    dir:'SHORT',sess:'NY',     conf:'0.71', fill:'filled @ $556.40'},
+      {sym:'AMZN',   dir:'LONG', sess:'NY',     conf:'0.68', fill:'filled @ $267.97'},
+      {sym:'EUR/USD',dir:'LONG', sess:'LONDON', conf:'0.77', fill:'filled @ 1.0838'},
+      {sym:'ETH/USD',dir:'LONG', sess:'ASIA',   conf:'0.73', fill:'filled @ $2,267'},
+    ];
+    let total=22*3600+58*60+11;
+    return raw.map((r,i)=>{total-=(220+(i*97)%400);if(total<0)total+=86400;const hh=Math.floor(total/3600)%24,mm=Math.floor(total/60)%60,ss=total%60;return {...r,time:`${p(hh)}:${p(mm)}:${p(ss)}`,outcome:r.fill,placed:true};});
+  }
+  fmtClock(d){const p=n=>String(n).padStart(2,'0');return `${p(d.getUTCHours())}:${p(d.getUTCMinutes())}:${p(d.getUTCSeconds())}`;}
+  componentDidMount(){
+    this._t=setInterval(()=>this.setState({clock:this.fmtClock(new Date())}),1000);
+    this._r=()=>this.setState({isTablet:window.innerWidth<=1024});
+    window.addEventListener('resize',this._r);this._r();
+  }
+  componentWillUnmount(){clearInterval(this._t);window.removeEventListener('resize',this._r);}
+  buildSignals(){
+    const syms=['NVDA','AAPL','SPY','TSLA','MSFT','BTC/USD','ETH/USD','EUR/USD','AMZN','GOOGL','META','QQQ'];
+    const sessions=['NY','LONDON','ASIA'];
+    const reasons=['spread too wide','below conf','max positions','no stop loss','cooldown','session filter','risk cap'];
+    const dirs=['LONG','SHORT'];
+    const p=n=>String(n).padStart(2,'0');
+    let total=23*3600+47*60+58;const out=[];
+    for(let i=0;i<25;i++){
+      total-=(37+(i*53)%120);if(total<0)total+=86400;
+      const hh=Math.floor(total/3600)%24,mm=Math.floor(total/60)%60,ss=total%60;
+      out.push({time:`${p(hh)}:${p(mm)}:${p(ss)}`,sym:syms[(i*7)%syms.length],dir:dirs[i%2],sess:sessions[(i*3)%sessions.length],conf:(0.50+((i*13)%46)/100).toFixed(2),outcome:reasons[(i*5)%reasons.length]});
+    }
+    return out;
+  }
+  toggleSet(key,val){this.setState(st=>{const m={...st[key]};if(m[val])delete m[val];else m[val]=true;return {[key]:m};});}
+  renderVals(){
+    const st=this.state;
+    const c=st.collapsed||st.isTablet;
+    // All icons are lime (#CAFF33). Labels use navGrey at rest, accent when active.
+    const navA={overview:{accent:'#CAFF33',bg:'rgba(202,255,51,0.12)'},strategies:{accent:'#3DD5A8',bg:'rgba(61,213,168,0.12)'},analysis:{accent:'#A78BFA',bg:'rgba(167,139,250,0.10)'},chart:{accent:'#FBB23A',bg:'rgba(251,178,58,0.10)'},journal:{accent:'#FBB23A',bg:'rgba(251,178,58,0.10)'},audit:{accent:'#FBB23A',bg:'rgba(251,178,58,0.10)'},accounts:{accent:'#F87171',bg:'rgba(248,113,113,0.10)'},configure:{accent:'#F87171',bg:'rgba(248,113,113,0.10)'},signal:{accent:'#F87171',bg:'rgba(248,113,113,0.10)'},marketplace:{accent:'#F87171',bg:'rgba(248,113,113,0.10)'},mysignals:{accent:'#F87171',bg:'rgba(248,113,113,0.10)'},settings:{accent:'#C4CBD4',bg:'rgba(255,255,255,0.06)'}};
+    const navGrey='#8B95A4'; // WCAG AA ~5.8:1 on #0F1724
+    const nav=(id)=>{const a=st.activeNav===id;const{accent,bg}=navA[id]||navA.overview;return `display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;text-decoration:none;cursor:pointer;transition:background .12s;white-space:nowrap;overflow:hidden;${c?'justify-content:center;':''}color:${a?accent:navGrey};background:${a?bg:'transparent'};font-weight:${a?500:400};box-shadow:${a?`inset 3px 0 0 0 ${accent}`:'none'};`;};
+    const seg=(on)=>`padding:5px 13px;border-radius:6px;font-size:11px;font-weight:600;letter-spacing:0.04em;cursor:pointer;border:none;font-family:var(--sans);transition:all .12s;background:${on?'var(--accent)':'transparent'};color:${on?'var(--accent-on)':'var(--muted)'};`;
+    const tab=(on)=>`padding:12px 4px;margin-right:20px;font-size:12px;font-weight:600;letter-spacing:0.04em;cursor:pointer;background:none;border:none;border-bottom:2px solid ${on?'var(--accent)':'transparent'};color:${on?'var(--head)':'var(--muted)'};font-family:var(--sans);transition:all .12s;display:inline-flex;align-items:center;gap:7px;`;
+    const tabBadge=(on)=>`font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;font-variant-numeric:tabular-nums;background:${on?'var(--navy)':'var(--subtle)'};color:${on?'#fff':'var(--muted)'};`;
+    const chip=(on)=>`padding:6px 11px;border-radius:6px;font-size:11px;font-weight:600;letter-spacing:0.03em;cursor:pointer;font-family:var(--sans);transition:all .12s;border:1px solid ${on?'var(--navy)':'var(--border)'};background:${on?'var(--navy)':'var(--bg)'};color:${on?'#fff':'var(--body)'};`;
+
+    // filter positions
+    let rows=st.positions;
+    const q=st.symbolQuery.trim().toUpperCase();
+    if(q)rows=rows.filter(p=>p.sym.includes(q));
+    const af=Object.keys(st.assetFilter);if(af.length)rows=rows.filter(p=>af.includes(p.assetClass));
+    const sf=Object.keys(st.sideFilter);if(sf.length)rows=rows.filter(p=>sf.includes(p.side));
+    const posRows=rows.map(p=>({...p,
+      sideStyle:`display:inline-block;padding:3px 9px;border-radius:5px;font-size:10px;font-weight:700;letter-spacing:0.05em;background:${p.side==='LONG'?'var(--profit)':'var(--loss)'};color:#fff;`,
+      onRemove:()=>this.setState(s=>({positions:s.positions.filter(x=>x.id!==p.id)})),
+    }));
+
+    const strategies=[
+      {name:'EMA 9/30 Cross',dotStyle:'background:var(--info);',recent:'+2',signals:47,trades:12,win:'58%',pl:'+$214.40',plStyle:'color:var(--profit);font-weight:600;',tag:'EQ'},
+      {name:'RSI Reversal',dotStyle:'background:var(--warn);',recent:'+1',signals:33,trades:8,win:'50%',pl:'-$96.12',plStyle:'color:var(--loss);font-weight:600;',tag:'CRYPTO'},
+      {name:'VWAP Bounce',dotStyle:'background:var(--accent);',recent:'0',signals:21,trades:5,win:'60%',pl:'+$58.30',plStyle:'color:var(--profit);font-weight:600;',tag:'FX'},
+      {name:'Breakout ATR',dotStyle:'background:var(--profit);',recent:'+4',signals:62,trades:18,win:'44%',pl:'-$182.05',plStyle:'color:var(--loss);font-weight:600;',tag:'EQ'},
+      {name:'Default engine',dotStyle:'background:var(--muted);',recent:'—',signals:0,trades:0,win:'—',pl:'$0.00',plStyle:'color:var(--muted);',tag:null},
+    ];
+
+    // P&L by symbol × strategy matrix
+    const pnlCols=['EMA','RSI','VWAP','ATR'];
+    const pnlData=[
+      {sym:'NVDA',    cells:[88.50,0,0,64.30]},
+      {sym:'AAPL',    cells:[42.10,0,-12.40,18.20]},
+      {sym:'SPY',     cells:[63.40,-7.12,0,-21.45]},
+      {sym:'AMZN',    cells:[-30.20,0,0,-51.90]},
+      {sym:'ETH/USD', cells:[0,-68.00,0,0]},
+      {sym:'EUR/USD', cells:[0,0,58.30,0]},
+    ];
+    const fmt=v=>(v>0?'+$':'−$')+Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const cellOf=v=>!v?{text:'·',style:'text-align:right;font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;'}:{text:fmt(v),style:`text-align:right;font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums;font-weight:600;color:${v>0?'var(--profit)':'var(--loss)'};`};
+    const pnlRows=pnlData.map(r=>{const tot=r.cells.reduce((a,b)=>a+b,0);return {sym:r.sym,cells:r.cells.map(cellOf),total:fmt(tot),totalStyle:`text-align:right;font-family:var(--mono);font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;color:${tot>0?'var(--profit)':tot<0?'var(--loss)':'var(--muted)'};`};});
+    const pnlColCells=pnlCols.map(l=>({label:l}));
+
+    const decorate=sg=>({...sg,
+      dirColor:`color:${sg.dir==='LONG'?'var(--profit)':'var(--loss)'};`,
+      outcomeStyle:sg.placed?'color:var(--profit);font-weight:500;':'color:var(--muted);'});
+    const allSignals=[...this.placed.map(s=>({...s})),...this.signals.map(s=>({...s,placed:false}))]
+      .sort((a,b)=>b.time.localeCompare(a.time));
+    const signalRows=(st.signalTab==='placed'?this.placed
+      :st.signalTab==='skipped'?this.signals
+      :allSignals).map(decorate);
+
+    return {
+      // sidebar layout
+      sbStyle:`width:${c?'66px':'234px'};flex:none;background:var(--sb-bg);display:flex;flex-direction:column;overflow:hidden;transition:width .18s ease;`,
+      logoJustify:c?'justify-content:center;':'',
+      logoMarkStyle:`height:30px;width:auto;flex:none;display:${c?'block':'none'};`,
+      logoWordmarkStyle:`height:26px;width:auto;flex:none;display:${c?'none':'block'};`,
+      labelStyle:c?'display:none;':'flex:1;',
+      sectionStyle:`padding:${c?'12px 0 4px':'14px 12px 5px'};font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--sb-muted);${c?'text-align:center;':''}`,
+      subWrapStyle:`display:${(!c&&st.strategiesExpanded)?'flex':'none'};flex-direction:column;gap:2px;margin:2px 0;`,
+      chevronStyle:`flex:none;transition:transform .15s;transform:rotate(${st.strategiesExpanded?'0deg':'-90deg'});${c?'display:none;':''}`,
+      footerStyle:`display:${c?'none':'block'};`,
+      headerRowStyle:`display:flex;align-items:center;padding:18px 16px 16px;${c?'flex-direction:column;gap:10px;padding:16px 10px 12px;':'justify-content:space-between;gap:9px;'}`,
+      collapseTitle:c?'Expand navigation':'Collapse navigation',
+      clockRowStyle:`display:flex;align-items:center;gap:8px;${c?'justify-content:center;':''}`,
+      acctChevron:st.acctOpen?'transform:rotate(180deg);':'',
+      acctTriggerStyle:`display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;background:none;border:1px solid ${st.acctOpen?'var(--sb-border)':'transparent'};border-radius:9px;cursor:pointer;${c?'justify-content:center;padding:9px 0;':''}`,
+      acctMenuStyle:`position:absolute;left:10px;right:10px;bottom:calc(100% - 2px);background:var(--navy-light);border:1px solid var(--sb-border);border-radius:11px;box-shadow:0 -10px 32px -8px rgba(0,0,0,.45);overflow:hidden;z-index:40;transition:opacity .14s,transform .14s;transform-origin:bottom center;${st.acctOpen?'opacity:1;transform:translateY(0) scale(1);pointer-events:auto;':'opacity:0;transform:translateY(8px) scale(.98);pointer-events:none;'}`,
+      acctItemPaper:`display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;background:var(--sb-hover);border:none;border-radius:7px;cursor:pointer;`,
+      acctItemLive:`display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;background:none;border:none;border-radius:7px;cursor:pointer;`,
+      acctItemBinance:`display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;background:none;border:none;border-radius:7px;cursor:pointer;`,
+      profileChevron:st.profileOpen?'transform:rotate(180deg);':'',
+      bellBtnStyle:`position:relative;display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;border:1px solid ${st.notifOpen?'var(--navy)':'var(--border)'};background:var(--bg);color:${st.notifOpen?'var(--navy)':'var(--body)'};cursor:pointer;`,
+      watchChevron:st.watchOpen?'transform:rotate(180deg);':'',
+      themeClass:st.dark?'tv-dark':'',
+      themeTitle:st.dark?'Switch to light mode':'Switch to dark mode',
+      themeBtnStyle:`display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;border:1px solid ${st.dark?'var(--navy)':'var(--border)'};background:var(--bg);color:var(--body);cursor:pointer;flex:none;`,
+      themeMoonStyle:`display:${st.dark?'none':'inline-flex'};`,
+      themeSunStyle:`display:${st.dark?'inline-flex':'none'};color:var(--accent);`,
+      watchBtnStyle:`display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 12px;border-radius:8px;border:1px solid ${st.watchOpen?'var(--navy)':'var(--border)'};background:var(--bg);color:${st.watchOpen?'var(--head)':'var(--body)'};font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;`,
+      watchMenuStyle:`position:absolute;top:calc(100% + 8px);right:0;width:320px;background:var(--bg);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 32px -8px rgba(13,27,42,.22),0 2px 8px -2px rgba(13,27,42,.12);z-index:50;overflow:hidden;transition:opacity .14s,transform .14s;transform-origin:top right;${st.watchOpen?'opacity:1;transform:translateY(0) scale(1);pointer-events:auto;':'opacity:0;transform:translateY(-6px) scale(.97);pointer-events:none;'}`,
+      notifMenuStyle:`position:absolute;top:calc(100% + 8px);right:0;width:330px;background:var(--bg);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 32px -8px rgba(13,27,42,.22),0 2px 8px -2px rgba(13,27,42,.12);z-index:50;overflow:hidden;transition:opacity .14s,transform .14s;transform-origin:top right;${st.notifOpen?'opacity:1;transform:translateY(0) scale(1);pointer-events:auto;':'opacity:0;transform:translateY(-6px) scale(.97);pointer-events:none;'}`,
+      profileMenuStyle:`position:absolute;top:calc(100% + 8px);right:0;width:230px;background:var(--bg);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 32px -8px rgba(13,27,42,.22),0 2px 8px -2px rgba(13,27,42,.12);z-index:50;overflow:hidden;transition:opacity .14s,transform .14s;transform-origin:top right;${st.profileOpen?'opacity:1;transform:translateY(0) scale(1);pointer-events:auto;':'opacity:0;transform:translateY(-6px) scale(.97);pointer-events:none;'}`,
+      collapseIconStyle:`flex:none;transition:transform .18s;transform:rotate(${c?'180deg':'0deg'});`,
+      // nav styles (flattened to top-level — nested object holes do not re-resolve on re-render)
+      navOverview:nav('overview'),navStrategies:nav('strategies'),navAnalysis:nav('analysis'),
+      navChart:nav('chart'),navJournal:nav('journal'),navAudit:nav('audit'),navSettings:nav('settings'),
+      navMarketplace:nav('marketplace'),navMySignals:nav('mysignals'),
+      perfToday:seg(st.perfWindow==='today'),perf7d:seg(st.perfWindow==='7d'),perf30d:seg(st.perfWindow==='30d'),
+      tabPlaced:tab(st.signalTab==='placed'),tabSkipped:tab(st.signalTab==='skipped'),tabAll:tab(st.signalTab==='all'),
+      badgePlaced:tabBadge(st.signalTab==='placed'),badgeSkipped:tabBadge(st.signalTab==='skipped'),badgeAll:tabBadge(st.signalTab==='all'),
+      // topbar
+      clock:st.clock,
+      killLabel:st.killArmed?'ARMED':'KILL',
+      killStyle:st.killArmed
+        ? `display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--loss);background:var(--loss);color:#fff;font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:0.06em;cursor:pointer;${c?'padding:10px 0;':''}`
+        : `display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:10px 14px;border-radius:8px;border:1px solid rgba(239,68,68,.5);background:rgba(239,68,68,.14);color:#FF8A8A;font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:0.06em;cursor:pointer;${c?'padding:10px 0;':''}`,
+      // data
+      posCount:posRows.length,
+      posEmpty:posRows.length===0,
+      posRows,
+      strategies,
+      signalRows,
+      signalEmpty:signalRows.length===0,
+      placedCount:this.placed.length,
+      skippedCount:this.signals.length,
+      allCount:this.placed.length+this.signals.length,
+      pnlColCells,
+      pnlRows,
+      symbolQuery:st.symbolQuery,
+      assetChips:['US_EQUITY','CRYPTO','FOREX','INDICES'].map(l=>({label:l,style:chip(!!st.assetFilter[l]),onClick:()=>this.toggleSet('assetFilter',l)})),
+      sideChips:['LONG','SHORT'].map(l=>({label:l,style:chip(!!st.sideFilter[l]),onClick:()=>this.toggleSet('sideFilter',l)})),
+      brokerChips:['ALPACA'].map(l=>({label:l,style:chip(!!st.brokerFilter[l]),onClick:()=>this.toggleSet('brokerFilter',l)})),
+      // handlers
+      onNavOverview:()=>this.setState({activeNav:'overview'}),
+      onNavStrategies:()=>{ window.location.href = 'Strategies.dc.html'; },
+      onNavChart:()=>{ window.location.href = 'Chart.dc.html'; },
+      onNavJournal:()=>this.setState({activeNav:'journal'}),
+      onNavAudit:()=>{ window.location.href = 'Audit.dc.html'; },
+      onNavSettings:()=>this.setState({activeNav:'settings'}),
+      onNavMarketplace:()=>{ window.location.href = 'Marketplace.dc.html'; },
+      onNavMySignals:()=>{ window.location.href = 'MySignals.dc.html'; },
+      onNavBacktest:()=>this.setState({activeNav:'backtest'}),
+      onNavAnalysis:()=>{ window.location.href = 'Analysis.dc.html'; },
+      onToggleStrategies:()=>this.setState(s=>({activeNav:'strategies',strategiesExpanded:!s.strategiesExpanded})),
+      onToggleCollapse:()=>this.setState(s=>({collapsed:!s.collapsed})),
+      onToggleProfile:()=>this.setState(s=>({profileOpen:!s.profileOpen,notifOpen:false})),
+      onToggleNotif:()=>this.setState(s=>({notifOpen:!s.notifOpen,profileOpen:false,watchOpen:false})),
+      onToggleWatch:()=>this.setState(s=>({watchOpen:!s.watchOpen,notifOpen:false,profileOpen:false})),
+      onToggleTheme:()=>this.setState(s=>({dark:!s.dark})),
+      onLogout:()=>this.setState({profileOpen:false}),
+      onToggleAccts:()=>this.setState(s=>({acctOpen:!s.acctOpen})),
+      onPickAlpacaPaper:()=>this.setState({acctOpen:false}),
+      onPickAlpacaLive:()=>this.setState({acctOpen:false}),
+      onPickBinance:()=>this.setState({acctOpen:false}),
+      onPerfToday:()=>this.setState({perfWindow:'today'}),
+      onPerf7d:()=>this.setState({perfWindow:'7d'}),
+      onPerf30d:()=>this.setState({perfWindow:'30d'}),
+      onTabPlaced:()=>this.setState({signalTab:'placed'}),
+      onTabSkipped:()=>this.setState({signalTab:'skipped'}),
+      onTabAll:()=>this.setState({signalTab:'all'}),
+      onKill:()=>this.setState(s=>({killArmed:!s.killArmed})),
+      onSymbolInput:(e)=>this.setState({symbolQuery:e.target.value}),
+      onFlatten:()=>this.setState({positions:[]}),
+    };
+  }
+}
+</script>
+</body>
+</html>

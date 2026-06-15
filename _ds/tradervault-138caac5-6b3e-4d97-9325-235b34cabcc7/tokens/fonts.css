@@ -1,0 +1,13 @@
+/* TraderVault LM — Font Face Declarations */
+
+/* Unna (editorial display / wordmark) + Plus Jakarta Sans (UI / body) */
+@import url('https://fonts.googleapis.com/css2?family=Unna:ital,wght@0,400;0,700;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+/* Monospace retained for code, data and token specimens */
+@font-face {
+  font-family: "GeistMono";
+  src: url("../assets/fonts/GeistMono[wght].woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}

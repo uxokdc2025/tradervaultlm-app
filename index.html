@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TraderVault — Overview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFFFFF; --card:#F8FAFC; --subtle:#F1F5F9; --border:#E2E8F0; --input:#CBD5E1;
+  --muted:#64718A; --body:#475569; --head:#1E293B;
+  --lime:#C8FF00; --lime-dark:#B0E000; --navy:#101B25; --navy-mid:#0C1720; --navy-light:#18242F;
+  --accent:#7C3AED; --accent-on:#FFFFFF; --accent-soft:rgba(124,58,237,.12); --accent-ring:rgba(124,58,237,.24); --link:#7C3AED;
+  --profit:#15803D; --loss:#DC2626; --warn:#F59E0B; --info:#3B82F6;
+  --warn-soft:rgba(245,158,11,.16); --warn-ink:#B45309;
+  --sb-bg:#101B25; --sb-fg:#9DAAB6; --sb-muted:#7E8C99; --sb-hover:#1B2731; --sb-border:#2A3640;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --sans:'Inter',ui-sans-serif,system-ui,sans-serif;
+}
+.tv-dark{
+  --bg:#0B131B; --card:#101B25; --subtle:#18242F; --border:#28333D; --input:#2F3C47;
+  --muted:#8492A0; --body:#AEB9C4; --head:#F1F4F7; --link:#A78BFA;
+  --navy:#18242F; --navy-mid:#101B25; --navy-light:#1C2832;
+  --accent:#C8FF00; --accent-on:#101B25; --accent-soft:rgba(200,255,0,.16); --accent-ring:rgba(200,255,0,.22);
+  --warn-soft:rgba(245,158,11,.20); --warn-ink:#FBBF24;
+  --profit:#22C55E; --loss:#F87171;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:var(--sans);color:var(--body);background:var(--bg);-webkit-font-smoothing:antialiased;}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px;border:2px solid var(--bg);}
+::-webkit-scrollbar-track{background:transparent;}
+.tv-stats{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;flex-shrink:0;}
+@media(max-width:1340px){.tv-stats{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:1024px){.tv-stats{grid-template-columns:repeat(2,1fr);}}
+.tv-bottom{display:grid;grid-template-columns:65fr 35fr;gap:12px;align-items:stretch;flex-shrink:0;}
+@media(max-width:1024px){.tv-bottom{grid-template-columns:1fr;}}
+.tv-filters{display:grid;grid-template-columns:1.6fr 2.1fr 1.1fr 0.9fr;gap:22px;align-items:end;}
+@media(max-width:900px){.tv-filters{grid-template-columns:1fr 1fr;}}
+.tv-tablewrap{overflow-x:auto;}
+@keyframes tvpulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+a{text-decoration:none;}
+button{font-family:var(--sans);}
+</style>
+</head>
+<body>
+
+<div id="tv-root" style="display:flex;height:100vh;width:100%;overflow:hidden;background:var(--bg);">
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar" style="width:234px;flex:none;background:var(--sb-bg);display:flex;flex-direction:column;overflow:hidden;transition:width .18s ease;">
+
+    <!-- Logo -->
+    <a id="logo-link" style="display:flex;align-items:center;padding:18px 16px 16px;text-decoration:none;cursor:pointer;">
+      <img id="logo-mark" src="assets/tv-mark.svg" alt="TraderVault" style="height:30px;width:auto;flex:none;display:none;">
+      <img id="logo-wordmark" src="assets/tv-wordmark-dark.svg" alt="TraderVault" style="height:26px;width:auto;flex:none;display:block;">
+    </a>
+
+    <!-- Nav -->
+    <nav role="menu" aria-label="Primary navigation" style="flex:1;overflow-y:auto;overflow-x:hidden;padding:6px 10px;display:flex;flex-direction:column;gap:2px;">
+
+      <a role="menuitem" id="nav-overview" data-nav="overview" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;text-decoration:none;cursor:pointer;transition:background .12s;white-space:nowrap;overflow:hidden;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#CAFF33" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        <span class="nav-label" style="flex:1;">Overview</span>
+      </a>
+
+      <div class="nav-section" style="padding:14px 12px 5px;font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--sb-muted);">STRATEGIES</div>
+
+      <a role="menuitem" id="nav-strategies" data-nav="strategies" data-href="Strategies.dc.html" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;text-decoration:none;cursor:pointer;transition:background .12s;white-space:nowrap;overflow:hidden;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#3DD5A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 6a9 9 0 0 1-9 9"/><path d="M18 9v-3h-3"/></svg>
+        <span class="nav-label" style="flex:1;">Strategies</span>
+      </a>
+      <a role="menuitem" id="nav-analysis" data-nav="analysis" data-href="Analysis.dc.html" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;text-decoration:none;cursor:pointer;transition:background .12s;white-space:nowrap;overflow:hidden;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#3DD5A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg>
+        <span class="nav-label" style="flex:1;">Analysis</span>
+      </a>
+
+      <div class="nav-section" style="padding:14px 12px 5px;font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--sb-muted);">TRADING</div>
+
+      <a role="menuitem" id="nav-chart" data-nav="chart" data-href="Chart.dc.html" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;text-decoration:none;cursor:pointer;transition:background .12s;white-space:nowrap;overflow:hidden;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FBB23A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="7"/><rect x="14" y="6" width="3" height="11"/></svg>
+        <span class="nav-label" style="flex:1;">Chart signals</span>
+      </a>
+      <a role="menuitem" id="nav-audit" data-nav="audit" data-href="Audit.dc.html" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;text-decoration:none;cursor:pointer;transition:background .12s;white-space:nowrap;overflow:hidden;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FBB23A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        <span class="nav-label" style="flex:1;">Audit log</span>
+      </a>
+
+      <div class="nav-section" style="padding:14px 12px 5px;font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--sb-muted);">MARKETPLACE</div>
+
+      <a role="menuitem" id="nav-marketplace" data-nav="marketplace" data-href="Marketplace.dc.html" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;text-decoration:none;cursor:pointer;transition:background .12s;white-space:nowrap;overflow:hidden;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M2 7h20"/><path d="M12 7v15"/></svg>
+        <span class="nav-label" style="flex:1;">Marketplace</span>
+      </a>
+      <a role="menuitem" id="nav-mysignals" data-nav="mysignals" data-href="MySignals.dc.html" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;text-decoration:none;cursor:pointer;transition:background .12s;white-space:nowrap;overflow:hidden;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M4.9 19.1A10 10 0 0 1 4.9 5"/><path d="M7.8 16.2a6 6 0 0 1 0-8.4"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4"/><path d="M19.1 4.9a10 10 0 0 1 0 14.2"/></svg>
+        <span class="nav-label" style="flex:1;">My signals</span>
+      </a>
+
+    </nav>
+
+    <!-- Sidebar Footer -->
+    <div id="sb-footer" style="display:block;">
+      <div style="position:relative;padding:10px 12px;border-top:1px solid var(--sb-border);">
+        <!-- Account menu (expands upward) -->
+        <div id="acct-menu" style="position:absolute;left:10px;right:10px;bottom:calc(100% - 2px);background:var(--navy-light);border:1px solid var(--sb-border);border-radius:11px;box-shadow:0 -10px 32px -8px rgba(0,0,0,.45);overflow:hidden;z-index:40;transition:opacity .14s,transform .14s;transform-origin:bottom center;opacity:0;transform:translateY(8px) scale(.98);pointer-events:none;">
+          <div style="padding:9px 12px 7px;font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--sb-muted);">SWITCH ACCOUNT</div>
+          <div style="height:1px;background:var(--sb-border);"></div>
+          <div style="padding:6px;display:flex;flex-direction:column;gap:2px;">
+            <button id="pick-alpaca-paper" style="display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;background:var(--sb-hover);border:none;border-radius:7px;cursor:pointer;">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none;"></span>
+              <div style="min-width:0;text-align:left;flex:1;">
+                <div style="font-size:13px;font-weight:600;color:#fff;">Alpaca paper</div>
+                <div style="font-size:11px;color:var(--sb-muted);">Paper trading · $99,858.87</div>
+              </div>
+            </button>
+            <button id="pick-alpaca-live" style="display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;background:none;border:none;border-radius:7px;cursor:pointer;">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--sb-muted);flex:none;"></span>
+              <div style="min-width:0;text-align:left;flex:1;">
+                <div style="font-size:13px;font-weight:600;color:#fff;">Alpaca live</div>
+                <div style="font-size:11px;color:var(--sb-muted);">Live trading · $24,107.40</div>
+              </div>
+            </button>
+            <button id="pick-binance" style="display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;background:none;border:none;border-radius:7px;cursor:pointer;">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--sb-muted);flex:none;"></span>
+              <div style="min-width:0;text-align:left;flex:1;">
+                <div style="font-size:13px;font-weight:600;color:#fff;">Binance Futures</div>
+                <div style="font-size:11px;color:var(--sb-muted);">Live trading · $12,540.18</div>
+              </div>
+            </button>
+          </div>
+          <div style="height:1px;background:var(--sb-border);"></div>
+          <button style="display:flex;align-items:center;gap:9px;width:100%;padding:10px 14px;background:none;border:none;color:var(--sb-fg);font-family:var(--sans);font-size:12px;font-weight:500;cursor:pointer;text-align:left;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Connect new account
+          </button>
+        </div>
+        <!-- Account trigger -->
+        <button id="acct-trigger" style="display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;background:none;border:1px solid transparent;border-radius:9px;cursor:pointer;">
+          <div style="min-width:0;flex:1;text-align:left;">
+            <div style="font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--sb-muted);margin-bottom:5px;">ACCOUNT</div>
+            <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:6px;">Alpaca paper</div>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+              <span style="font-size:9px;font-weight:600;letter-spacing:0.06em;padding:2px 6px;border-radius:4px;background:rgba(59,130,246,.18);color:#7DB1FF;">ALPACA</span>
+              <span style="font-size:9px;font-weight:600;letter-spacing:0.06em;padding:2px 6px;border-radius:4px;background:rgba(148,163,184,.18);color:#A7B4C2;">PAPER</span>
+              <span style="font-family:var(--mono);font-size:12px;color:#fff;margin-left:auto;font-variant-numeric:tabular-nums;">$99,858.87</span>
+            </div>
+          </div>
+          <svg id="acct-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--sb-muted);transition:transform .15s;"><path d="m18 15-6-6-6 6"/></svg>
+        </button>
+      </div>
+      <!-- Clock + Kill -->
+      <div style="padding:14px 12px 14px;display:flex;flex-direction:column;gap:9px;border-top:1px solid var(--sb-border);">
+        <div id="clock-row" style="display:flex;align-items:center;gap:8px;">
+          <span style="width:6px;height:6px;border-radius:50%;background:var(--accent);flex:none;box-shadow:0 0 6px var(--accent);"></span>
+          <span id="clock-display" style="font-family:var(--mono);font-size:13px;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:0.04em;">00:00:00</span>
+          <span style="font-size:10px;font-weight:600;color:var(--sb-muted);letter-spacing:0.08em;">UTC</span>
+        </div>
+        <div style="height:1px;background:var(--sb-border);margin:1px 0;"></div>
+        <button id="kill-btn" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:10px 14px;border-radius:8px;border:1px solid rgba(239,68,68,.5);background:rgba(239,68,68,.14);color:#FF8A8A;font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:0.06em;cursor:pointer;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+          <span id="kill-label" class="nav-label">KILL</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;">
+
+    <!-- Topbar -->
+    <header style="height:56px;flex:none;display:flex;align-items:center;gap:16px;padding:0 20px;border-bottom:1px solid var(--border);background:var(--bg);">
+      <button id="collapse-btn" title="Collapse navigation" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;flex:none;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--body);cursor:pointer;padding:0;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </button>
+      <div style="display:flex;align-items:center;gap:7px;font-size:14px;min-width:0;">
+        <span style="color:var(--head);font-weight:600;">Overview</span>
+      </div>
+      <div style="flex:1;"></div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--body);"><span style="width:7px;height:7px;border-radius:50%;background:var(--profit);animation:tvpulse 2s infinite;"></span>WS</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);"><span style="width:7px;height:7px;border-radius:50%;background:var(--muted);"></span>equity closed</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--body);"><span style="width:7px;height:7px;border-radius:50%;background:var(--profit);"></span>crypto 24/7</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--body);"><span style="width:7px;height:7px;border-radius:50%;background:var(--profit);"></span>forex 24/5</span>
+      </div>
+      <div style="width:1px;height:24px;background:var(--border);"></div>
+
+      <!-- Watch -->
+      <div style="position:relative;flex:none;">
+        <button id="watch-btn" style="display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--body);font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span>Watch</span>
+          <svg id="watch-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--muted);transition:transform .15s;"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div id="watch-menu" style="position:absolute;top:calc(100% + 8px);right:0;width:320px;background:var(--bg);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 32px -8px rgba(13,27,42,.22),0 2px 8px -2px rgba(13,27,42,.12);z-index:50;overflow:hidden;transition:opacity .14s,transform .14s;transform-origin:top right;opacity:0;transform:translateY(-6px) scale(.97);pointer-events:none;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 11px;">
+            <span style="font-size:15px;font-weight:600;color:var(--head);">Watchlist</span>
+            <span style="font-size:12px;color:var(--muted);">4 markets</span>
+          </div>
+          <div style="height:1px;background:var(--border);"></div>
+          <div style="padding:6px;display:flex;flex-direction:column;">
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;">
+              <span style="width:30px;height:30px;border-radius:7px;background:rgba(247,147,26,.14);color:#F7931A;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:none;">BTC</span>
+              <div style="min-width:0;flex:1;">
+                <div style="font-size:13px;font-weight:600;color:var(--head);">BTC/USD</div>
+                <div style="font-size:11px;color:var(--muted);">Bitcoin</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--head);font-variant-numeric:tabular-nums;">61,258.89</div>
+                <div style="font-family:var(--mono);font-size:11px;color:var(--profit);font-variant-numeric:tabular-nums;">+0.09%</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;">
+              <span style="width:30px;height:30px;border-radius:7px;background:rgba(98,126,234,.14);color:#627EEA;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:none;">ETH</span>
+              <div style="min-width:0;flex:1;">
+                <div style="font-size:13px;font-weight:600;color:var(--head);">ETH/USD</div>
+                <div style="font-size:11px;color:var(--muted);">Ethereum</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--head);font-variant-numeric:tabular-nums;">3,412.06</div>
+                <div style="font-family:var(--mono);font-size:11px;color:var(--profit);font-variant-numeric:tabular-nums;">+1.24%</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;">
+              <span style="width:30px;height:30px;border-radius:7px;background:rgba(30,41,59,.08);color:var(--head);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex:none;">AAPL</span>
+              <div style="min-width:0;flex:1;">
+                <div style="font-size:13px;font-weight:600;color:var(--head);">AAPL</div>
+                <div style="font-size:11px;color:var(--muted);">Apple Inc.</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--head);font-variant-numeric:tabular-nums;">227.48</div>
+                <div style="font-family:var(--mono);font-size:11px;color:var(--loss);font-variant-numeric:tabular-nums;">-0.42%</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;">
+              <span style="width:30px;height:30px;border-radius:7px;background:rgba(30,41,59,.08);color:var(--head);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex:none;">EUR</span>
+              <div style="min-width:0;flex:1;">
+                <div style="font-size:13px;font-weight:600;color:var(--head);">EUR/USD</div>
+                <div style="font-size:11px;color:var(--muted);">Euro</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--head);font-variant-numeric:tabular-nums;">1.0842</div>
+                <div style="font-family:var(--mono);font-size:11px;color:var(--profit);font-variant-numeric:tabular-nums;">+0.11%</div>
+              </div>
+            </div>
+          </div>
+          <div style="height:1px;background:var(--border);"></div>
+          <a style="display:block;text-align:center;padding:13px;font-size:14px;font-weight:600;color:var(--link);cursor:pointer;text-decoration:none;">Manage watchlist</a>
+        </div>
+      </div>
+
+      <div style="width:1px;height:24px;background:var(--border);"></div>
+
+      <!-- Notifications -->
+      <div style="position:relative;flex:none;">
+        <button id="notif-btn" style="position:relative;display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--body);cursor:pointer;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          <span style="position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:var(--loss);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums;">57</span>
+        </button>
+        <div id="notif-menu" style="position:absolute;top:calc(100% + 8px);right:0;width:330px;background:var(--bg);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 32px -8px rgba(13,27,42,.22),0 2px 8px -2px rgba(13,27,42,.12);z-index:50;overflow:hidden;transition:opacity .14s,transform .14s;transform-origin:top right;opacity:0;transform:translateY(-6px) scale(.97);pointer-events:none;">
+          <div style="padding:15px 18px 12px;font-size:15px;font-weight:600;color:var(--head);">Notifications</div>
+          <div style="height:1px;background:var(--border);"></div>
+          <div style="padding:6px;display:flex;flex-direction:column;">
+            <div style="display:flex;align-items:flex-start;gap:12px;padding:11px 12px;border-radius:8px;cursor:pointer;">
+              <span style="width:32px;height:32px;border-radius:50%;background:var(--profit);display:flex;align-items:center;justify-content:center;flex:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <div style="min-width:0;">
+                <div style="font-size:14px;font-weight:600;color:var(--head);line-height:1.25;">BTC/USDT trade executed</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:2px;">2 min ago</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:12px;padding:11px 12px;border-radius:8px;cursor:pointer;">
+              <span style="width:32px;height:32px;border-radius:50%;background:var(--warn);display:flex;align-items:center;justify-content:center;flex:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+              <div style="min-width:0;">
+                <div style="font-size:14px;font-weight:600;color:var(--head);line-height:1.25;">Signal Bot paused — volatility high</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:2px;">15 min ago</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:12px;padding:11px 12px;border-radius:8px;cursor:pointer;">
+              <span style="width:32px;height:32px;border-radius:50%;background:var(--info);display:flex;align-items:center;justify-content:center;flex:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+              <div style="min-width:0;">
+                <div style="font-size:14px;font-weight:600;color:var(--head);line-height:1.25;">New strategy available</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:2px;">1 hour ago</div>
+              </div>
+            </div>
+          </div>
+          <div style="height:1px;background:var(--border);"></div>
+          <a style="display:block;text-align:center;padding:13px;font-size:14px;font-weight:600;color:var(--link);cursor:pointer;text-decoration:none;">View all notifications</a>
+        </div>
+      </div>
+
+      <!-- Theme toggle -->
+      <button id="theme-btn" title="Switch to dark mode" style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--body);cursor:pointer;flex:none;">
+        <span id="theme-moon" style="display:inline-flex;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
+        <span id="theme-sun" style="display:none;color:var(--accent);"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></span>
+      </button>
+
+      <!-- Profile -->
+      <div style="position:relative;flex:none;">
+        <button id="profile-btn" style="display:flex;align-items:center;gap:7px;padding:3px 7px 3px 3px;border-radius:999px;border:1px solid var(--border);background:var(--bg);cursor:pointer;">
+          <span style="width:30px;height:30px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;color:var(--lime);font-size:12px;font-weight:700;flex:none;">JD</span>
+          <svg id="profile-chevron" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted);transition:transform .15s;"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div id="profile-menu" style="position:absolute;top:calc(100% + 8px);right:0;width:230px;background:var(--bg);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 32px -8px rgba(13,27,42,.22),0 2px 8px -2px rgba(13,27,42,.12);z-index:50;overflow:hidden;transition:opacity .14s,transform .14s;transform-origin:top right;opacity:0;transform:translateY(-6px) scale(.97);pointer-events:none;">
+          <div style="padding:14px 16px 12px;">
+            <div style="font-size:15px;font-weight:600;color:var(--head);line-height:1.2;">John Doe</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:3px;">Pro Trader</div>
+          </div>
+          <div style="height:1px;background:var(--border);"></div>
+          <div style="padding:6px;display:flex;flex-direction:column;">
+            <a style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:7px;font-size:14px;color:var(--body);text-decoration:none;cursor:pointer;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;opacity:.65;"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+              My Profile
+            </a>
+            <a style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:7px;font-size:14px;color:var(--body);text-decoration:none;cursor:pointer;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;opacity:.65;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              Settings
+            </a>
+            <a style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:7px;font-size:14px;color:var(--body);text-decoration:none;cursor:pointer;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;opacity:.65;"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              Help &amp; Support
+            </a>
+          </div>
+          <div style="height:1px;background:var(--border);margin:0 6px;"></div>
+          <div style="padding:6px;">
+            <a id="logout-btn" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:7px;font-size:14px;color:var(--body);text-decoration:none;cursor:pointer;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;opacity:.65;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Logout
+            </a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main scroll content -->
+    <main style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;">
+
+      <!-- Stat cards -->
+      <div class="tv-stats">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 18px;display:flex;flex-direction:column;gap:6px;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:0.07em;color:var(--muted);">CASH</div>
+          <div style="font-size:27px;font-weight:700;color:var(--head);font-variant-numeric:tabular-nums;letter-spacing:-0.01em;line-height:1.1;">$98,616.73</div>
+          <div style="font-size:12px;color:var(--muted);">Alpaca paper</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 18px;display:flex;flex-direction:column;gap:6px;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:0.07em;color:var(--muted);">EQUITY</div>
+          <div style="font-size:27px;font-weight:700;color:var(--head);font-variant-numeric:tabular-nums;letter-spacing:-0.01em;line-height:1.1;">$99,858.87</div>
+          <div style="font-size:12px;color:var(--muted);">total account value</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 18px;display:flex;flex-direction:column;gap:6px;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:0.07em;color:var(--muted);">BUYING POWER</div>
+          <div style="font-size:27px;font-weight:700;color:var(--head);font-variant-numeric:tabular-nums;letter-spacing:-0.01em;line-height:1.1;">$397,478.15</div>
+          <div style="font-size:12px;color:var(--muted);">4x margin</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 18px;display:flex;flex-direction:column;gap:6px;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:0.07em;color:var(--muted);">OPEN P&amp;L</div>
+          <div style="display:flex;align-items:baseline;gap:8px;"><span style="font-size:27px;font-weight:700;color:var(--loss);font-variant-numeric:tabular-nums;letter-spacing:-0.01em;line-height:1.1;">-$125.67</span><span style="font-size:12px;font-weight:600;color:var(--loss);font-variant-numeric:tabular-nums;">-0.01%</span></div>
+          <div style="font-size:12px;color:var(--muted);">unrealized · live · 5s</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 18px;display:flex;flex-direction:column;gap:6px;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:0.07em;color:var(--muted);">MAX DRAWDOWN</div>
+          <div style="font-size:27px;font-weight:700;color:var(--loss);font-variant-numeric:tabular-nums;line-height:1.1;">-$1,284.50</div>
+          <div style="font-size:12px;color:var(--muted);">-1.27% peak-to-trough · today</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 18px;display:flex;flex-direction:column;gap:6px;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:0.07em;color:var(--muted);">AVG TRADE SIZE</div>
+          <div style="font-size:27px;font-weight:700;color:var(--head);font-variant-numeric:tabular-nums;line-height:1.1;">$542.18</div>
+          <div style="font-size:12px;color:var(--muted);">across 43 fills today</div>
+        </div>
+      </div>
+
+      <!-- Open Positions -->
+      <section style="background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+        <div style="display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--border);">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          <span style="font-size:12px;font-weight:700;letter-spacing:0.07em;color:var(--head);">OPEN POSITIONS</span>
+          <div style="flex:1;"></div>
+          <span id="pos-count" style="font-size:13px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums;">3</span>
+        </div>
+
+        <!-- Filter row -->
+        <div class="tv-filters" style="padding:14px 16px;border-bottom:1px solid var(--border);">
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <label style="font-size:10px;font-weight:600;letter-spacing:0.08em;color:var(--muted);">SYMBOL</label>
+            <input id="symbol-search" type="text" placeholder="BTC / SPY / EUR…" style="width:100%;height:40px;padding:0 12px;border-radius:7px;border:1px solid var(--border);background:var(--bg);color:var(--head);font-family:var(--sans);font-size:13px;outline:none;">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <label style="font-size:10px;font-weight:600;letter-spacing:0.08em;color:var(--muted);">ASSET CLASS</label>
+            <div id="asset-chips" style="display:flex;gap:7px;flex-wrap:wrap;"></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <label style="font-size:10px;font-weight:600;letter-spacing:0.08em;color:var(--muted);">SIDE</label>
+            <div id="side-chips" style="display:flex;gap:7px;flex-wrap:wrap;"></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <label style="font-size:10px;font-weight:600;letter-spacing:0.08em;color:var(--muted);">BROKER</label>
+            <div id="broker-chips" style="display:flex;gap:7px;flex-wrap:wrap;"></div>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="tv-tablewrap">
+          <table style="width:100%;border-collapse:collapse;min-width:920px;">
+            <thead>
+              <tr style="background:var(--subtle);">
+                <th style="text-align:left;padding:9px 16px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">POSITION</th>
+                <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">SIDE</th>
+                <th style="text-align:right;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">QTY / LOT</th>
+                <th style="text-align:right;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">CASH $</th>
+                <th style="text-align:right;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">ENTRY → MARK</th>
+                <th style="text-align:center;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">SL ($)</th>
+                <th style="text-align:right;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">TP ($)</th>
+                <th style="text-align:right;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">R:R</th>
+                <th style="text-align:right;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">DD $</th>
+                <th style="text-align:right;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">P&amp;L $</th>
+                <th style="width:36px;"></th>
+              </tr>
+            </thead>
+            <tbody id="pos-tbody"></tbody>
+          </table>
+          <div id="pos-empty" style="display:none;padding:34px;text-align:center;font-size:13px;color:var(--muted);">No open positions match your filters.</div>
+        </div>
+      </section>
+
+      <!-- Bottom two-column -->
+      <div class="tv-bottom">
+        <!-- Left column -->
+        <div style="display:flex;flex-direction:column;gap:12px;min-width:0;">
+
+          <!-- Strategy Performance -->
+          <section style="background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--border);">
+              <span style="font-size:12px;font-weight:700;letter-spacing:0.07em;color:var(--head);">STRATEGY PERFORMANCE</span>
+              <div style="flex:1;"></div>
+              <div style="display:flex;gap:2px;background:var(--subtle);padding:3px;border-radius:8px;">
+                <button id="perf-today" style="padding:5px 13px;border-radius:6px;font-size:11px;font-weight:600;letter-spacing:0.04em;cursor:pointer;border:none;font-family:var(--sans);transition:all .12s;background:var(--accent);color:var(--accent-on);">TODAY</button>
+                <button id="perf-7d" style="padding:5px 13px;border-radius:6px;font-size:11px;font-weight:600;letter-spacing:0.04em;cursor:pointer;border:none;font-family:var(--sans);transition:all .12s;background:transparent;color:var(--muted);">7D</button>
+                <button id="perf-30d" style="padding:5px 13px;border-radius:6px;font-size:11px;font-weight:600;letter-spacing:0.04em;cursor:pointer;border:none;font-family:var(--sans);transition:all .12s;background:transparent;color:var(--muted);">30D</button>
+              </div>
+            </div>
+            <div class="tv-tablewrap">
+              <table style="width:100%;border-collapse:collapse;min-width:560px;">
+                <thead>
+                  <tr style="background:var(--subtle);">
+                    <th style="text-align:left;padding:9px 16px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">STRATEGY</th>
+                    <th style="text-align:right;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">RECENT 5M</th>
+                    <th style="text-align:right;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">SIGNALS</th>
+                    <th style="text-align:right;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">TRADES</th>
+                    <th style="text-align:right;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">WIN RATE</th>
+                    <th style="text-align:right;padding:9px 16px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">P&amp;L</th>
+                  </tr>
+                </thead>
+                <tbody id="strat-tbody"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- P&L by Symbol x Strategy -->
+          <section style="background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;flex:1;display:flex;flex-direction:column;">
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--border);">
+              <span style="font-size:12px;font-weight:700;letter-spacing:0.07em;color:var(--head);">P&amp;L BY SYMBOL × STRATEGY</span>
+              <div style="flex:1;"></div>
+              <span style="font-size:11px;font-weight:600;letter-spacing:0.06em;color:var(--muted);">TODAY</span>
+            </div>
+            <div style="flex:1;overflow-x:auto;">
+              <div style="min-width:440px;">
+                <div style="display:grid;grid-template-columns:1.3fr repeat(4,1fr) 1.1fr;gap:6px;padding:9px 16px;background:var(--subtle);border-bottom:1px solid var(--border);">
+                  <span style="font-size:10px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">SYMBOL</span>
+                  <span style="font-size:10px;font-weight:600;letter-spacing:0.05em;color:var(--muted);text-align:right;">EMA</span>
+                  <span style="font-size:10px;font-weight:600;letter-spacing:0.05em;color:var(--muted);text-align:right;">RSI</span>
+                  <span style="font-size:10px;font-weight:600;letter-spacing:0.05em;color:var(--muted);text-align:right;">VWAP</span>
+                  <span style="font-size:10px;font-weight:600;letter-spacing:0.05em;color:var(--muted);text-align:right;">ATR</span>
+                  <span style="font-size:10px;font-weight:600;letter-spacing:0.05em;color:var(--muted);text-align:right;">TOTAL</span>
+                </div>
+                <div id="pnl-rows"></div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Right column: Signal Feed -->
+        <section style="background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;min-width:0;">
+          <div style="display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--border);">
+            <span style="font-size:12px;font-weight:700;letter-spacing:0.07em;color:var(--head);">SIGNAL FEED</span>
+            <div style="flex:1;"></div>
+            <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);"><span style="width:6px;height:6px;border-radius:50%;background:var(--profit);animation:tvpulse 2s infinite;"></span>live · last 25</span>
+          </div>
+          <div style="display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--border);">
+            <button id="tab-placed" style="padding:12px 4px;margin-right:20px;font-size:12px;font-weight:600;letter-spacing:0.04em;cursor:pointer;background:none;border:none;border-bottom:2px solid var(--accent);color:var(--head);font-family:var(--sans);transition:all .12s;display:inline-flex;align-items:center;gap:7px;">PLACED <span id="badge-placed" style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;font-variant-numeric:tabular-nums;background:var(--navy);color:#fff;">7</span></button>
+            <button id="tab-skipped" style="padding:12px 4px;margin-right:20px;font-size:12px;font-weight:600;letter-spacing:0.04em;cursor:pointer;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:var(--sans);transition:all .12s;display:inline-flex;align-items:center;gap:7px;">SKIPPED <span id="badge-skipped" style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;font-variant-numeric:tabular-nums;background:var(--subtle);color:var(--muted);">25</span></button>
+            <button id="tab-all" style="padding:12px 4px;margin-right:20px;font-size:12px;font-weight:600;letter-spacing:0.04em;cursor:pointer;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:var(--sans);transition:all .12s;display:inline-flex;align-items:center;gap:7px;">ALL <span id="badge-all" style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;font-variant-numeric:tabular-nums;background:var(--subtle);color:var(--muted);">32</span></button>
+          </div>
+          <div style="display:grid;grid-template-columns:64px 1fr 50px 52px 48px 1fr;gap:8px;padding:9px 16px;background:var(--subtle);border-bottom:1px solid var(--border);">
+            <span style="font-size:10px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">TIME</span>
+            <span style="font-size:10px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">SYMBOL</span>
+            <span style="font-size:10px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">DIR</span>
+            <span style="font-size:10px;font-weight:600;letter-spacing:0.05em;color:var(--muted);">SESS</span>
+            <span style="font-size:10px;font-weight:600;letter-spacing:0.05em;color:var(--muted);text-align:right;">CONF</span>
+            <span style="font-size:10px;font-weight:600;letter-spacing:0.05em;color:var(--muted);text-align:right;">OUTCOME</span>
+          </div>
+          <div id="signal-feed" style="flex:1;overflow-y:auto;min-height:200px;"></div>
+        </section>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+// ============================
+// State
+// ============================
+const state = {
+  activeNav: 'overview',
+  collapsed: false,
+  profileOpen: false,
+  notifOpen: false,
+  watchOpen: false,
+  dark: false,
+  acctOpen: false,
+  killArmed: false,
+  perfWindow: 'today',
+  signalTab: 'placed',
+  symbolQuery: '',
+  assetFilter: {},
+  sideFilter: {},
+  brokerFilter: {},
+  positions: [
+    {id:'aapl', sym:'AAPL',    broker:'ALPACA · ALPACA PAPER', side:'LONG',  qty:'2',       cash:'$597.17',  entry:'$298.59',   mark:'$295.70',  dd:'-$22.35', pl:'-$5.77',  plPct:'-0.97%', assetClass:'US_EQUITY'},
+    {id:'amzn', sym:'AMZN',    broker:'ALPACA · ALPACA PAPER', side:'LONG',  qty:'2',       cash:'$535.94',  entry:'$267.97',   mark:'$242.02',  dd:'-$65.49', pl:'-$51.90', plPct:'-9.68%', assetClass:'US_EQUITY'},
+    {id:'eth',  sym:'ETH/USD', broker:'ALPACA · ALPACA PAPER', side:'LONG',  qty:'0.09975', cash:'$226.15',  entry:'$2,267.20', mark:'$1,585.50',dd:'-$75.09', pl:'-$68.00', plPct:'-30.07%',assetClass:'CRYPTO'},
+  ],
+};
+
+// ============================
+// Data builders
+// ============================
+function pad(n){ return String(n).padStart(2,'0'); }
+
+function buildPlaced(){
+  const raw=[
+    {sym:'NVDA',    dir:'LONG',  sess:'NY',     conf:'0.82', outcome:'filled @ $131.92'},
+    {sym:'AAPL',    dir:'LONG',  sess:'NY',     conf:'0.74', outcome:'filled @ $298.59'},
+    {sym:'BTC/USD', dir:'LONG',  sess:'ASIA',   conf:'0.79', outcome:'filled @ $61,140'},
+    {sym:'SPY',     dir:'SHORT', sess:'NY',     conf:'0.71', outcome:'filled @ $556.40'},
+    {sym:'AMZN',    dir:'LONG',  sess:'NY',     conf:'0.68', outcome:'filled @ $267.97'},
+    {sym:'EUR/USD', dir:'LONG',  sess:'LONDON', conf:'0.77', outcome:'filled @ 1.0838'},
+    {sym:'ETH/USD', dir:'LONG',  sess:'ASIA',   conf:'0.73', outcome:'filled @ $2,267'},
+  ];
+  let total=22*3600+58*60+11;
+  return raw.map((r,i)=>{
+    total-=(220+(i*97)%400);
+    if(total<0)total+=86400;
+    const hh=Math.floor(total/3600)%24,mm=Math.floor(total/60)%60,ss=total%60;
+    return {...r, time:`${pad(hh)}:${pad(mm)}:${pad(ss)}`, placed:true};
+  });
+}
+
+function buildSkipped(){
+  const syms=['NVDA','AAPL','SPY','TSLA','MSFT','BTC/USD','ETH/USD','EUR/USD','AMZN','GOOGL','META','QQQ'];
+  const sessions=['NY','LONDON','ASIA'];
+  const reasons=['spread too wide','below conf','max positions','no stop loss','cooldown','session filter','risk cap'];
+  const dirs=['LONG','SHORT'];
+  let total=23*3600+47*60+58;
+  const out=[];
+  for(let i=0;i<25;i++){
+    total-=(37+(i*53)%120);
+    if(total<0)total+=86400;
+    const hh=Math.floor(total/3600)%24,mm=Math.floor(total/60)%60,ss=total%60;
+    out.push({
+      time:`${pad(hh)}:${pad(mm)}:${pad(ss)}`,
+      sym:syms[(i*7)%syms.length],
+      dir:dirs[i%2],
+      sess:sessions[(i*3)%sessions.length],
+      conf:(0.50+((i*13)%46)/100).toFixed(2),
+      outcome:reasons[(i*5)%reasons.length],
+      placed:false
+    });
+  }
+  return out;
+}
+
+const PLACED = buildPlaced();
+const SKIPPED = buildSkipped();
+
+const STRATEGIES = [
+  {name:'EMA 9/30 Cross', dot:'var(--info)',   recent:'+2', signals:47, trades:12, win:'58%', pl:'+$214.40', plColor:'var(--profit)', tag:'EQ'},
+  {name:'RSI Reversal',   dot:'var(--warn)',   recent:'+1', signals:33, trades:8,  win:'50%', pl:'-$96.12',  plColor:'var(--loss)',   tag:'CRYPTO'},
+  {name:'VWAP Bounce',    dot:'var(--accent)', recent:'0',  signals:21, trades:5,  win:'60%', pl:'+$58.30',  plColor:'var(--profit)', tag:'FX'},
+  {name:'Breakout ATR',   dot:'var(--profit)', recent:'+4', signals:62, trades:18, win:'44%', pl:'-$182.05', plColor:'var(--loss)',   tag:'EQ'},
+  {name:'Default engine', dot:'var(--muted)',  recent:'—',  signals:0,  trades:0,  win:'—',   pl:'$0.00',    plColor:'var(--muted)', tag:null},
+];
+
+const PNL_DATA=[
+  {sym:'NVDA',    cells:[88.50,   0,      0,      64.30]},
+  {sym:'AAPL',    cells:[42.10,   0,     -12.40,  18.20]},
+  {sym:'SPY',     cells:[63.40,  -7.12,   0,     -21.45]},
+  {sym:'AMZN',    cells:[-30.20,  0,      0,     -51.90]},
+  {sym:'ETH/USD', cells:[0,      -68.00,  0,       0]},
+  {sym:'EUR/USD', cells:[0,       0,     58.30,    0]},
+];
+
+// ============================
+// Style helpers
+// ============================
+function chipStyle(on){
+  return `padding:6px 11px;border-radius:6px;font-size:11px;font-weight:600;letter-spacing:0.03em;cursor:pointer;font-family:var(--sans);transition:all .12s;border:1px solid ${on?'var(--navy)':'var(--border)'};background:${on?'var(--navy)':'var(--bg)'};color:${on?'#fff':'var(--body)'};`;
+}
+function segStyle(on){
+  return `padding:5px 13px;border-radius:6px;font-size:11px;font-weight:600;letter-spacing:0.04em;cursor:pointer;border:none;font-family:var(--sans);transition:all .12s;background:${on?'var(--accent)':'transparent'};color:${on?'var(--accent-on)':'var(--muted)'};`;
+}
+function tabStyle(on){
+  return `padding:12px 4px;margin-right:20px;font-size:12px;font-weight:600;letter-spacing:0.04em;cursor:pointer;background:none;border:none;border-bottom:2px solid ${on?'var(--accent)':'transparent'};color:${on?'var(--head)':'var(--muted)'};font-family:var(--sans);transition:all .12s;display:inline-flex;align-items:center;gap:7px;`;
+}
+function badgeStyle(on){
+  return `font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;font-variant-numeric:tabular-nums;background:${on?'var(--navy)':'var(--subtle)'};color:${on?'#fff':'var(--muted)'};`;
+}
+function navStyle(id){
+  const navA={
+    overview:   {accent:'#CAFF33',bg:'rgba(202,255,51,0.12)'},
+    strategies: {accent:'#3DD5A8',bg:'rgba(61,213,168,0.12)'},
+    analysis:   {accent:'#A78BFA',bg:'rgba(167,139,250,0.10)'},
+    chart:      {accent:'#FBB23A',bg:'rgba(251,178,58,0.10)'},
+    audit:      {accent:'#FBB23A',bg:'rgba(251,178,58,0.10)'},
+    marketplace:{accent:'#F87171',bg:'rgba(248,113,113,0.10)'},
+    mysignals:  {accent:'#F87171',bg:'rgba(248,113,113,0.10)'},
+  };
+  const c=state.collapsed;
+  const active=state.activeNav===id;
+  const {accent,bg}=navA[id]||navA.overview;
+  const navGrey='#8B95A4';
+  return `display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;text-decoration:none;cursor:pointer;transition:background .12s;white-space:nowrap;overflow:hidden;${c?'justify-content:center;':''}color:${active?accent:navGrey};background:${active?bg:'transparent'};font-weight:${active?500:400};box-shadow:${active?`inset 3px 0 0 0 ${accent}`:'none'};`;
+}
+function fmtPnl(v){
+  return (v>0?'+$':'−$')+Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+// ============================
+// Render functions
+// ============================
+function renderNavItems(){
+  const c=state.collapsed;
+  document.querySelectorAll('[data-nav]').forEach(el=>{
+    const id=el.dataset.nav;
+    el.style.cssText=navStyle(id);
+  });
+  document.querySelectorAll('.nav-label').forEach(el=>{
+    el.style.cssText=c?'display:none;':'flex:1;';
+  });
+  document.querySelectorAll('.nav-section').forEach(el=>{
+    const base='font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--sb-muted);';
+    el.style.cssText=c?base+'padding:12px 0 4px;text-align:center;':base+'padding:14px 12px 5px;';
+  });
+  // logo
+  document.getElementById('logo-mark').style.display=c?'block':'none';
+  document.getElementById('logo-wordmark').style.display=c?'none':'block';
+  document.getElementById('logo-link').style.cssText=`display:flex;align-items:center;padding:18px 16px 16px;text-decoration:none;cursor:pointer;${c?'justify-content:center;':''}`;
+  // footer
+  document.getElementById('sb-footer').style.display=c?'none':'block';
+  // sidebar width
+  document.getElementById('sidebar').style.width=c?'66px':'234px';
+}
+
+function renderPositions(){
+  let rows=state.positions.slice();
+  const q=state.symbolQuery.trim().toUpperCase();
+  if(q) rows=rows.filter(p=>p.sym.toUpperCase().includes(q));
+  const af=Object.keys(state.assetFilter);
+  if(af.length) rows=rows.filter(p=>af.includes(p.assetClass));
+  const sf=Object.keys(state.sideFilter);
+  if(sf.length) rows=rows.filter(p=>sf.includes(p.side));
+  // broker filter not altering since all are ALPACA — but keep the chip logic consistent
+  document.getElementById('pos-count').textContent=rows.length;
+  const tbody=document.getElementById('pos-tbody');
+  tbody.innerHTML='';
+  if(rows.length===0){
+    document.getElementById('pos-empty').style.display='block';
+    return;
+  }
+  document.getElementById('pos-empty').style.display='none';
+  rows.forEach(p=>{
+    const sideColor=p.side==='LONG'?'var(--profit)':'var(--loss)';
+    const tr=document.createElement('tr');
+    tr.style.cssText='border-bottom:1px solid var(--border);';
+    tr.innerHTML=`
+      <td style="padding:12px 16px;">
+        <div style="font-size:14px;font-weight:600;color:var(--head);">${p.sym}</div>
+        <div style="font-size:10px;letter-spacing:0.04em;color:var(--muted);margin-top:2px;">${p.broker}</div>
+      </td>
+      <td style="padding:12px 12px;"><span style="display:inline-block;padding:3px 9px;border-radius:5px;font-size:10px;font-weight:700;letter-spacing:0.05em;background:${sideColor};color:#fff;">${p.side}</span></td>
+      <td style="padding:12px 12px;text-align:right;font-family:var(--mono);font-size:13px;color:var(--head);font-variant-numeric:tabular-nums;">${p.qty}</td>
+      <td style="padding:12px 12px;text-align:right;font-family:var(--mono);font-size:13px;color:var(--head);font-variant-numeric:tabular-nums;">${p.cash}</td>
+      <td style="padding:12px 12px;text-align:right;white-space:nowrap;">
+        <span style="font-family:var(--mono);font-size:13px;color:var(--body);font-variant-numeric:tabular-nums;">${p.entry}</span>
+        <span style="color:var(--muted);margin:0 4px;">→</span>
+        <span style="font-family:var(--mono);font-size:13px;color:var(--head);font-variant-numeric:tabular-nums;">${p.mark}</span>
+        <span style="font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.06em;color:var(--muted);background:var(--subtle);padding:2px 4px;border-radius:3px;margin-left:6px;">BKR</span>
+      </td>
+      <td style="padding:12px 12px;text-align:center;"><span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:5px;background:var(--warn-soft);color:var(--warn-ink);font-size:10px;font-weight:600;letter-spacing:0.05em;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>NO SL</span></td>
+      <td style="padding:12px 12px;text-align:right;color:var(--muted);font-family:var(--mono);font-size:13px;">—</td>
+      <td style="padding:12px 12px;text-align:right;color:var(--muted);font-family:var(--mono);font-size:13px;">—</td>
+      <td style="padding:12px 12px;text-align:right;font-family:var(--mono);font-size:13px;color:var(--loss);font-variant-numeric:tabular-nums;">${p.dd}</td>
+      <td style="padding:12px 12px;text-align:right;">
+        <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--loss);font-variant-numeric:tabular-nums;">${p.pl}</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--loss);font-variant-numeric:tabular-nums;margin-top:1px;">${p.plPct}</div>
+      </td>
+      <td style="padding:12px 14px 12px 4px;text-align:right;" class="remove-cell"></td>
+    `;
+    const removeBtn=document.createElement('button');
+    removeBtn.style.cssText='display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:5px;border:none;background:none;color:var(--muted);cursor:pointer;';
+    removeBtn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+    removeBtn.addEventListener('click',()=>{
+      state.positions=state.positions.filter(x=>x.id!==p.id);
+      renderPositions();
+    });
+    tr.querySelector('.remove-cell').appendChild(removeBtn);
+    tbody.appendChild(tr);
+  });
+}
+
+function renderChips(){
+  function makeChips(containerId, keys, filterObj, filterKey){
+    const cont=document.getElementById(containerId);
+    cont.innerHTML='';
+    keys.forEach(k=>{
+      const on=!!filterObj[k];
+      const btn=document.createElement('button');
+      btn.textContent=k;
+      btn.style.cssText=chipStyle(on);
+      btn.addEventListener('click',()=>{
+        if(state[filterKey][k]) delete state[filterKey][k];
+        else state[filterKey][k]=true;
+        renderChips();
+        renderPositions();
+      });
+      cont.appendChild(btn);
+    });
+  }
+  makeChips('asset-chips',['US_EQUITY','CRYPTO','FOREX','INDICES'],state.assetFilter,'assetFilter');
+  makeChips('side-chips',['LONG','SHORT'],state.sideFilter,'sideFilter');
+  makeChips('broker-chips',['ALPACA'],state.brokerFilter,'brokerFilter');
+}
+
+function renderStrategies(){
+  const tbody=document.getElementById('strat-tbody');
+  tbody.innerHTML='';
+  STRATEGIES.forEach(s=>{
+    const tr=document.createElement('tr');
+    tr.style.cssText='border-bottom:1px solid var(--border);';
+    tr.innerHTML=`
+      <td style="padding:13px 16px;">
+        <div style="display:flex;align-items:center;gap:9px;">
+          <span style="width:8px;height:8px;border-radius:50%;flex:none;background:${s.dot};"></span>
+          <span style="font-size:14px;font-weight:500;color:var(--head);">${s.name}</span>
+          ${s.tag?`<span style="font-size:9px;font-weight:600;letter-spacing:0.06em;padding:2px 6px;border-radius:4px;background:var(--subtle);color:var(--body);border:1px solid var(--border);">${s.tag}</span>`:''}
+        </div>
+      </td>
+      <td style="padding:13px 12px;text-align:right;font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;">${s.recent}</td>
+      <td style="padding:13px 12px;text-align:right;font-family:var(--mono);font-size:13px;color:var(--head);font-variant-numeric:tabular-nums;">${s.signals}</td>
+      <td style="padding:13px 12px;text-align:right;font-family:var(--mono);font-size:13px;color:var(--head);font-variant-numeric:tabular-nums;">${s.trades}</td>
+      <td style="padding:13px 12px;text-align:right;font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;">${s.win}</td>
+      <td style="padding:13px 16px;text-align:right;font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums;font-weight:600;color:${s.plColor};">${s.pl}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderPnlRows(){
+  const cont=document.getElementById('pnl-rows');
+  cont.innerHTML='';
+  PNL_DATA.forEach(r=>{
+    const tot=r.cells.reduce((a,b)=>a+b,0);
+    const cellsHtml=r.cells.map(v=>{
+      if(!v) return `<span style="text-align:right;font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;">·</span>`;
+      return `<span style="text-align:right;font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums;font-weight:600;color:${v>0?'var(--profit)':'var(--loss)'};">${fmtPnl(v)}</span>`;
+    }).join('');
+    const totalColor=tot>0?'var(--profit)':tot<0?'var(--loss)':'var(--muted)';
+    const row=document.createElement('div');
+    row.style.cssText='display:grid;grid-template-columns:1.3fr repeat(4,1fr) 1.1fr;gap:6px;padding:11px 16px;border-bottom:1px solid var(--border);align-items:center;';
+    row.innerHTML=`
+      <span style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--head);">${r.sym}</span>
+      ${cellsHtml}
+      <span style="text-align:right;font-family:var(--mono);font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;color:${totalColor};">${fmtPnl(tot)}</span>
+    `;
+    cont.appendChild(row);
+  });
+}
+
+function renderSignals(){
+  const tab=state.signalTab;
+  let rows;
+  if(tab==='placed') rows=PLACED.slice();
+  else if(tab==='skipped') rows=SKIPPED.slice();
+  else rows=[...PLACED,...SKIPPED].sort((a,b)=>b.time.localeCompare(a.time));
+
+  const feed=document.getElementById('signal-feed');
+  feed.innerHTML='';
+
+  if(rows.length===0){
+    feed.innerHTML='<div style="padding:56px 16px;text-align:center;font-size:13px;color:var(--muted);">no placed signals — try All or Skipped</div>';
+    return;
+  }
+  rows.forEach(sig=>{
+    const dirColor=sig.dir==='LONG'?'var(--profit)':'var(--loss)';
+    const outcomeStyle=sig.placed?'color:var(--profit);font-weight:500;':'color:var(--muted);';
+    const div=document.createElement('div');
+    div.style.cssText='display:grid;grid-template-columns:64px 1fr 50px 52px 48px 1fr;gap:8px;padding:9px 16px;border-bottom:1px solid var(--border);align-items:center;';
+    div.innerHTML=`
+      <span style="font-family:var(--mono);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;">${sig.time}</span>
+      <span style="font-family:var(--mono);font-size:12px;font-weight:500;color:var(--head);">${sig.sym}</span>
+      <span style="font-size:10px;font-weight:700;letter-spacing:0.04em;color:${dirColor};">${sig.dir}</span>
+      <span style="font-size:10px;font-weight:600;color:var(--body);">${sig.sess}</span>
+      <span style="font-family:var(--mono);font-size:11px;color:var(--body);text-align:right;font-variant-numeric:tabular-nums;">${sig.conf}</span>
+      <span style="font-size:10px;text-align:right;${outcomeStyle}">${sig.outcome}</span>
+    `;
+    feed.appendChild(div);
+  });
+}
+
+function renderSignalTabs(){
+  const tabs={placed:'tab-placed',skipped:'tab-skipped',all:'tab-all'};
+  const badges={placed:'badge-placed',skipped:'badge-skipped',all:'badge-all'};
+  Object.keys(tabs).forEach(k=>{
+    const on=state.signalTab===k;
+    document.getElementById(tabs[k]).style.cssText=tabStyle(on);
+    document.getElementById(badges[k]).style.cssText=badgeStyle(on);
+  });
+  // reattach badge text content
+  document.getElementById('badge-placed').textContent=PLACED.length;
+  document.getElementById('badge-skipped').textContent=SKIPPED.length;
+  document.getElementById('badge-all').textContent=PLACED.length+SKIPPED.length;
+}
+
+function renderPerfButtons(){
+  const map={today:'perf-today','7d':'perf-7d','30d':'perf-30d'};
+  Object.keys(map).forEach(k=>{
+    document.getElementById(map[k]).style.cssText=segStyle(state.perfWindow===k);
+  });
+}
+
+function renderTheme(){
+  const root=document.getElementById('tv-root');
+  if(state.dark) root.classList.add('tv-dark');
+  else root.classList.remove('tv-dark');
+  document.getElementById('theme-moon').style.display=state.dark?'none':'inline-flex';
+  document.getElementById('theme-sun').style.display=state.dark?'inline-flex':'none';
+  document.getElementById('theme-btn').title=state.dark?'Switch to light mode':'Switch to dark mode';
+}
+
+function renderKill(){
+  const btn=document.getElementById('kill-btn');
+  const label=document.getElementById('kill-label');
+  if(state.killArmed){
+    btn.style.cssText='display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--loss);background:var(--loss);color:#fff;font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:0.06em;cursor:pointer;';
+    label.textContent='ARMED';
+  } else {
+    btn.style.cssText='display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:10px 14px;border-radius:8px;border:1px solid rgba(239,68,68,.5);background:rgba(239,68,68,.14);color:#FF8A8A;font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:0.06em;cursor:pointer;';
+    label.textContent='KILL';
+  }
+}
+
+function showMenu(id, show){
+  const el=document.getElementById(id);
+  if(show){
+    el.style.opacity='1';
+    el.style.transform='translateY(0) scale(1)';
+    el.style.pointerEvents='auto';
+  } else {
+    el.style.opacity='0';
+    el.style.transform='translateY(-6px) scale(.97)';
+    el.style.pointerEvents='none';
+  }
+}
+
+function showAcctMenu(show){
+  const el=document.getElementById('acct-menu');
+  if(show){
+    el.style.opacity='1';
+    el.style.transform='translateY(0) scale(1)';
+    el.style.pointerEvents='auto';
+  } else {
+    el.style.opacity='0';
+    el.style.transform='translateY(8px) scale(.98)';
+    el.style.pointerEvents='none';
+  }
+}
+
+function renderDropdowns(){
+  showMenu('watch-menu', state.watchOpen);
+  showMenu('notif-menu', state.notifOpen);
+  showMenu('profile-menu', state.profileOpen);
+  showAcctMenu(state.acctOpen);
+  // chevrons
+  document.getElementById('watch-chevron').style.transform=state.watchOpen?'rotate(180deg)':'';
+  document.getElementById('profile-chevron').style.transform=state.profileOpen?'rotate(180deg)':'';
+  document.getElementById('acct-chevron').style.transform=state.acctOpen?'rotate(180deg)':'';
+  // button borders
+  document.getElementById('watch-btn').style.borderColor=state.watchOpen?'var(--navy)':'var(--border)';
+  document.getElementById('watch-btn').style.color=state.watchOpen?'var(--head)':'var(--body)';
+  document.getElementById('notif-btn').style.borderColor=state.notifOpen?'var(--navy)':'var(--border)';
+  document.getElementById('acct-trigger').style.borderColor=state.acctOpen?'var(--sb-border)':'transparent';
+}
+
+function renderAll(){
+  renderNavItems();
+  renderChips();
+  renderPositions();
+  renderStrategies();
+  renderPnlRows();
+  renderSignals();
+  renderSignalTabs();
+  renderPerfButtons();
+  renderTheme();
+  renderKill();
+  renderDropdowns();
+}
+
+// ============================
+// Clock
+// ============================
+function fmtClock(d){
+  return `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`;
+}
+function tickClock(){
+  document.getElementById('clock-display').textContent=fmtClock(new Date());
+}
+tickClock();
+setInterval(tickClock,1000);
+
+// ============================
+// Event listeners
+// ============================
+
+// Nav items
+document.querySelectorAll('[data-nav]').forEach(el=>{
+  el.addEventListener('click',()=>{
+    const id=el.dataset.nav;
+    const href=el.dataset.href;
+    if(href){
+      window.location.href=href;
+      return;
+    }
+    state.activeNav=id;
+    renderNavItems();
+  });
+});
+
+// Collapse
+document.getElementById('collapse-btn').addEventListener('click',()=>{
+  state.collapsed=!state.collapsed;
+  renderNavItems();
+});
+
+// Logo
+document.getElementById('logo-link').addEventListener('click',()=>{
+  state.activeNav='overview';
+  renderNavItems();
+});
+
+// Theme
+document.getElementById('theme-btn').addEventListener('click',()=>{
+  state.dark=!state.dark;
+  renderTheme();
+});
+
+// Kill
+document.getElementById('kill-btn').addEventListener('click',()=>{
+  state.killArmed=!state.killArmed;
+  renderKill();
+});
+
+// Watch
+document.getElementById('watch-btn').addEventListener('click',()=>{
+  state.watchOpen=!state.watchOpen;
+  state.notifOpen=false;
+  state.profileOpen=false;
+  renderDropdowns();
+});
+
+// Notif
+document.getElementById('notif-btn').addEventListener('click',()=>{
+  state.notifOpen=!state.notifOpen;
+  state.watchOpen=false;
+  state.profileOpen=false;
+  renderDropdowns();
+});
+
+// Profile
+document.getElementById('profile-btn').addEventListener('click',()=>{
+  state.profileOpen=!state.profileOpen;
+  state.notifOpen=false;
+  state.watchOpen=false;
+  renderDropdowns();
+});
+
+// Logout
+document.getElementById('logout-btn').addEventListener('click',()=>{
+  state.profileOpen=false;
+  renderDropdowns();
+});
+
+// Account switcher
+document.getElementById('acct-trigger').addEventListener('click',()=>{
+  state.acctOpen=!state.acctOpen;
+  renderDropdowns();
+});
+['pick-alpaca-paper','pick-alpaca-live','pick-binance'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',()=>{
+    state.acctOpen=false;
+    renderDropdowns();
+  });
+});
+
+// Symbol search
+document.getElementById('symbol-search').addEventListener('input',e=>{
+  state.symbolQuery=e.target.value;
+  renderPositions();
+});
+
+// Perf buttons
+document.getElementById('perf-today').addEventListener('click',()=>{ state.perfWindow='today'; renderPerfButtons(); });
+document.getElementById('perf-7d').addEventListener('click',()=>{ state.perfWindow='7d'; renderPerfButtons(); });
+document.getElementById('perf-30d').addEventListener('click',()=>{ state.perfWindow='30d'; renderPerfButtons(); });
+
+// Signal tabs
+document.getElementById('tab-placed').addEventListener('click',()=>{ state.signalTab='placed'; renderSignalTabs(); renderSignals(); });
+document.getElementById('tab-skipped').addEventListener('click',()=>{ state.signalTab='skipped'; renderSignalTabs(); renderSignals(); });
+document.getElementById('tab-all').addEventListener('click',()=>{ state.signalTab='all'; renderSignalTabs(); renderSignals(); });
+
+// Close dropdowns on outside click
+document.addEventListener('click',e=>{
+  const watchArea=document.getElementById('watch-btn').closest('div');
+  const notifArea=document.getElementById('notif-btn').closest('div');
+  const profileArea=document.getElementById('profile-btn').closest('div');
+  const acctArea=document.getElementById('acct-trigger').closest('div');
+
+  if(state.watchOpen && !watchArea.contains(e.target)){
+    state.watchOpen=false; renderDropdowns();
+  }
+  if(state.notifOpen && !notifArea.contains(e.target)){
+    state.notifOpen=false; renderDropdowns();
+  }
+  if(state.profileOpen && !profileArea.contains(e.target)){
+    state.profileOpen=false; renderDropdowns();
+  }
+  if(state.acctOpen && !acctArea.contains(e.target)){
+    state.acctOpen=false; renderDropdowns();
+  }
+});
+
+// ============================
+// Initial render
+// ============================
+renderAll();
+</script>
+</body>
+</html>

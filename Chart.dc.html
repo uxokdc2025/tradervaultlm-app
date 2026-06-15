@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="tokens.css">
+  <style>
+    :root { --profit-soft:rgba(21,128,61,.12); --loss-soft:rgba(220,38,38,.12); --warn:#D97706; --warn-soft:rgba(217,119,6,.14); --info:#2563EB; --info-soft:rgba(37,99,235,.10); --chartbg:#FBFAF7; --chartgrid:rgba(15,23,36,.06); }
+    .tv-dark { --profit-soft:rgba(34,197,94,.16); --loss-soft:rgba(248,113,113,.16); --warn:#FBBF24; --warn-soft:rgba(251,191,36,.16); --info:#60A5FA; --info-soft:rgba(96,165,250,.14); --chartbg:#0C1620; --chartgrid:rgba(255,255,255,.05); }
+    @keyframes tvpulse2 { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.45;transform:scale(.8);} }
+  </style>
+</helmet>
+<dc-import name="_Shell"
+  active-page="chart"
+  page-title="Chart & signals"
+  page-subtitle="NQ · 5m · Momentum Breakout · Instance 1"
+  on-nav-overview="{{ goOverview }}"
+  on-nav-strategies="{{ goStrategies }}"
+  on-nav-analysis="{{ goAnalysis }}"
+  on-nav-chart="{{ goChart }}"
+  on-nav-journal="{{ goSoon }}"
+  on-nav-audit="{{ goAudit }}"
+  on-nav-accounts="{{ goSoon }}"
+  on-nav-configure="{{ goSoon }}"
+  on-nav-signal="{{ goSoon }}"
+  on-nav-settings="{{ goSoon }}"
+  hint-size="100%,100%">
+  {{ chartEl }}
+</dc-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  state = { tf: '5m', tab: 'live', filter: 'All', addOpen: false, overlays: [], activeInst: 'mb1', paused: {}, panelW: 340, confOpen: true, toastMsg: null };
+
+  componentWillUnmount() { if (this._t) clearTimeout(this._t); }
+  toast(m) { this.setState({ toastMsg: m }); if (this._t) clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toastMsg: null }), 2800); }
+
+  e(t, p, ...k) { return React.createElement(t, p, ...k); }
+  d(style, ...k) { return React.createElement('div', { style }, ...k); }
+  sp(style, ...k) { return React.createElement('span', { style }, ...k); }
+  btn(p, ...k) { return React.createElement('button', { type: 'button', ...p }, ...k); }
+  ic(paths, color, size) { const h = React.createElement; return h('svg', { width: size || 16, height: size || 16, viewBox: '0 0 24 24', fill: 'none', stroke: color, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', style: { flexShrink: 0 } }, paths.map((d, i) => h('path', { key: i, d }))); }
+  scoreColor(s) { return s >= 90 ? 'var(--warn)' : s >= 70 ? 'var(--profit)' : s >= 55 ? 'var(--info)' : s >= 40 ? 'var(--warn)' : 'var(--loss)'; }
+
+  instances() {
+    return [
+      { id: 'mb1', strat: 'Momentum Breakout', n: 1, asset: 'NQ Futures', tf: '5m', preset: 'Intraday', status: 'live', score: 74 },
+      { id: 'mb2', strat: 'Momentum Breakout', n: 2, asset: 'ES Futures', tf: '15m', preset: 'Swing', status: 'paper', score: 61 },
+      { id: 'vw1', strat: 'VWAP Scalper', n: 1, asset: 'EUR/USD', tf: '1H', preset: 'Swing', status: 'paper', score: 71 },
+      { id: 'mr1', strat: 'Mean Reversion RSI', n: 1, asset: 'NQ Futures', tf: '5m', preset: 'Intraday', status: 'draft', score: 58 },
+    ];
+  }
+  activeInstance() { return this.instances().find(i => i.id === this.state.activeInst) || this.instances()[0]; }
+
+  // ═══════════ CHART DATA ═══════════
+  chartData() {
+    const W = 1000, H = 760, pTop = 19920, pBot = 19580;
+    const yOf = p => (pTop - p) / (pTop - pBot) * H;
+    const n = 46, x0 = 28, step = 18, cw = 9;
+    const closes = [], opens = [], highs = [], lows = [], ups = [];
+    let prev = 19604;
+    for (let i = 0; i < n; i++) {
+      const t = i / (n - 1);
+      const base = 19602 + t * 244;
+      const wig = Math.sin(i * 0.7) * 8 + Math.sin(i * 0.33) * 5 + Math.cos(i * 1.1) * 4;
+      const c = base + wig, o = prev;
+      const hi = Math.max(o, c) + (3 + (i * 53 % 7));
+      const lo = Math.min(o, c) - (3 + (i * 29 % 6));
+      closes.push(c); opens.push(o); highs.push(hi); lows.push(lo); ups.push(c >= o); prev = c;
+    }
+    const candles = [];
+    for (let i = 0; i < n; i++) candles.push({ x: x0 + i * step, cw, up: ups[i], oY: yOf(opens[i]), cY: yOf(closes[i]), hY: yOf(highs[i]), lY: yOf(lows[i]) });
+    const ema = []; let e = closes[0]; const k = 2 / 10;
+    for (let i = 0; i < n; i++) { e = closes[i] * k + e * (1 - k); ema.push({ x: x0 + i * step, y: yOf(e) }); }
+    const nearest = (price) => { let bi = 0, bd = 1e9; for (let i = 0; i < n; i++) { const d = Math.abs(closes[i] - price); if (d < bd) { bd = d; bi = i; } } return bi; };
+    const mk = (type, price, label) => { const i = nearest(price); return { type, label, x: x0 + i * step, highY: yOf(highs[i]), lowY: yOf(lows[i]) }; };
+    const markers = [mk('buy', 19623, 'BUY 19,623'), mk('buy', 19714, 'BUY 19,714'), mk('sell', 19798, 'SELL 19,798')];
+    const pending = { x: x0 + (n - 1) * step, highY: yOf(highs[n - 1]) };
+    const priceLine = { y: yOf(closes[n - 1]), label: '19,847' };
+    const grids = [19900, 19800, 19700, 19600].map(p => ({ y: yOf(p), label: p.toLocaleString() }));
+    return { W, H, candles, ema, markers, pending, priceLine, grids, lastX: x0 + (n - 1) * step };
+  }
+
+  tri(dir, color) { const h = React.createElement; const d = dir === 'down' ? 'M0 0 L12 0 L6 9 Z' : 'M6 0 L12 9 L0 9 Z'; return h('svg', { width: 12, height: 9, viewBox: '0 0 12 9', style: { display: 'block' } }, h('path', { d, fill: color })); }
+
+  chartArea() {
+    const cd = this.chartData();
+    const lp = x => (x / cd.W * 100) + '%';
+    const tp = y => (y / cd.H * 100) + '%';
+    const candleEls = [];
+    cd.candles.forEach((c, i) => {
+      const col = c.up ? 'var(--profit)' : 'var(--loss)';
+      candleEls.push(this.e('line', { key: 'w' + i, x1: c.x, y1: c.hY, x2: c.x, y2: c.lY, stroke: col, strokeWidth: 1.4, vectorEffect: 'non-scaling-stroke' }));
+      const top = Math.min(c.oY, c.cY), hgt = Math.max(2, Math.abs(c.oY - c.cY));
+      candleEls.push(this.e('rect', { key: 'b' + i, x: c.x - c.cw / 2, y: top, width: c.cw, height: hgt, fill: col, rx: 1 }));
+    });
+    const emaPath = 'M' + cd.ema.map(p => p.x + ',' + p.y).join(' L');
+    const svg = this.e('svg', { viewBox: '0 0 ' + cd.W + ' ' + cd.H, preserveAspectRatio: 'none', style: { position: 'absolute', inset: 0, width: '100%', height: '100%' } },
+      ...cd.grids.map((g, i) => this.e('line', { key: 'g' + i, x1: 0, y1: g.y, x2: cd.W, y2: g.y, stroke: 'var(--chartgrid)', strokeWidth: 1, vectorEffect: 'non-scaling-stroke' })),
+      ...candleEls,
+      this.e('path', { d: emaPath, fill: 'none', stroke: 'var(--warn)', strokeWidth: 2, vectorEffect: 'non-scaling-stroke', opacity: 0.95 }),
+      this.e('line', { x1: 0, y1: cd.priceLine.y, x2: cd.lastX, y2: cd.priceLine.y, stroke: 'var(--accent)', strokeWidth: 1.4, strokeDasharray: '5 4', vectorEffect: 'non-scaling-stroke', opacity: 0.6 }));
+
+    // HTML overlays
+    const gridLabels = cd.grids.map((g, i) => this.e('div', { key: 'gl' + i, style: { position: 'absolute', right: '8px', top: tp(g.y), transform: 'translateY(-50%)', fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--muted)', fontVariantNumeric: 'tabular-nums' } }, g.label));
+    const markerEls = cd.markers.map((m, i) => {
+      const col = m.type === 'buy' ? 'var(--profit)' : 'var(--loss)';
+      const bg = m.type === 'buy' ? 'var(--profit-soft)' : 'var(--loss-soft)';
+      return this.e('div', { key: 'mk' + i, style: { position: 'absolute', left: lp(m.x), top: tp(m.highY - 50), transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', pointerEvents: 'none' } },
+        this.sp({ fontSize: '11px', fontWeight: 700, color: col, background: bg, border: '1px solid color-mix(in srgb,' + col + ' 30%,transparent)', borderRadius: '5px', padding: '3px 7px', whiteSpace: 'nowrap' }, m.label),
+        this.tri(m.type === 'sell' ? 'down' : 'up', col));
+    });
+    const pendingEl = this.e('div', { key: 'pend', style: { position: 'absolute', left: lp(cd.pending.x), top: tp(cd.pending.highY - 86), transform: 'translateX(-60%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', pointerEvents: 'none' } },
+      this.sp({ fontSize: '11px', fontWeight: 700, color: 'var(--warn)', background: 'var(--warn-soft)', border: '1px solid color-mix(in srgb, var(--warn) 35%,transparent)', borderRadius: '5px', padding: '3px 7px', whiteSpace: 'nowrap' }, 'PENDING…'),
+      this.tri('up', 'var(--warn)'));
+    const priceChip = this.e('div', { style: { position: 'absolute', right: '4px', top: tp(cd.priceLine.y), transform: 'translateY(-50%)', fontSize: '12px', fontWeight: 700, fontFamily: 'var(--mono)', color: '#fff', background: 'var(--accent)', borderRadius: '5px', padding: '3px 7px', pointerEvents: 'none' } }, cd.priceLine.label);
+
+    return this.d({ flex: 1, minWidth: 0, position: 'relative', background: 'var(--chartbg)', overflow: 'hidden' }, svg, ...gridLabels, ...markerEls, pendingEl, priceChip);
+  }
+
+  confidenceCard() {
+    const rows = [['SQQQ', true], ['ATR', true], ['BOS', true], ['DXY', false]];
+    return this.d({ position: 'absolute', left: '18px', bottom: '18px', width: '258px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', boxShadow: '0 8px 28px -8px rgba(15,23,36,.22)', padding: '15px 16px' },
+      this.sp({ display: 'block', fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', color: 'var(--muted)', textTransform: 'uppercase' }, 'Signal confidence'),
+      this.sp({ display: 'block', fontSize: '32px', fontWeight: 800, color: 'var(--accent)', lineHeight: '1.1', margin: '2px 0 1px' }, '84%'),
+      this.sp({ display: 'block', fontSize: '12px', color: 'var(--muted)', marginBottom: '11px' }, 'Context engine · 3 of 4 met'),
+      this.d({ display: 'flex', flexDirection: 'column', gap: '7px' }, ...rows.map(([l, ok]) => this.d({ key: l, display: 'flex', alignItems: 'center', gap: '10px' },
+        this.sp({ flex: '0 0 54px', fontSize: '12px', fontWeight: 600, color: 'var(--body)' }, l + ' ' + (ok ? '✓' : '✗')),
+        this.d({ flex: 1, height: '6px', borderRadius: '999px', background: 'var(--subtle)', overflow: 'hidden' }, this.d({ width: (ok ? (72 + Math.random() * 0) : 22) + '%', height: '100%', background: ok ? 'var(--accent)' : 'var(--loss)' }))))));
+  }
+
+  // ═══════════ ASSET BAR ═══════════
+  assetBar() {
+    const inst = this.activeInstance();
+    const tfs = ['1m', '5m', '15m', '30m', '1H'];
+    const sep = () => this.d({ width: '1px', height: '26px', background: 'var(--border)', flexShrink: 0 });
+    const assetBtn = this.btn({ onClick: () => this.toast('Asset search — logic coming soon'), style: { display: 'flex', alignItems: 'center', gap: '8px', height: '36px', padding: '0 12px', background: 'var(--subtle)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontFamily: 'var(--sans)' } },
+      this.ic(['M11 11m-8 0a8 8 0 1 0 16 0 8 8 0 0 0-16 0', 'm21 21-4.3-4.3'], 'var(--muted)', 15), this.sp({ fontSize: '15px', fontWeight: 700, color: 'var(--head)' }, 'NQ'), this.ic(['m6 9 6 6 6-6'], 'var(--muted)', 15));
+    const price = this.sp({ fontSize: '19px', fontWeight: 700, color: 'var(--head)', fontVariantNumeric: 'tabular-nums' }, '19,847.25');
+    const change = this.sp({ fontSize: '14px', fontWeight: 600, color: 'var(--profit)', fontVariantNumeric: 'tabular-nums' }, '+124.50 (+0.63%)');
+    const tfPills = this.d({ display: 'flex', gap: '4px' }, ...tfs.map(t => { const on = this.state.tf === t; return this.btn({ key: t, onClick: () => this.setState({ tf: t }), style: { height: '32px', padding: '0 13px', borderRadius: '7px', fontFamily: 'var(--sans)', fontSize: '13px', fontWeight: 600, cursor: 'pointer', background: on ? 'var(--subtle)' : 'transparent', color: on ? 'var(--head)' : 'var(--muted)', border: '1px solid ' + (on ? 'var(--border-2,var(--border))' : 'transparent') } }, t); }));
+    const dotColor = (s) => ({ live: 'var(--profit)', paper: '#7C3AED', draft: 'var(--muted)' }[s]);
+    const statPill = (i, primary) => {
+      const paused = !!this.state.paused[i.id];
+      const running = i.status === 'live' || i.status === 'paper';
+      const dc = paused ? 'var(--muted)' : dotColor(i.status);
+      const ppBtn = running ? this.btn({ onClick: () => this.togglePause(i.id), title: paused ? 'Resume strategy' : 'Pause strategy', 'aria-label': paused ? 'Resume' : 'Pause', style: { width: '26px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '6px', border: '1px solid ' + (paused ? 'color-mix(in srgb,var(--profit) 40%,transparent)' : 'var(--border)'), background: paused ? 'var(--profit-soft)' : 'var(--card)', cursor: 'pointer', flexShrink: 0 } }, this.ppIcon(paused, paused ? 'var(--profit)' : 'var(--muted)', 13)) : null;
+      const rmBtn = this.btn({ onClick: () => primary ? this.removePrimary() : this.removeOverlay(i.id), 'aria-label': 'Remove from chart', title: 'Remove from chart', style: { width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '6px', border: 'none', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', flexShrink: 0 } }, this.ic(['M18 6 6 18', 'm6 6 12 12'], 'currentColor', 13));
+      return this.d({ display: 'flex', alignItems: 'center', gap: '8px', height: '38px', padding: running ? '0 5px' : '0 5px 0 12px', background: primary ? (paused ? 'var(--warn-soft)' : (i.status === 'live' ? 'var(--profit-soft)' : 'var(--subtle)')) : 'var(--info-soft)', border: '1px solid ' + (primary ? (paused ? 'color-mix(in srgb,var(--warn) 35%,transparent)' : (i.status === 'live' ? 'color-mix(in srgb,var(--profit) 28%,transparent)' : 'var(--border)')) : 'color-mix(in srgb,var(--info) 38%,transparent)'), borderRadius: '9px' },
+        ppBtn,
+        this.d({ width: '8px', height: '8px', borderRadius: '50%', background: dc, flexShrink: 0, animation: (paused || i.status === 'draft') ? 'none' : 'tvpulse2 1.6s infinite' }),
+        this.sp({ fontSize: '13px', fontWeight: 600, color: 'var(--head)', whiteSpace: 'nowrap' }, i.strat + ' · Instance ' + i.n),
+        this.sp({ fontSize: '12px', fontWeight: 700, color: this.scoreColor(i.score), background: 'var(--card)', borderRadius: '5px', padding: '2px 7px' }, String(i.score)),
+        rmBtn);
+    };
+    const byId = (id) => this.instances().find(x => x.id === id);
+    const overlayPills = this.state.overlays.map(id => this.e('div', { key: id }, statPill(byId(id), false)));
+    const full = this.state.overlays.length >= 1;
+    const add = this.d({ position: 'relative' },
+      this.btn({ onClick: () => full ? this.toast('Maximum 2 strategies overlaid at once') : this.setState(s => ({ addOpen: !s.addOpen })), style: { display: 'flex', alignItems: 'center', gap: '7px', height: '38px', padding: '0 13px', background: 'transparent', border: '1.5px dashed var(--border-2,var(--border))', borderRadius: '9px', cursor: full ? 'not-allowed' : 'pointer', opacity: full ? 0.5 : 1, fontFamily: 'var(--sans)', fontSize: '13px', fontWeight: 600, color: 'var(--body)' } }, this.ic(['M12 5v14', 'M5 12h14'], 'currentColor', 15), 'Add strategy'),
+      this.state.addOpen ? this.addDropdown() : null);
+    return this.d({ flexShrink: 0, borderBottom: '1px solid var(--border)', background: 'var(--bg)', padding: '11px 18px', display: 'flex', flexDirection: 'column', gap: '11px' },
+      this.d({ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }, assetBtn, price, change, sep(), tfPills),
+      this.d({ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }, add, statPill(inst, true), ...overlayPills));
+  }
+
+  addOverlay(id) { this.setState(s => ({ overlays: (s.overlays.length >= 1 || s.overlays.includes(id)) ? s.overlays : [...s.overlays, id], addOpen: false })); const i = this.instances().find(x => x.id === id); if (i) this.toast(i.strat + ' · Instance ' + i.n + ' overlaid — its signals show in a different colour'); }
+  removeOverlay(id) { this.setState(s => ({ overlays: s.overlays.filter(x => x !== id) })); }
+  removePrimary() { const ov = this.state.overlays; if (ov.length) { this.setState({ activeInst: ov[0], overlays: ov.slice(1) }); this.toast('Strategy removed from chart'); } else { this.toast('At least one strategy must stay on the chart'); } }
+  togglePause(id) { const nowPaused = !this.state.paused[id]; this.setState(s => ({ paused: { ...s.paused, [id]: !s.paused[id] } })); const i = this.instances().find(x => x.id === id); if (i) this.toast(i.strat + ' · Instance ' + i.n + (nowPaused ? ' paused — no new signals will fire' : ' resumed — strategy is live again')); }
+  ppIcon(paused, color, size) { const h = React.createElement; const s = size || 13; if (paused) return h('svg', { width: s, height: s, viewBox: '0 0 24 24', style: { flexShrink: 0 } }, h('path', { d: 'M7 4v16l13-8z', fill: color })); return h('svg', { width: s, height: s, viewBox: '0 0 24 24', style: { flexShrink: 0 } }, h('rect', { x: 6.5, y: 5, width: 3.6, height: 14, rx: 1, fill: color }), h('rect', { x: 13.9, y: 5, width: 3.6, height: 14, rx: 1, fill: color })); }
+  startResize(e) {
+    e.preventDefault();
+    const startX = e.clientX, startW = this.state.panelW;
+    const move = (ev) => { let w = startW + (startX - ev.clientX); w = Math.max(300, Math.min(680, w)); this.setState({ panelW: w }); };
+    const up = () => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); document.body.style.cursor = ''; document.body.style.userSelect = ''; };
+    window.addEventListener('mousemove', move); window.addEventListener('mouseup', up);
+    document.body.style.cursor = 'col-resize'; document.body.style.userSelect = 'none';
+  }
+  resizeHandle() { return this.e('div', { onMouseDown: (e) => this.startResize(e), title: 'Drag to resize panel', style: { width: '8px', flexShrink: 0, cursor: 'col-resize', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', borderLeft: '1px solid var(--border)' } }, this.d({ width: '3px', height: '36px', borderRadius: '3px', background: 'var(--border-2,var(--border))' })); }
+  confidencePanel() {
+    const open = this.state.confOpen;
+    const rows = [['SQQQ', true], ['ATR', true], ['BOS', true], ['DXY', false]];
+    const header = this.btn({ onClick: () => this.setState(s => ({ confOpen: !s.confOpen })), style: { display: 'flex', alignItems: 'center', gap: '9px', width: '100%', padding: '12px 16px', background: 'var(--bg)', border: 'none', borderBottom: '1px solid var(--border)', cursor: 'pointer', fontFamily: 'var(--sans)' } },
+      this.sp({ fontSize: '10px', fontWeight: 700, letterSpacing: '0.07em', color: 'var(--muted)', textTransform: 'uppercase', whiteSpace: 'nowrap' }, 'Signal confidence'),
+      this.sp({ fontSize: '16px', fontWeight: 800, color: 'var(--accent)' }, '84%'),
+      this.sp({ flex: 1, textAlign: 'left', fontSize: '11px', color: 'var(--muted)' }, '· 3 of 4 met'),
+      this.ic([open ? 'm18 15-6-6-6 6' : 'm6 9 6 6 6-6'], 'var(--muted)', 15));
+    const body = open ? this.d({ padding: '12px 16px 14px', borderBottom: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '7px' }, ...rows.map(([l, ok]) => this.d({ key: l, display: 'flex', alignItems: 'center', gap: '10px' },
+      this.sp({ flex: '0 0 54px', fontSize: '12px', fontWeight: 600, color: 'var(--body)' }, l + ' ' + (ok ? '✓' : '✗')),
+      this.d({ flex: 1, height: '6px', borderRadius: '999px', background: 'var(--subtle)', overflow: 'hidden' }, this.d({ width: (ok ? 78 : 22) + '%', height: '100%', background: ok ? 'var(--accent)' : 'var(--loss)' }))))) : null;
+    return this.d({ flexShrink: 0 }, header, body);
+  }
+  addDropdown() {
+    const taken = [this.state.activeInst, ...this.state.overlays];
+    const list = this.instances().filter(i => !taken.includes(i.id));
+    const stBadge = { live: { t: 'LIVE', c: 'var(--profit)', bg: 'var(--profit-soft)' }, paper: { t: 'PAPER', c: '#4338CA', bg: 'var(--info-soft)' }, draft: { t: 'DRAFT', c: 'var(--muted)', bg: 'var(--subtle)' } };
+    return this.e('div', { onClick: (e) => e.stopPropagation(), style: { position: 'absolute', top: 'calc(100% + 6px)', left: 0, width: '370px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', boxShadow: '0 16px 40px -10px rgba(15,23,36,.28)', zIndex: 60, overflow: 'hidden' } },
+      this.d({ padding: '11px 13px 9px', borderBottom: '1px solid var(--border)' },
+        this.sp({ display: 'block', fontSize: '11px', fontWeight: 700, letterSpacing: '0.05em', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '8px' }, 'Overlay a strategy'),
+        this.e('input', { type: 'text', placeholder: 'Search strategies…', style: { width: '100%', height: '34px', padding: '0 12px', fontFamily: 'var(--sans)', fontSize: '13px', color: 'var(--head)', background: 'var(--subtle)', border: '1px solid var(--border)', borderRadius: '8px', outline: 'none' } })),
+      this.d({ maxHeight: '300px', overflowY: 'auto', padding: '6px' }, list.length ? this.d({}, ...list.map(i => { const sb = stBadge[i.status]; return this.e('div', { key: i.id, style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 9px 9px 11px', borderRadius: '9px' } },
+        this.d({ flex: 1, minWidth: 0 }, this.sp({ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--head)' }, i.strat + ' · Instance ' + i.n), this.sp({ fontSize: '11px', color: 'var(--muted)' }, i.asset + ' · ' + i.tf + ' · ' + i.preset)),
+        this.sp({ fontSize: '14px', fontWeight: 800, color: this.scoreColor(i.score), flexShrink: 0 }, String(i.score)),
+        this.sp({ fontSize: '9px', fontWeight: 700, padding: '3px 7px', borderRadius: '4px', background: sb.bg, color: sb.c, flexShrink: 0 }, sb.t),
+        this.btn({ onClick: () => this.addOverlay(i.id), style: { height: '30px', padding: '0 14px', borderRadius: '7px', background: 'var(--accent)', color: 'var(--accent-on)', border: 'none', fontFamily: 'var(--sans)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', flexShrink: 0 } }, 'Add')); })) : this.d({ padding: '26px 16px', textAlign: 'center' }, this.sp({ fontSize: '13px', color: 'var(--muted)' }, 'All instances are already on the chart'))));
+  }
+  pillDropdown() {
+    const list = this.instances();
+    const stBadge = { live: { t: 'LIVE', c: 'var(--profit)', bg: 'var(--profit-soft)' }, paper: { t: 'PAPER', c: '#4338CA', bg: 'var(--info-soft)' }, draft: { t: 'DRAFT', c: 'var(--muted)', bg: 'var(--subtle)' } };
+    return this.e('div', { onClick: (e) => e.stopPropagation(), style: { position: 'absolute', top: 'calc(100% + 6px)', left: 0, width: '340px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', boxShadow: '0 16px 40px -10px rgba(15,23,36,.28)', zIndex: 60, overflow: 'hidden' } },
+      this.d({ padding: '10px', borderBottom: '1px solid var(--border)' },
+        this.e('input', { type: 'text', placeholder: 'Search strategies…', style: { width: '100%', height: '36px', padding: '0 12px', fontFamily: 'var(--sans)', fontSize: '13px', color: 'var(--head)', background: 'var(--subtle)', border: '1px solid var(--border)', borderRadius: '8px', outline: 'none' } })),
+      this.d({ maxHeight: '320px', overflowY: 'auto', padding: '6px' }, ...list.map(i => {
+        const on = i.id === this.state.activeInst; const sb = stBadge[i.status];
+        return this.e('button', { key: i.id, type: 'button', onClick: () => this.setState({ activeInst: i.id, pillOpen: false }), style: { display: 'flex', alignItems: 'center', gap: '11px', width: '100%', textAlign: 'left', padding: '10px 11px', borderRadius: '9px', cursor: 'pointer', fontFamily: 'var(--sans)', background: on ? 'var(--subtle)' : 'transparent', border: 'none', borderLeft: '3px solid ' + (on ? 'var(--accent)' : 'transparent') } },
+          this.d({ flex: 1, minWidth: 0 },
+            this.sp({ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--head)' }, i.strat + ' · Instance ' + i.n),
+            this.sp({ fontSize: '11px', color: 'var(--muted)' }, i.asset + ' · ' + i.tf + ' · ' + i.preset)),
+          this.sp({ fontSize: '14px', fontWeight: 800, color: this.scoreColor(i.score), flexShrink: 0 }, String(i.score)),
+          this.sp({ fontSize: '9px', fontWeight: 700, padding: '3px 7px', borderRadius: '4px', background: sb.bg, color: sb.c, flexShrink: 0 }, sb.t));
+      })));
+  }
+
+  // ═══════════ RIGHT PANEL ═══════════
+  rightPanel() {
+    const tabs = [['live', 'Live signals'], ['positions', 'Positions'], ['strategies', 'Strategies']];
+    const tabBar = this.d({ display: 'flex', borderBottom: '1px solid var(--border)', flexShrink: 0 }, ...tabs.map(([k, l]) => {
+      const on = this.state.tab === k;
+      return this.btn({ key: k, onClick: () => this.setState({ tab: k }), style: { flex: 1, padding: '14px 8px', background: 'none', border: 'none', borderBottom: on ? '2px solid var(--accent)' : '2px solid transparent', marginBottom: '-1px', fontFamily: 'var(--sans)', fontSize: '14px', fontWeight: on ? 700 : 500, color: on ? 'var(--accent)' : 'var(--body)', cursor: 'pointer' } }, l);
+    }));
+    let body;
+    if (this.state.tab === 'live') body = this.liveTab();
+    else if (this.state.tab === 'positions') body = this.positionsTab();
+    else body = this.strategiesTab();
+    return this.d({ flexShrink: 0, width: this.state.panelW + 'px', background: 'var(--bg)', display: 'flex', flexDirection: 'column', minHeight: 0 },
+      this.confidencePanel(), tabBar, this.d({ flex: 1, minHeight: 0, overflowY: 'auto' }, body));
+  }
+
+  liveTab() {
+    const filters = ['All', 'Buy', 'Sell', 'Pending', 'Filled'];
+    const sigs = [
+      { dir: 'buy', status: 'Pending', time: '10:23am', px: '19,847.25', conf: 84, confC: 'var(--accent)' },
+      { dir: 'buy', status: 'Filled', time: '9:47am', px: '19,714.00', conf: 91, confC: 'var(--profit)' },
+      { dir: 'sell', status: 'Filled', time: '9:31am', px: '19,623.50', conf: 76, confC: 'var(--profit)' },
+      { dir: 'buy', status: 'Expired', time: 'Yesterday', px: '19,580.00', conf: 44, confC: 'var(--muted)' },
+    ];
+    const stMap = { Pending: { c: 'var(--warn)', bg: 'var(--warn-soft)', bdr: 'var(--warn)' }, Filled: { c: 'var(--profit)', bg: 'var(--profit-soft)', bdr: 'var(--profit)' }, Expired: { c: 'var(--muted)', bg: 'var(--subtle)', bdr: 'var(--muted)' } };
+    const visible = sigs.filter(s => this.state.filter === 'All' || (this.state.filter === 'Buy' && s.dir === 'buy') || (this.state.filter === 'Sell' && s.dir === 'sell') || this.state.filter === s.status);
+    const filterBar = this.d({ display: 'flex', gap: '6px', flexWrap: 'wrap', padding: '12px 14px', borderBottom: '1px solid var(--border)' }, ...filters.map(f => {
+      const on = this.state.filter === f;
+      return this.btn({ key: f, onClick: () => this.setState({ filter: f }), style: { height: '30px', padding: '0 12px', borderRadius: '7px', fontFamily: 'var(--sans)', fontSize: '12px', fontWeight: 600, cursor: 'pointer', background: on ? 'var(--subtle)' : 'transparent', color: on ? 'var(--head)' : 'var(--muted)', border: '1px solid ' + (on ? 'var(--border-2,var(--border))' : 'var(--border)') } }, f);
+    }));
+    const row = (s, i) => {
+      const sm = stMap[s.status]; const expired = s.status === 'Expired';
+      const dc = s.dir === 'buy' ? 'var(--profit)' : 'var(--loss)';
+      const dbg = s.dir === 'buy' ? 'var(--profit-soft)' : 'var(--loss-soft)';
+      return this.e('div', { key: i, onClick: () => this.toast('Signal detail — Phase 2'), style: { display: 'flex', gap: '12px', padding: '14px 14px 14px 13px', borderBottom: '1px solid var(--border)', borderLeft: '3px solid ' + sm.bdr, cursor: 'pointer', opacity: expired ? 0.5 : 1 } },
+        this.d({ width: '34px', height: '34px', borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: dbg, color: dc }, this.ic(s.dir === 'buy' ? ['M12 19V5', 'm5 12 7-7 7 7'] : ['M12 5v14', 'm5 12 7 7 7-7'], dc, 16)),
+        this.d({ flex: 1, minWidth: 0 },
+          this.d({ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' },
+            this.sp({ fontSize: '14px', fontWeight: 700, color: 'var(--head)' }, 'NQ'),
+            this.sp({ fontSize: '9px', fontWeight: 700, padding: '3px 7px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.04em', background: sm.bg, color: sm.c }, s.status),
+            this.d({ flex: 1 }),
+            this.sp({ fontSize: '12px', color: 'var(--muted)', whiteSpace: 'nowrap' }, s.time)),
+          this.sp({ display: 'block', fontSize: '12px', color: 'var(--muted)', marginBottom: '5px' }, 'Momentum Breakout · Instance 1'),
+          this.sp({ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--body)', fontVariantNumeric: 'tabular-nums', marginBottom: '8px' }, '@ ' + s.px),
+          this.d({ display: 'flex', alignItems: 'center', gap: '9px' },
+            this.sp({ fontSize: '11px', color: 'var(--muted)', flexShrink: 0 }, 'Confidence'),
+            this.d({ flex: 1, height: '6px', borderRadius: '999px', background: 'var(--subtle)', overflow: 'hidden' }, this.d({ width: s.conf + '%', height: '100%', background: s.confC })),
+            this.sp({ fontSize: '12px', fontWeight: 700, color: s.confC, flexShrink: 0 }, s.conf + '%'))));
+    };
+    return this.d({}, filterBar, visible.length ? this.d({}, ...visible.map(row)) : this.d({ padding: '40px 20px', textAlign: 'center' }, this.sp({ fontSize: '13px', color: 'var(--muted)' }, 'No signals match this filter')));
+  }
+
+  positionsTab() {
+    const head = (t) => this.sp({ display: 'block', fontSize: '10px', fontWeight: 700, letterSpacing: '0.07em', color: 'var(--muted)', textTransform: 'uppercase', padding: '14px 16px 8px' }, t);
+    const posRow = (p, closed) => this.d({ key: p.k, padding: '13px 16px', borderBottom: '1px solid var(--border)', opacity: closed ? 0.55 : 1 },
+      this.d({ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' },
+        this.sp({ fontSize: '14px', fontWeight: 700, color: 'var(--head)' }, 'NQ'),
+        this.sp({ fontSize: '9px', fontWeight: 700, padding: '3px 7px', borderRadius: '4px', textTransform: 'uppercase', background: p.dir === 'Long' ? 'var(--profit-soft)' : 'var(--loss-soft)', color: p.dir === 'Long' ? 'var(--profit)' : 'var(--loss)' }, p.dir),
+        this.d({ flex: 1 }),
+        this.sp({ fontSize: '14px', fontWeight: 700, color: p.pnlPos ? 'var(--profit)' : 'var(--loss)', fontVariantNumeric: 'tabular-nums' }, p.pnl)),
+      this.sp({ display: 'block', fontSize: '12px', color: 'var(--body)', fontVariantNumeric: 'tabular-nums', marginBottom: '3px' }, p.contracts + ' · entry ' + p.entry + ' · ' + (closed ? 'exit ' + p.exit : 'stop ' + p.stop)),
+      this.d({ display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+        this.sp({ fontSize: '11px', color: 'var(--muted)' }, 'Momentum Breakout · Instance 1'),
+        this.sp({ fontSize: '12px', fontWeight: 700, color: p.pnlPos ? 'var(--profit)' : 'var(--loss)' }, p.r)));
+    return this.d({},
+      head('Open positions'),
+      posRow({ k: 'o1', dir: 'Long', contracts: '2 contracts', entry: '19,714', stop: '19,690', pnl: '+$540', pnlPos: true, r: '+1.9R' }, false),
+      head('Closed today'),
+      posRow({ k: 'c1', dir: 'Long', contracts: '2 contracts', entry: '19,623', exit: '19,714', pnl: '+$1,820', pnlPos: true, r: '+2.8R' }, true),
+      posRow({ k: 'c2', dir: 'Short', contracts: '1 contract', entry: '19,798', exit: '19,762', pnl: '+$720', pnlPos: true, r: '+1.4R' }, true));
+  }
+
+  strategiesTab() {
+    const inst = this.activeInstance();
+    const others = this.instances().filter(i => i.id !== inst.id);
+    const head = (t) => this.sp({ display: 'block', fontSize: '10px', fontWeight: 700, letterSpacing: '0.07em', color: 'var(--muted)', textTransform: 'uppercase', padding: '14px 16px 8px' }, t);
+    const dotEl = (i, active) => { const paused = !!this.state.paused[i.id]; const c = (active && !paused) ? ({ live: 'var(--profit)', paper: '#7C3AED', draft: 'var(--muted)' }[i.status]) : 'var(--muted)'; return this.d({ width: '9px', height: '9px', borderRadius: '50%', flexShrink: 0, background: c, animation: (active && !paused && i.status !== 'draft') ? 'tvpulse2 1.6s infinite' : 'none' }); };
+    const pauseBtn = (i) => { const paused = !!this.state.paused[i.id]; return this.btn({ onClick: (e) => { e.stopPropagation(); this.togglePause(i.id); }, style: { display: 'flex', alignItems: 'center', gap: '5px', height: '30px', padding: '0 11px', borderRadius: '7px', border: '1px solid ' + (paused ? 'color-mix(in srgb,var(--profit) 38%,transparent)' : 'var(--border)'), background: paused ? 'var(--profit-soft)' : 'var(--card)', color: paused ? 'var(--profit)' : 'var(--body)', fontFamily: 'var(--sans)', fontSize: '12px', fontWeight: 600, cursor: 'pointer', flexShrink: 0 } }, this.ppIcon(paused, paused ? 'var(--profit)' : 'var(--muted)', 12), paused ? 'Start' : 'Pause'); };
+    const row = (i, active) => { const running = i.status === 'live' || i.status === 'paper'; const paused = !!this.state.paused[i.id]; return this.e('div', { key: i.id, style: { display: 'flex', alignItems: 'center', gap: '11px', padding: '13px 16px', borderBottom: '1px solid var(--border)', background: active ? 'var(--profit-soft)' : 'transparent' } },
+      dotEl(i, active),
+      this.e('div', { onClick: () => active ? null : this.setState({ activeInst: i.id }), style: { flex: 1, minWidth: 0, cursor: active ? 'default' : 'pointer', opacity: active ? 1 : 0.82 } },
+        this.sp({ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--head)' }, i.strat + ' · Instance ' + i.n),
+        this.sp({ fontSize: '11px', color: 'var(--muted)' }, i.asset + ' · ' + i.tf + ' · ' + i.preset + ' · ' + (paused ? 'Paused' : (i.status[0].toUpperCase() + i.status.slice(1))))),
+      this.sp({ fontSize: '15px', fontWeight: 800, color: this.scoreColor(i.score), flexShrink: 0 }, String(i.score)),
+      running ? pauseBtn(i) : null); };
+    return this.d({}, head('Active on NQ'), row(inst, true), head('Other instances'), ...others.map(i => row(i, false)));
+  }
+
+  chartEl() {
+    const st = this.state;
+    const toastEl = st.toastMsg ? this.e('div', { style: { position: 'fixed', bottom: '20px', right: '20px', zIndex: 300, background: 'var(--head)', color: 'var(--bg)', padding: '11px 16px', borderRadius: '9px', fontSize: '13px', fontWeight: 500, boxShadow: '0 8px 24px rgba(15,23,36,.22)', maxWidth: '340px' } }, st.toastMsg) : null;
+    const overlayClose = st.addOpen ? this.e('div', { onClick: () => this.setState({ addOpen: false }), style: { position: 'fixed', inset: 0, zIndex: 55 } }) : null;
+    return this.d({ height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0, background: 'var(--bg)' },
+      this.assetBar(),
+      this.d({ flex: 1, minHeight: 0, display: 'flex' }, this.chartArea(), this.resizeHandle(), this.rightPanel()),
+      overlayClose, toastEl);
+  }
+
+  renderVals() {
+    const goto = (f) => () => { try { window.location.href = f; } catch (e) {} };
+    return {
+      chartEl: this.chartEl(),
+      goOverview: goto('Overview.dc.html'),
+      goStrategies: goto('Strategies.dc.html'),
+      goAnalysis: goto('Analysis.dc.html'),
+      goAudit: goto('Audit.dc.html'),
+      goChart: () => {},
+      goSoon: () => this.toast('That page is coming soon'),
+    };
+  }
+}
+</script>
+</body>
+</html>

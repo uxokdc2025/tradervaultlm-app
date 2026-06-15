@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="tokens.css">
+  <style>
+    :root { --profit-soft:rgba(21,128,61,.12); --loss-soft:rgba(220,38,38,.12); --warn:#D97706; --warn-soft:rgba(217,119,6,.14); --page:#F7F6F1; }
+    .tv-dark { --profit-soft:rgba(34,197,94,.16); --loss-soft:rgba(248,113,113,.16); --warn:#FBBF24; --warn-soft:rgba(251,191,36,.16); --page:#0B131B; }
+  </style>
+</helmet>
+<dc-import name="_Shell"
+  active-page="audit"
+  page-title="Audit log"
+  page-subtitle="Every signal, fill, skip & system event"
+  on-nav-overview="{{ goOverview }}"
+  on-nav-strategies="{{ goStrategies }}"
+  on-nav-analysis="{{ goAnalysis }}"
+  on-nav-chart="{{ goChart }}"
+  on-nav-audit="{{ goAudit }}"
+  on-nav-accounts="{{ goSoon }}"
+  on-nav-configure="{{ goSoon }}"
+  on-nav-signal="{{ goSoon }}"
+  on-nav-settings="{{ goSoon }}"
+  hint-size="100%,100%">
+  {{ auditEl }}
+</dc-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  state = { filter: 'All', strat: 'mb1', range: 'Today', search: '', openRow: null, collapsed: {}, notes: [
+    { id: 'n1', text: 'Paused briefly Jun 13 ahead of Fed announcement — resumed after. Pattern degradation warning flagged by AI — monitoring closely before deciding to run new backtest.', meta: 'Jun 14 · 9:20am · by you' },
+    { id: 'n2', text: 'Reduced max contracts from 3 to 2 after margin rejection on Jun 14 morning. Need to review position sizing in Backtest Config.', meta: 'Jun 14 · 9:35am · by you' },
+  ], draft: '', composerOpen: false, notePublic: false, toastMsg: null };
+
+  componentWillUnmount() { if (this._t) clearTimeout(this._t); }
+  toast(m) { this.setState({ toastMsg: m }); if (this._t) clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toastMsg: null }), 2800); }
+
+  e(t, p, ...k) { return React.createElement(t, p, ...k); }
+  d(style, ...k) { return React.createElement('div', { style }, ...k); }
+  sp(style, ...k) { return React.createElement('span', { style }, ...k); }
+  btn(p, ...k) { return React.createElement('button', { type: 'button', ...p }, ...k); }
+  ic(paths, color, size) { const h = React.createElement; return h('svg', { width: size || 16, height: size || 16, viewBox: '0 0 24 24', fill: 'none', stroke: color, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', style: { flexShrink: 0 } }, paths.map((d, i) => h('path', { key: i, d }))); }
+  b(t) { return this.sp({ fontWeight: 700, color: 'var(--head)' }, t); }
+
+  typeMap(t) {
+    return {
+      filled:   { c: 'var(--profit)', bg: 'var(--profit-soft)', icon: ['M20 6 9 17l-5-5'] },
+      skipped:  { c: 'var(--muted)',  bg: 'var(--subtle)',      icon: ['M5 12h14'] },
+      rejected: { c: 'var(--loss)',   bg: 'var(--loss-soft)',   icon: ['M18 6 6 18', 'm6 6 12 12'] },
+      warning:  { c: 'var(--warn)',   bg: 'var(--warn-soft)',   icon: ['M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z', 'M12 9v4', 'M12 17h.01'] },
+      system:   { c: '#7C3AED',       bg: 'rgba(124,58,237,.10)', icon: ['M12 4v8', 'M7.5 7.5a7 7 0 1 0 9 0'] },
+    }[t];
+  }
+  tag(text, kind, key) {
+    const m = { purple: { bg: 'rgba(124,58,237,.10)', c: '#7C3AED' }, green: { bg: 'var(--profit-soft)', c: 'var(--profit)' }, gray: { bg: 'var(--subtle)', c: 'var(--muted)' }, red: { bg: 'var(--loss-soft)', c: 'var(--loss)' }, amber: { bg: 'var(--warn-soft)', c: 'var(--warn)' } }[kind] || { bg: 'var(--subtle)', c: 'var(--body)' };
+    return this.e('span', { key: key || text, style: { fontSize: '11px', fontWeight: 600, padding: '3px 9px', borderRadius: '5px', background: m.bg, color: m.c, whiteSpace: 'nowrap', border: '1px solid color-mix(in srgb,' + m.c + ' 22%, transparent)' } }, text);
+  }
+
+  events() {
+    const T = (s) => this.sp({ fontWeight: 700, color: 'var(--head)' }, s);
+    return {
+      today: [
+        { id: 'e1', type: 'filled', strat: 'mb1', time: '10:23am', title: 'NQ Long — signal fired and filled',
+          text: 'nq long signal fired filled buy 19847 confidence 84 momentum breakout',
+          desc: this.e('span', {}, 'Momentum Breakout · Instance 1 fired a ', T('buy signal at 19,847.25'), '. Order placed and filled at 19,847.50. Confidence 84% — 3 of 4 context conditions met.'),
+          tags: [['Momentum Breakout · I1', 'purple'], ['Filled @ 19,847.50', 'green'], ['Confidence 84%', 'purple']],
+          detail: { grid: [['Signal time', '10:23:04am'], ['Signal price', '19,847.25'], ['Fill price', '19,847.50'], ['Slippage', '+0.25 (0.5 tk)'], ['Contracts', '2'], ['Stop', '19,798'], ['Take profit', '19,983 (2R)'], ['Broker', 'Alpaca paper']], context: [['SQQQ', true], ['ATR', true], ['BOS', true], ['DXY', false]], reason: null } },
+        { id: 'e2', type: 'skipped', strat: 'mb1', time: '9:58am', title: 'NQ Long — signal skipped',
+          text: 'nq long signal skipped confidence 38 below threshold sqqq did not confirm',
+          desc: this.e('span', {}, 'Momentum Breakout · Instance 1 fired a buy signal but it was ', T('skipped — confidence 38%'), ' (below your 50% threshold). SQQQ did not confirm within 90 seconds.'),
+          tags: [['Momentum Breakout · I1', 'purple'], ['Skipped', 'gray'], ['Confidence 38% — below threshold', 'purple']],
+          detail: { grid: [['Signal time', '9:58:11am'], ['Signal price', '19,801.00'], ['Skip reason', 'Confidence below threshold'], ['Threshold set', '50% minimum']], context: [['SQQQ', false], ['ATR', true], ['BOS', false], ['DXY', false]], reason: 'Your confidence threshold protected you here — only 38% of context conditions were met. SQQQ failed to confirm within the 90-second window, so the entry was blocked. No action needed.' } },
+        { id: 'e3', type: 'filled', strat: 'mb1', time: '9:47am → 11:02am', title: 'NQ Long — closed at take profit',
+          text: 'nq long closed take profit 2r exit 19983 pnl 2660 momentum breakout',
+          desc: this.e('span', {}, 'Position opened at 9:47am ', T('closed at take profit (2R)'), '. Exit at 19,983. Held 1h 15m. P&L +$2,660 (+2.0R).'),
+          tags: [['Momentum Breakout · I1', 'purple'], ['TP hit @ 19,983', 'green'], ['+$2,660 (+2.0R)', 'green']],
+          detail: { grid: [['Entry time', '9:47:30am'], ['Entry price', '19,851.00'], ['Exit time', '11:02:14am'], ['Exit price', '19,983.00'], ['Hold time', '1h 15m'], ['Contracts', '2'], ['P&L', '+$2,660'], ['R-multiple', '+2.0R']], context: null, reason: null } },
+        { id: 'e4', type: 'rejected', strat: 'mb1', time: '9:31am', title: 'NQ Long — order rejected by broker',
+          text: 'nq long order rejected broker insufficient buying power margin 3 contracts',
+          desc: this.e('span', {}, 'Signal fired correctly but the broker rejected the order — ', T('insufficient buying power'), '. Order was for 3 contracts at 19,623. Available margin covered 2 contracts only.'),
+          tags: [['Momentum Breakout · I1', 'purple'], ['Broker rejection', 'red'], ['Insufficient margin', 'amber']],
+          detail: { grid: [['Signal time', '9:31:02am'], ['Signal price', '19,623.50'], ['Requested size', '3 contracts'], ['Broker error', 'Insufficient buying power']], context: null, reason: 'The signal was valid, but your account margin only covered 2 of the 3 requested contracts. Consider lowering Risk per trade or Max contracts in Backtest Config so orders fit available margin.', raw: 'INSUFFICIENT_BUYING_POWER' } },
+        { id: 'e5', type: 'warning', strat: 'mb1', time: '9:15am', title: 'Context engine — pattern degradation detected',
+          text: 'context engine pattern degradation sqqq atr bos win rate 84 61 declining',
+          desc: this.e('span', {}, 'Your top winning pattern (', T('SQQQ + ATR + BOS'), ') has shown declining win rate over the last 7 live trading days — 84% in backtest, now 61% in live conditions. AI is flagging this for your review.'),
+          tags: [['Pattern degradation', 'amber'], ['Momentum Breakout · I1', 'purple'], ['84% → 61% win rate', 'purple']],
+          detail: { grid: [['Pattern', 'SQQQ + ATR + BOS'], ['Backtest win rate', '84%'], ['Live win rate (7d)', '61%'], ['Live trades', '23']], context: null, reason: 'Live performance has dropped more than 15 points below backtest over 23 trades. Markets may have shifted. Consider running a fresh backtest on recent data, or tightening the entry filters before this pattern degrades further.' } },
+        { id: 'e6', type: 'system', strat: 'mb1', time: '8:30am', title: 'Momentum Breakout · Instance 1 — resumed',
+          text: 'instance resumed momentum breakout live',
+          desc: this.e('span', {}, 'Instance manually resumed after the overnight pause. ', T('Now live'), ' and listening for signals on NQ · 5m.'),
+          tags: [['Momentum Breakout · I1', 'purple'], ['Resumed', 'green']],
+          detail: { grid: [['Resumed at', '8:30:00am'], ['Paused since', 'Jun 13 · 4:10pm'], ['Signals missed', '0'], ['Status', 'Live']], context: null, reason: null } },
+      ],
+      yesterday: [
+        { id: 'y1', type: 'system', strat: 'mb1', time: '3:47pm', title: 'KILL switch activated',
+          text: 'kill switch activated manual position closed market nq long 19720 paused',
+          desc: this.e('span', {}, 'All live signals paused manually. ', T('1 open position closed at market'), '. NQ Long closed at 19,720 (was +0.6R at close). All instances set to paused.'),
+          tags: [['Manual KILL', 'purple'], ['1 position force-closed', 'amber'], ['Resumed 4:10pm', 'green']],
+          detail: { grid: [['Kill time', '3:47:12pm'], ['Resume time', '4:10:40pm'], ['Positions closed', '1 (NQ Long)'], ['Signals cancelled', '2 pending']], context: null, reason: 'You triggered the KILL switch. All live signals were halted and the single open NQ Long position was force-closed at market (19,720, +0.6R). Two pending signals were cancelled. Instances were resumed at 4:10pm.' } },
+        { id: 'y2', type: 'skipped', strat: 'mb1', time: '4:01pm', title: 'NQ Long — skipped (session ended)',
+          text: 'nq long skipped session ended ny 4pm session filter',
+          desc: this.e('span', {}, 'Signal fired at 4:01pm but was skipped — ', T('NY session ended at 4:00pm'), '. Session filter prevented entry.'),
+          tags: [['Momentum Breakout · I1', 'purple'], ['Session ended', 'gray']],
+          detail: { grid: [['Signal time', '4:01:09pm'], ['Signal price', '19,712.00'], ['Skip reason', 'Session ended (NY 4:00pm)'], ['Filter', 'NY session only']], context: null, reason: 'Your strategy only trades the New York session (09:30–16:00 ET). This signal fired one minute after the session closed, so the session filter correctly blocked the entry.' } },
+      ],
+    };
+  }
+
+  matches(ev) {
+    const st = this.state;
+    if (st.filter !== 'All') { const map = { Filled: 'filled', Skipped: 'skipped', Rejected: 'rejected', Warnings: 'warning', System: 'system' }; if (ev.type !== map[st.filter]) return false; }
+    if (st.strat !== 'all' && ev.strat !== st.strat) return false;
+    if (st.search.trim() && !(ev.text + ' ' + ev.title).toLowerCase().includes(st.search.trim().toLowerCase())) return false;
+    return true;
+  }
+
+  // ── summary strip ──
+  summaryStrip() {
+    const cards = [
+      { v: '47', l: 'Signals fired today', c: 'var(--head)' },
+      { v: '31', l: 'Orders filled', c: 'var(--profit)' },
+      { v: '14', l: 'Signals skipped', c: 'var(--muted)' },
+      { v: '2', l: 'Rejections', c: 'var(--loss)' },
+      { v: '1', l: 'Warnings', c: 'var(--warn)' },
+    ];
+    return this.d({ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: '12px' }, ...cards.map((c, i) => this.d({ key: i, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px 18px' },
+      this.sp({ display: 'block', fontSize: '26px', fontWeight: 800, color: c.c, lineHeight: '1', fontVariantNumeric: 'tabular-nums' }, c.v),
+      this.sp({ display: 'block', fontSize: '11px', fontWeight: 600, letterSpacing: '0.04em', color: 'var(--muted)', textTransform: 'uppercase', marginTop: '8px', lineHeight: '1.3' }, c.l))));
+  }
+
+  // ── filter bar ──
+  selectEl(value, options, onChange) {
+    return this.d({ position: 'relative', flex: 1 },
+      this.e('select', { value, onChange, style: { width: '100%', height: '46px', padding: '0 36px 0 16px', fontFamily: 'var(--sans)', fontSize: '15px', fontWeight: 600, color: 'var(--head)', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '10px', outline: 'none', appearance: 'none', WebkitAppearance: 'none', cursor: 'pointer' } }, ...options.map(o => this.e('option', { key: o[0], value: o[0] }, o[1]))),
+      this.d({ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }, this.ic(['m6 9 6 6 6-6'], 'var(--muted)', 17)));
+  }
+  filterBar() {
+    const pills = ['All', 'Filled', 'Skipped', 'Rejected', 'Warnings', 'System'];
+    const pillBar = this.d({ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }, ...pills.map(p => {
+      const on = this.state.filter === p;
+      return this.btn({ key: p, onClick: () => this.setState({ filter: p }), style: { height: '36px', padding: '0 16px', borderRadius: '999px', fontFamily: 'var(--sans)', fontSize: '14px', fontWeight: 600, cursor: 'pointer', background: on ? 'var(--subtle)' : 'transparent', color: on ? 'var(--head)' : 'var(--muted)', border: '1px solid ' + (on ? 'var(--border-2,var(--border))' : 'var(--border)') } }, p);
+    }));
+    const stratOpts = [['all', 'All strategies'], ['mb1', 'Momentum Breakout · Instance 1'], ['mb2', 'Momentum Breakout · Instance 2'], ['vw1', 'VWAP Scalper · Instance 1']];
+    const rangeOpts = [['Today', 'Today'], ['7d', 'Last 7 days'], ['30d', 'Last 30 days'], ['Custom', 'Custom']];
+    const search = this.d({ position: 'relative', flex: '1 1 260px' },
+      this.d({ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }, this.ic(['M11 11m-8 0a8 8 0 1 0 16 0 8 8 0 0 0-16 0', 'm21 21-4.3-4.3'], 'var(--muted)', 17)),
+      this.e('input', { type: 'text', value: this.state.search, placeholder: 'Search events…', onChange: (e) => this.setState({ search: e.target.value }), style: { width: '100%', height: '46px', padding: '0 14px 0 42px', fontFamily: 'var(--sans)', fontSize: '15px', color: 'var(--head)', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '10px', outline: 'none' } }));
+    return this.d({ display: 'flex', flexDirection: 'column', gap: '12px' },
+      pillBar,
+      this.d({ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'stretch' }, this.selectEl(this.state.strat, stratOpts, (e) => this.setState({ strat: e.target.value, openRow: null })), this.selectEl(this.state.range, rangeOpts, (e) => this.setState({ range: e.target.value })), search));
+  }
+
+  // ── log row ──
+  detailPanel(ev) {
+    const dt = ev.detail || {};
+    const grid = dt.grid ? this.d({ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '14px 18px' }, ...dt.grid.map(([k, v], i) => this.d({ key: i },
+      this.sp({ display: 'block', fontSize: '10px', fontWeight: 700, letterSpacing: '0.05em', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '3px' }, k),
+      this.sp({ fontSize: '13px', fontWeight: 600, color: 'var(--head)', fontVariantNumeric: 'tabular-nums' }, v)))) : null;
+    const ctx = dt.context ? this.d({ marginTop: '14px' },
+      this.sp({ display: 'block', fontSize: '10px', fontWeight: 700, letterSpacing: '0.05em', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '8px' }, 'Context conditions at signal'),
+      this.d({ display: 'flex', flexWrap: 'wrap', gap: '8px' }, ...dt.context.map(([l, ok]) => this.d({ key: l, display: 'inline-flex', alignItems: 'center', gap: '7px', padding: '5px 10px', borderRadius: '8px', background: 'var(--card)', border: '1px solid var(--border)' },
+        this.d({ width: '15px', height: '15px', borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: ok ? 'var(--profit)' : 'var(--loss)' }, this.ic(ok ? ['M20 6 9 17l-5-5'] : ['M18 6 6 18', 'm6 6 12 12'], '#fff', 10)),
+        this.sp({ fontSize: '12.5px', fontWeight: 600, color: 'var(--head)' }, l))))) : null;
+    const reason = dt.reason ? this.d({ marginTop: '14px', padding: '11px 13px', borderRadius: '9px', background: 'var(--card)', border: '1px solid var(--border)' },
+      this.sp({ fontSize: '13px', color: 'var(--body)', lineHeight: '1.55' }, dt.reason),
+      dt.raw ? this.sp({ display: 'block', fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--muted)', marginTop: '7px' }, 'Broker code: ' + dt.raw) : null) : null;
+    return this.d({ padding: '16px 18px 18px 74px', background: 'var(--subtle)', borderTop: '1px solid var(--border)' }, grid, ctx, reason);
+  }
+  logRow(ev) {
+    const m = this.typeMap(ev.type);
+    const open = this.state.openRow === ev.id;
+    return this.d({ borderLeft: '3px solid ' + m.c, borderBottom: '1px solid var(--border)', background: 'var(--card)' },
+      this.e('div', { onClick: () => this.setState(s => ({ openRow: s.openRow === ev.id ? null : ev.id })), style: { display: 'flex', gap: '14px', padding: '16px 18px', cursor: 'pointer' } },
+        this.d({ width: '36px', height: '36px', borderRadius: '10px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: m.bg, color: m.c }, this.ic(m.icon, m.c, 18)),
+        this.d({ flex: 1, minWidth: 0 },
+          this.d({ display: 'flex', alignItems: 'baseline', gap: '12px' },
+            this.sp({ flex: 1, fontSize: '15px', fontWeight: 700, color: 'var(--head)' }, ev.title),
+            this.sp({ fontSize: '13px', color: 'var(--muted)', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }, ev.time)),
+          this.e('p', { style: { margin: '5px 0 0', fontSize: '14px', color: 'var(--body)', lineHeight: '1.55' } }, ev.desc),
+          this.d({ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '7px', marginTop: '11px' }, ...ev.tags.map((t, i) => this.tag(t[0], t[1], ev.id + 'tag' + i)), this.btn({ onClick: (e) => { e.stopPropagation(); this.noteForSignal(ev); }, title: 'Add a note about this signal', style: { display: 'inline-flex', alignItems: 'center', gap: '5px', height: '24px', padding: '0 9px', borderRadius: '5px', border: '1px dashed var(--border-2,var(--border))', background: 'transparent', color: 'var(--muted)', fontFamily: 'var(--sans)', fontSize: '11px', fontWeight: 600, cursor: 'pointer' } }, this.ic(['M12 5v14', 'M5 12h14'], 'currentColor', 12), 'Note'))),
+        this.d({ flexShrink: 0, paddingTop: '2px', color: 'var(--muted)' }, this.ic([open ? 'm18 15-6-6-6 6' : 'm6 9 6 6 6-6'], 'currentColor', 18))),
+      open ? this.detailPanel(ev) : null);
+  }
+  dateGroup(key, label, count, list) {
+    const collapsed = !!this.state.collapsed[key];
+    const visible = list.filter(ev => this.matches(ev));
+    if (visible.length === 0) return null;
+    const header = this.btn({ onClick: () => this.setState(s => ({ collapsed: { ...s.collapsed, [key]: !s.collapsed[key] } })), style: { display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '12px 18px', background: 'var(--subtle)', border: 'none', borderBottom: '1px solid var(--border)', cursor: 'pointer', fontFamily: 'var(--sans)' } },
+      this.ic([collapsed ? 'm9 18 6-6-6-6' : 'm6 9 6 6 6-6'], 'var(--muted)', 15),
+      this.sp({ fontSize: '12px', fontWeight: 700, letterSpacing: '0.05em', color: 'var(--head)', textTransform: 'uppercase' }, label),
+      this.sp({ fontSize: '12px', color: 'var(--muted)' }, count + ' events'));
+    return this.d({ border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden', marginBottom: '16px', background: 'var(--card)' }, header, collapsed ? null : this.d({}, ...visible.map(ev => this.e('div', { key: ev.id }, this.logRow(ev)))));
+  }
+
+  // ── instance notes ──
+  noteForSignal(ev) { const ref = ev.title.split(' — ')[0]; this.setState({ strat: ev.strat, composerOpen: true, draft: 'Re: ' + ref + ' at ' + ev.time + ' — ' }); this.toast('Note started — finish it in Instance notes below'); }
+  deleteNote(id) { this.setState(s => ({ notes: s.notes.filter(n => n.id !== id) })); this.toast('Note deleted'); }
+  notesSection() {
+    if (this.state.strat === 'all') return null;
+    const st = this.state;
+    const name = { mb1: 'Momentum Breakout · Instance 1', mb2: 'Momentum Breakout · Instance 2', vw1: 'VWAP Scalper · Instance 1' }[st.strat];
+    const ready = st.draft.trim().length > 0;
+    const addNote = () => { if (!ready) { this.toast('Write something first'); return; } this.setState(s => ({ notes: [...s.notes, { id: 'n' + Date.now(), text: s.draft.trim(), meta: 'Jun 14 · just now · by you' + (s.notePublic ? ' · visible to followers' : '') }], draft: '', composerOpen: false })); this.toast('Note added to this instance'); };
+    const openComposer = () => this.setState({ composerOpen: true });
+    const composer = this.d({ padding: '14px 16px 16px', borderTop: '1px solid var(--border)', background: 'var(--subtle)' },
+      this.e('textarea', { value: st.draft, autoFocus: true, maxLength: 280, placeholder: 'Write a note about this instance…  e.g. "Paused ahead of FOMC" or "Switched 2R → 3R TP after review"', onChange: (e) => this.setState({ draft: e.target.value }), style: { width: '100%', minHeight: '90px', resize: 'vertical', boxSizing: 'border-box', padding: '12px 14px', fontFamily: 'var(--sans)', fontSize: '14px', lineHeight: '1.55', color: 'var(--head)', background: 'var(--card)', border: '1px solid var(--input)', borderRadius: '10px', outline: 'none' } }),
+      this.d({ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '11px', flexWrap: 'wrap' },
+        this.btn({ onClick: () => this.setState(s => ({ notePublic: !s.notePublic })), title: 'Toggle who can see this note', style: { display: 'flex', alignItems: 'center', gap: '7px', height: '34px', padding: '0 12px', borderRadius: '8px', border: '1px solid ' + (st.notePublic ? 'color-mix(in srgb,#7C3AED 35%,transparent)' : 'var(--border)'), background: st.notePublic ? 'rgba(124,58,237,.08)' : 'var(--card)', color: st.notePublic ? '#7C3AED' : 'var(--muted)', fontFamily: 'var(--sans)', fontSize: '12px', fontWeight: 600, cursor: 'pointer' } }, this.ic(st.notePublic ? ['M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z', 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z'] : ['M5 11V8a7 7 0 0 1 14 0v3', 'M5 11a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2z'], 'currentColor', 13), st.notePublic ? 'Visible to followers' : 'Private — only you'),
+        this.d({ flex: 1 }),
+        this.sp({ fontSize: '11px', color: 'var(--muted)', fontVariantNumeric: 'tabular-nums' }, st.draft.length + ' / 280'),
+        this.btn({ onClick: () => this.setState({ composerOpen: false, draft: '' }), style: { height: '38px', padding: '0 16px', borderRadius: '9px', background: 'var(--card)', border: '1px solid var(--border)', fontFamily: 'var(--sans)', fontSize: '13px', fontWeight: 600, color: 'var(--body)', cursor: 'pointer' } }, 'Cancel'),
+        this.e('button', { type: 'button', onClick: addNote, disabled: !ready, style: { display: 'flex', alignItems: 'center', gap: '7px', height: '38px', padding: '0 18px', borderRadius: '9px', background: ready ? 'var(--accent)' : 'var(--subtle)', color: ready ? 'var(--accent-on)' : 'var(--muted)', border: ready ? 'none' : '1px solid var(--border)', fontFamily: 'var(--sans)', fontSize: '13px', fontWeight: 700, cursor: ready ? 'pointer' : 'not-allowed' } }, this.ic(['M20 6 9 17l-5-5'], ready ? 'var(--accent-on)' : 'var(--muted)', 15), 'Save note')));
+    const trigger = this.btn({ onClick: openComposer, style: { display: 'flex', alignItems: 'center', gap: '11px', width: '100%', padding: '14px 16px', background: 'none', border: 'none', borderTop: '1px solid var(--border)', cursor: 'pointer', fontFamily: 'var(--sans)', textAlign: 'left' } }, this.d({ width: '24px', height: '24px', borderRadius: '7px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(124,58,237,.10)', color: '#7C3AED' }, this.ic(['M12 5v14', 'M5 12h14'], 'currentColor', 14)), this.sp({ fontSize: '14px', color: 'var(--muted)' }, 'Add note to this instance…'));
+    return this.d({ border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden', background: 'var(--card)' },
+      this.d({ display: 'flex', alignItems: 'center', gap: '10px', padding: '15px 18px', borderBottom: '1px solid var(--border)' },
+        this.ic(['M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z', 'M14 2v6h6', 'M9 13h6', 'M9 17h4'], 'var(--muted)', 17),
+        this.sp({ flex: 1, fontSize: '15px', fontWeight: 700, color: 'var(--head)' }, 'Instance notes — ' + name)),
+      ...this.state.notes.map(n => this.d({ key: n.id, padding: '15px 18px', borderBottom: '1px solid var(--border)', display: 'flex', gap: '12px', alignItems: 'flex-start' },
+        this.d({ width: '8px', height: '8px', borderRadius: '50%', background: '#7C3AED', flexShrink: 0, marginTop: '6px' }),
+        this.d({ flex: 1, minWidth: 0 },
+          this.sp({ display: 'block', fontSize: '14px', color: 'var(--head)', lineHeight: '1.55' }, n.text),
+          this.sp({ display: 'block', fontSize: '12px', color: 'var(--muted)', marginTop: '6px' }, n.meta)),
+        this.btn({ onClick: () => this.deleteNote(n.id), 'aria-label': 'Delete note', title: 'Delete note', style: { width: '28px', height: '28px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '7px', border: 'none', background: 'transparent', color: 'var(--muted)', cursor: 'pointer' } }, this.ic(['M3 6h18', 'M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2', 'M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6', 'M10 11v6', 'M14 11v6'], 'currentColor', 14)))),
+      st.composerOpen ? composer : trigger);
+  }
+
+  auditEl() {
+    const st = this.state;
+    const ev = this.events();
+    const header = this.d({ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' },
+      this.d({},
+        this.sp({ display: 'block', fontSize: '28px', fontWeight: 800, color: 'var(--head)', letterSpacing: '-0.02em' }, 'Audit log'),
+        this.sp({ display: 'block', fontSize: '14px', color: 'var(--muted)', marginTop: '5px' }, 'Every signal, fill, skip, and system event — in plain English')),
+      this.btn({ onClick: () => this.toast('Export CSV — logic coming soon'), style: { display: 'flex', alignItems: 'center', gap: '8px', height: '40px', padding: '0 16px', background: 'transparent', border: '1px solid var(--border)', borderRadius: '10px', fontFamily: 'var(--sans)', fontSize: '14px', fontWeight: 600, color: 'var(--body)', cursor: 'pointer' } }, this.ic(['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'M7 10l5 5 5-5', 'M12 15V3'], 'currentColor', 16), 'Export CSV'));
+    const groups = this.d({}, this.dateGroup('today', 'Today — Jun 14, 2026', 12, ev.today), this.dateGroup('yesterday', 'Yesterday — Jun 13, 2026', 8, ev.yesterday));
+    const anyVisible = ev.today.some(e => this.matches(e)) || ev.yesterday.some(e => this.matches(e));
+    const empty = !anyVisible ? this.d({ padding: '48px', textAlign: 'center', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px' }, this.sp({ fontSize: '14px', color: 'var(--muted)' }, 'No events match these filters')) : null;
+    const toastEl = st.toastMsg ? this.e('div', { style: { position: 'fixed', bottom: '20px', right: '20px', zIndex: 300, background: 'var(--head)', color: 'var(--bg)', padding: '11px 16px', borderRadius: '9px', fontSize: '13px', fontWeight: 500, boxShadow: '0 8px 24px rgba(15,23,36,.22)', maxWidth: '340px' } }, st.toastMsg) : null;
+    return this.d({ height: '100%', overflowY: 'auto', background: 'var(--page)' },
+      this.d({ maxWidth: '1180px', margin: '0 auto', padding: '20px 24px 56px', display: 'flex', flexDirection: 'column', gap: '18px' },
+        header, this.summaryStrip(), this.filterBar(), this.d({ marginTop: '2px' }, groups, empty), this.notesSection()),
+      toastEl);
+  }
+
+  renderVals() {
+    const goto = (f) => () => { try { window.location.href = f; } catch (e) {} };
+    return { auditEl: this.auditEl(), goOverview: goto('Overview.dc.html'), goStrategies: goto('Strategies.dc.html'), goAnalysis: goto('Analysis.dc.html'), goChart: goto('Chart.dc.html'), goAudit: () => {}, goSoon: () => this.toast('That page is coming soon') };
+  }
+}
+</script>
+</body>
+</html>

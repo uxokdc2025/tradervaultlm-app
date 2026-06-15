@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFFFFF;--subtle:#F1F5F9;--border:#E2E8F0;
+  --muted:#64718A;--body:#475569;--head:#1E293B;
+  --lime:#C8FF00;--navy:#101B25;
+  --accent:#7C3AED;--accent-on:#FFFFFF;--accent-soft:rgba(124,58,237,.12);--accent-ring:rgba(124,58,237,.24);
+  --profit:#15803D;--loss:#DC2626;--warn:#D97706;--info:#2563EB;
+  --profit-soft:rgba(21,128,61,.12);--loss-soft:rgba(220,38,38,.12);--warn-soft:rgba(217,119,6,.12);
+  --sb-bg:#101B25;--sb-muted:#7E8C99;--sb-hover:#1B2731;--sb-border:#2A3640;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --sans:'Inter',ui-sans-serif,system-ui,sans-serif;
+}
+.tv-dark{
+  --bg:#0B131B;--subtle:#18242F;--border:#28333D;
+  --muted:#8492A0;--body:#AEB9C4;--head:#F1F4F7;
+  --accent:#C8FF00;--accent-on:#101B25;--accent-soft:rgba(200,255,0,.15);--accent-ring:rgba(200,255,0,.25);
+  --profit:#22C55E;--loss:#F87171;--warn:#FBBF24;
+  --profit-soft:rgba(34,197,94,.15);--loss-soft:rgba(248,113,113,.15);--warn-soft:rgba(251,191,36,.15);
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:var(--sans);color:var(--body);background:#07090F;-webkit-font-smoothing:antialiased;}
+::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+@keyframes tvpulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+@keyframes tvspin{to{transform:rotate(360deg);}}
+@keyframes tvbreathe{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(124,58,237,.35);}50%{transform:scale(1.06);box-shadow:0 0 0 10px rgba(124,58,237,0);}}
+@keyframes toast-in{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+</style>
+</helmet>
+
+<div class="{{ themeClass }}" style="display:flex;height:100vh;width:100%;overflow:hidden;background:var(--bg);">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside style="{{ sbStyle }}">
+    <a onClick="{{ onPage.strategies }}" style="display:flex;align-items:center;padding:18px 14px 16px;gap:10px;text-decoration:none;cursor:pointer;{{ collapseJustify }}">
+      <div style="width:30px;height:30px;flex-shrink:0;border-radius:7px;background:var(--lime);display:flex;align-items:center;justify-content:center;">
+        <svg width="18" height="18" viewBox="0 0 30 30" fill="none" aria-hidden="true"><path d="M6.5 8L15 21.5L23.5 8" stroke="#101B25" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div style="{{ logoTextStyle }}">
+        <span style="font-size:11px;font-weight:600;color:#fff;letter-spacing:0.06em;line-height:1.2;display:block;">TRADER VAULT</span>
+        <span style="font-size:8px;font-weight:700;color:var(--lime);letter-spacing:0.16em;display:block;">LM</span>
+      </div>
+    </a>
+    <nav role="menu" aria-label="Primary navigation" style="flex:1;overflow-y:auto;overflow-x:hidden;padding:6px 10px;display:flex;flex-direction:column;gap:2px;">
+      <a role="menuitem" aria-current="{{ aria.strategies }}" onClick="{{ onPage.strategies }}" style="{{ nav.overview }}" style-hover="background:rgba(202,255,51,.08)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#CAFF33" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        <span style="{{ labelStyle }}">Overview</span>
+      </a>
+      <div style="{{ sectionStyle }}">STRATEGIES</div>
+      <a role="menuitem" aria-current="{{ aria.strategies }}" onClick="{{ onPage.strategies }}" style="{{ nav.strategies }}" style-hover="background:rgba(61,213,168,.08)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#3DD5A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 6a9 9 0 0 1-9 9"/><path d="M18 9V6h-3"/></svg>
+        <span style="{{ labelStyle }}">Strategies</span>
+        <span style="{{ badge.strategies }}">5</span>
+      </a>
+      <a role="menuitem" aria-current="{{ aria.analysis }}" onClick="{{ onPage.analysis }}" style="{{ nav.analysis }}" style-hover="background:rgba(61,213,168,.08)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#3DD5A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg>
+        <span style="{{ labelStyle }}">Analysis</span>
+      </a>
+      <div style="{{ sectionStyle }}">TRADING</div>
+      <a role="menuitem" aria-current="false" style="{{ nav.chart }}" style-hover="background:rgba(251,178,58,.08)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FBB23A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="7"/><rect x="14" y="6" width="3" height="11"/></svg>
+        <span style="{{ labelStyle }}">Chart &amp; signals</span>
+      </a>
+      <a role="menuitem" aria-current="false" style="{{ nav.journal }}" style-hover="background:rgba(251,178,58,.08)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FBB23A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        <span style="{{ labelStyle }}">Journal</span>
+      </a>
+      <a role="menuitem" aria-current="false" style="{{ nav.audit }}" style-hover="background:rgba(251,178,58,.08)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FBB23A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        <span style="{{ labelStyle }}">Audit log</span>
+      </a>
+      <div style="{{ sectionStyle }}">COPY TRADING</div>
+      <a role="menuitem" aria-current="false" style="{{ nav.accounts }}" style-hover="background:rgba(248,113,113,.08)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>
+        <span style="{{ labelStyle }}">Accounts</span>
+        <span style="{{ badge.accounts }}">3</span>
+      </a>
+      <a role="menuitem" aria-current="false" style="{{ nav.configure }}" style-hover="background:rgba(248,113,113,.08)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15H4.5a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 6 9.4a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6V4.5a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 11h.1a2 2 0 0 1 0 4h-.1z"/></svg>
+        <span style="{{ labelStyle }}">Configure</span>
+      </a>
+      <a role="menuitem" aria-current="false" style="{{ nav.signal }}" style-hover="background:rgba(248,113,113,.08)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M4.9 19.1A10 10 0 0 1 4.9 5"/><path d="M7.8 16.2a6 6 0 0 1 0-8.4"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4"/><path d="M19.1 4.9a10 10 0 0 1 0 14.2"/></svg>
+        <span style="{{ labelStyle }}">Signal sync</span>
+      </a>
+      <div style="height:1px;background:var(--sb-border);margin:5px 0;flex-shrink:0;"></div>
+      <a role="menuitem" aria-current="false" style="{{ nav.settings }}" style-hover="background:rgba(255,255,255,.05)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8B95A4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><line x1="4" y1="8" x2="20" y2="8"/><circle cx="9" cy="8" r="2.4" fill="var(--sb-bg)"/><line x1="4" y1="16" x2="20" y2="16"/><circle cx="15" cy="16" r="2.4" fill="var(--sb-bg)"/></svg>
+        <span style="{{ labelStyle }}">Settings</span>
+      </a>
+    </nav>
+    <div style="{{ footerStyle }}">
+      <div style="padding:14px;border-top:1px solid var(--sb-border);display:flex;flex-direction:column;gap:8px;">
+        <div style="position:relative;">
+          <button onClick="{{ onAccountClick }}" aria-label="Account menu" style="display:flex;align-items:center;gap:8px;width:100%;padding:6px 8px;margin:-6px -8px 0;border:none;background:transparent;border-radius:8px;cursor:pointer;text-align:left;" style-hover="background:rgba(255,255,255,0.05)">
+            <span style="flex:1;min-width:0;display:block;">
+              <span style="font-size:10px;font-weight:600;color:var(--sb-muted);letter-spacing:0.1em;display:block;">ACCOUNT</span>
+              <span style="font-size:13px;font-weight:600;color:#fff;display:block;">Alpaca paper</span>
+            </span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--sb-muted)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="{{ acctChevron }}"><path d="m6 15 6-6 6 6"/></svg>
+          </button>
+          {{ accountMenuEl }}
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="width:6px;height:6px;border-radius:50%;background:var(--lime);box-shadow:0 0 6px var(--lime);flex:none;"></span>
+          <span ref="{{ clockRef }}" style="font-family:var(--mono);font-size:12px;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:0.04em;"></span>
+          <span style="font-size:10px;font-weight:600;color:var(--sb-muted);letter-spacing:0.08em;">UTC</span>
+        </div>
+        <button onClick="{{ onKill }}" style="{{ killStyle }}" style-hover="filter:brightness(1.08)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+          {{ killLabel }}
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;">
+    <header style="height:56px;flex:none;display:flex;align-items:center;gap:12px;padding:0 20px;border-bottom:1px solid var(--border);background:var(--bg);">
+      <button onClick="{{ onToggleCollapse }}" aria-label="{{ collapseTitle }}" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;flex:none;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--body);cursor:pointer;padding:0;" style-hover="background:var(--subtle)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="{{ collapseIconStyle }}"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </button>
+      <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+        <span style="font-size:15px;font-weight:700;color:var(--head);white-space:nowrap;">{{ pageTitle }}</span>
+        <sc-if value="{{ hasPageSub }}" hint-placeholder-val="{{ false }}">
+          <span style="color:var(--border);">·</span>
+          <span style="font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ pageSub }}</span>
+        </sc-if>
+      </div>
+      <div style="flex:1;"></div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--body);"><span style="width:7px;height:7px;border-radius:50%;background:var(--profit);animation:tvpulse 2s infinite;"></span>WS connected</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);"><span style="width:7px;height:7px;border-radius:50%;background:var(--muted);"></span>equity closed</span>
+      </div>
+      <div style="width:1px;height:22px;background:var(--border);"></div>
+      <button onClick="{{ onToggleTheme }}" aria-label="Toggle theme" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;" style-hover="background:var(--subtle)">
+        <span style="{{ themeMoon }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
+        <span style="{{ themeSun }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></span>
+      </button>
+      <button style="display:flex;align-items:center;gap:7px;padding:3px 7px 3px 3px;border-radius:999px;border:1px solid var(--border);background:var(--bg);cursor:pointer;" style-hover="background:var(--subtle)">
+        <span style="width:30px;height:30px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;color:var(--lime);font-size:12px;font-weight:700;flex:none;">JD</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted);"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+    </header>
+    <div style="flex:1;min-height:0;overflow:hidden;">{{ contentEl }}</div>
+  </div>
+
+  <!-- Dim overlay -->
+  <sc-if value="{{ anyDrawerOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ onCloseDimmer }}" style="position:fixed;inset:0;z-index:150;background:rgba(0,0,0,0.4);"></div>
+  </sc-if>
+
+  <!-- Active drawer -->
+  {{ drawerEl }}
+
+  <!-- Discard confirm -->
+  <sc-if value="{{ discardOpen }}" hint-placeholder-val="{{ false }}">
+    {{ discardEl }}
+  </sc-if>
+
+  <!-- Toast stack -->
+  {{ toastEl }}
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    page: 'strategies',
+    collapsed: false,
+    dark: (()=>{ try{return localStorage.getItem('tv-theme')==='dark';}catch(e){return false;} })(),
+    killArmed: false, accountMenuOpen: false, bAiExpand: false,
+    // builder
+    builderOpen: false, builderStep: 1, builderDirty: false, discardOpen: false,
+    bType: null, bName: 'New strategy', bSymbol: 'SPY', bTf: '5m',
+    bIndicators: ['EMA(9)', 'EMA(21)'], bTp: '2.0', bSl: '1.0', bTrailing: false,
+    bPosSz: '2', bMaxLoss: '5', bMaxTrades: '3', bAiPrompt: '',
+    bMode: 'ai', bTab: 'indicators', bGenerating: false, genStep: 0, bAiGen: false, mInds: [], mPick: null, mPickerOpen: false, mEditIdx: null, mSearch: '', mBuyMode: 'all', mSellMode: 'first', mBuyThresh: 2, mSellThresh: 1, mLogicEdit: null, mAskAI: null, mAskText: '', mSuggestDismissed: false,
+    // backtest
+    btOpen: false, btStep: 'config', btCardId: null,
+    btProgress: 0, btLogs: [], btDatePreset: '3M',
+    btCapital: '100000', btCommission: '0.005', btSlippage: '5', btLiveParams: false,
+    btAccount: '$100,000', btRisk: '1', btMaxPos: '3',
+    btAsset: 'futures', btSymCode: 'ES', btAssetOpen: false, btAssetFilter: 'all', btSymQuery: '', btStyle: 'intraday', btDetail: 'standard',
+    btTf: '5m', btStopLoss: 'ATR-based (1.5×)', btTakeProfit: '2R multiple', btPartialExit: '50% at TP1, run rest', btBreakEven: 'Move to BE at 1R', btTrailingStop: 'None',
+    btRiskPerTrade: '1%', btSession: 'NY only', btDirty: false, btResetOpen: false, btPendingStyle: null,
+    aiOpenKey: null, aiPick: null,
+    // analysis
+    analysisFilter: 'all', analysisDetailId: null, analysisTab: 'overview', anaCollapsed: [], aiInsightsOpen: false,
+    sortBy: 'wr', cardMenuId: null, statusFilter: 'All', searchQuery: '', expandedStrat: null,
+    // toasts
+    toasts: [], _toastId: 0,
+  };
+
+  componentDidMount() {
+    this._t = setInterval(() => { if (this._clockEl) this._clockEl.textContent = this.fmtClock(); }, 1000);
+    if (this._clockEl) this._clockEl.textContent = this.fmtClock();
+    window.addEventListener('keydown', this.onEsc);
+  }
+  componentWillUnmount() { clearInterval(this._t); clearInterval(this._btTimer); clearInterval(this._genTimer); window.removeEventListener('keydown', this.onEsc); }
+  componentDidUpdate() {
+    const isRunning = this.state.btStep === 'running' && this.state.btOpen;
+    if (isRunning && !this._btRunning) { this._btRunning = true; this.startBtProgress(); }
+    if (!isRunning && this._btRunning) { this._btRunning = false; clearInterval(this._btTimer); this._btTimer = null; }
+  }
+  fmtClock() { const d=new Date(),p=n=>String(n).padStart(2,'0'); return p(d.getUTCHours())+':'+p(d.getUTCMinutes())+':'+p(d.getUTCSeconds()); }
+  onEsc = (e) => {
+    if (e.key !== 'Escape') return;
+    if (this.state.btResetOpen) return this.setState({ btResetOpen:false, btPendingStyle:null });
+    if (this.state.cardMenuId) return this.setState({ cardMenuId:null });
+    if (this.state.aiOpenKey) return this.setState({ aiOpenKey:null, aiPick:null });
+    if (this.state.accountMenuOpen) return this.setState({ accountMenuOpen:false });
+    if (this.state.discardOpen) return this.setState({ discardOpen: false });
+    if (this.state.builderOpen) { if (this.state.builderDirty) return this.setState({ discardOpen: true }); return this.setState({ builderOpen: false }); }
+    if (this.state.btOpen) return this.setState({ btOpen: false, btStep: 'config' });
+  };
+
+  // ── Toast ──────────────────────────────────────────────────────────────────
+  toast(msg, intent='success', undoFn=null) {
+    const id = this.state._toastId + 1;
+    const ms = intent==='error'?null:intent==='warning'?6000:4000;
+    this.setState(s=>({ toasts:[...s.toasts.slice(-2),{id,msg,intent,undoFn}], _toastId:id }));
+    if (ms) setTimeout(()=>this.setState(s=>({toasts:s.toasts.filter(t=>t.id!==id)})),ms);
+  }
+  dismissToast(id) { this.setState(s=>({toasts:s.toasts.filter(t=>t.id!==id)})); }
+
+  // ── Backtest presets (Trading-style → full column of settings) ──
+  btPresets() {
+    return {
+      scalping:{btTf:'1m',btStopLoss:'ATR-based (0.8×)',btTakeProfit:'1.5R multiple',btPartialExit:'None',btBreakEven:'None',btTrailingStop:'None',btRiskPerTrade:'0.5%',btDatePreset:'1M',btDetail:'simple',btSession:'NY + London only'},
+      intraday:{btTf:'5m',btStopLoss:'ATR-based (1.5×)',btTakeProfit:'2R multiple',btPartialExit:'50% at TP1, run rest',btBreakEven:'Move to BE at 1R',btTrailingStop:'None',btRiskPerTrade:'1%',btDatePreset:'3M',btDetail:'standard',btSession:'NY only'},
+      swing:{btTf:'1H',btStopLoss:'ATR-based (2×)',btTakeProfit:'3R multiple',btPartialExit:'50% at TP1, run rest',btBreakEven:'Move to BE at TP1',btTrailingStop:'ATR trail',btRiskPerTrade:'1%',btDatePreset:'6M',btDetail:'standard',btSession:'Any session'},
+      position:{btTf:'Daily',btStopLoss:'ATR-based (3×)',btTakeProfit:'Open-ended (trail)',btPartialExit:'None',btBreakEven:'None',btTrailingStop:'Chandelier exit',btRiskPerTrade:'0.5%',btDatePreset:'1Y',btDetail:'advanced',btSession:'Any session'},
+    };
+  }
+  styleLabel(k){ return ({scalping:'Scalping',intraday:'Intraday',swing:'Swing',position:'Position'})[k]||k; }
+  applyBtPreset(style) {
+    const p=this.btPresets()[style];
+    this.setState({ btStyle:style, ...p, btRisk:String(parseFloat(p.btRiskPerTrade)), btDirty:false, btResetOpen:false, btPendingStyle:null });
+  }
+  selectBtStyle(style) {
+    if (style===this.state.btStyle) return;
+    if (this.state.btDirty) return this.setState({ btResetOpen:true, btPendingStyle:style });
+    this.applyBtPreset(style);
+  }
+  setBtField(key,value) { this.setState({ [key]:value, btDirty:true }); }
+  openAi(key){ this.setState(s=>({ aiOpenKey:s.aiOpenKey===key?null:key, aiPick:s.aiOpenKey===key?null:s[key] })); }
+  aiApply(key){ const v=this.state.aiPick; this.setState({ aiOpenKey:null, aiPick:null }); if(v!=null) this.setBtField(key,v); }
+  startAiGen(){
+    const p=(this.state.bAiPrompt||'').toLowerCase();
+    const has=(k)=>p.includes(k);
+    let ids=[];
+    if(has('macd'))ids.push('macd'); if(has('rsi'))ids.push('rsi'); if(has('ema')||has('moving average'))ids.push('ema'); if(has('vwap'))ids.push('vwap'); if(has('atr')||has('volatil'))ids.push('atr'); if(has('bollinger')||has('bband'))ids.push('bb'); if(has('stoch'))ids.push('stoch'); if(has('supertrend'))ids.push('supertrend'); if(has('adx'))ids.push('adx'); if(has('volume'))ids.push('volume'); if(has('session')||has(' ny')||has('new york')||has('london'))ids.push('session');
+    ids=ids.filter((id,i)=>ids.indexOf(id)===i);
+    if(ids.length===0) ids=['macd','rsi'];
+    const cat=this.manualIndicators();
+    const mInds=ids.map(id=>{const c=cat.find(x=>x.id===id)||cat[0];return {id:c.id,buyIdx:0,sellIdx:0,buyVal:c.db||'',sellVal:c.ds||''};});
+    const nonFilter=mInds.filter(m=>(cat.find(x=>x.id===m.id)||{}).cat!=='Filter').length;
+    this.setState({bMode:'manual',bGenerating:true,genStep:0,bAiGen:true,bTab:'indicators',mInds,mPick:null,mPickerOpen:false,mEditIdx:null,mBuyMode:'all',mSellMode:'first',mBuyThresh:Math.max(2,nonFilter-1),mSellThresh:1,mLogicEdit:null,mAskAI:null,mSuggestDismissed:false,builderDirty:true});
+    this._genStart=Date.now(); this.runGenSteps();
+  }
+  runGenSteps(){
+    clearInterval(this._genTimer);
+    this._genTimer=setInterval(()=>{
+      this.setState(s=>{ if(!s.bGenerating){clearInterval(this._genTimer);this._genTimer=null;return null;} if(s.genStep>=4){ if(Date.now()-this._genStart>=2000){clearInterval(this._genTimer);this._genTimer=null;return {bGenerating:false};} return null; } return {genStep:s.genStep+1}; });
+    },550);
+  }
+
+  // ── Asset catalog (drives the position calculator) ──
+  btAssets() {
+    return {
+      forex:[{sym:'EUR/USD',name:'Euro / US Dollar',ptValue:10,stopPts:20,unit:'lots'},{sym:'GBP/USD',name:'British Pound / US Dollar',ptValue:10,stopPts:25,unit:'lots'},{sym:'USD/JPY',name:'US Dollar / Japanese Yen',ptValue:9,stopPts:25,unit:'lots'},{sym:'AUD/USD',name:'Australian Dollar / US Dollar',ptValue:10,stopPts:18,unit:'lots'}],
+      futures:[{sym:'ES',name:'E-mini S&P 500',ptValue:50,stopPts:12,unit:'contracts'},{sym:'NQ',name:'E-mini Nasdaq 100',ptValue:20,stopPts:30,unit:'contracts'},{sym:'CL',name:'Crude Oil',ptValue:1000,stopPts:0.8,unit:'contracts'},{sym:'GC',name:'Gold (COMEX)',ptValue:100,stopPts:8,unit:'contracts'},{sym:'YM',name:'E-mini Dow',ptValue:5,stopPts:60,unit:'contracts'}],
+      equities:[{sym:'SPY',name:'SPDR S&P 500 ETF',ptValue:1,stopPts:3,unit:'shares'},{sym:'AAPL',name:'Apple Inc.',ptValue:1,stopPts:4,unit:'shares'},{sym:'NVDA',name:'NVIDIA Corp.',ptValue:1,stopPts:6,unit:'shares'},{sym:'TSLA',name:'Tesla Inc.',ptValue:1,stopPts:8,unit:'shares'},{sym:'MSFT',name:'Microsoft Corp.',ptValue:1,stopPts:5,unit:'shares'}],
+      crypto:[{sym:'BTC',name:'Bitcoin',ptValue:1,stopPts:1500,unit:'coins'},{sym:'ETH',name:'Ethereum',ptValue:1,stopPts:120,unit:'coins'},{sym:'SOL',name:'Solana',ptValue:1,stopPts:8,unit:'coins'}],
+      metals:[{sym:'XAUUSD',name:'Gold Spot',ptValue:1,stopPts:18,unit:'oz'},{sym:'XAGUSD',name:'Silver Spot',ptValue:5,stopPts:0.5,unit:'oz'}],
+    };
+  }
+  assetClassLabel(k){ return ({forex:'Forex',futures:'Futures',equities:'Equities',crypto:'Crypto',metals:'Metals'})[k]||k; }
+  currentAsset() { const cat=this.btAssets(); const cls=cat[this.state.btAsset]||cat.futures; return cls.find(a=>a.sym===this.state.btSymCode)||cls[0]; }
+  selectAsset(classKey,sym){ this.setState({ btAsset:classKey, btSymCode:sym, btAssetOpen:false, btSymQuery:'' }); }
+
+  // ── Backtest progress ──────────────────────────────────────────────────────
+  startBtProgress() {
+    const logs = ['[~] Loading OHLCV data...','[~] Warming indicator lookback (21 bars)...','[+] Signal fired: LONG at $479.23','[+] Exit: take-profit hit (+$980)','[+] Signal fired: LONG at $491.10','[+] Exit: stop-loss hit (-$590)','[+] Signal fired: LONG at $512.44','[+] Exit: take-profit hit (+$1,145)','[+] Computing Sharpe ratio...','[+] Computing max drawdown...','[+] Generating trade report...','[✓] Backtest complete — 247 trades'];
+    let li = 0;
+    this._btTimer = setInterval(() => {
+      const p = this.state.btProgress;
+      if (p >= 100) { clearInterval(this._btTimer); this._btTimer=null; this._btRunning=false; this.setState({ btStep:'results', btProgress:100 }); return; }
+      const np = Math.min(100, p + Math.random()*3.2 + 0.8);
+      const nl = [...this.state.btLogs];
+      if (li < logs.length && np > (li/logs.length)*100) nl.push(logs[li++]);
+      this.setState({ btProgress:np, btLogs:nl });
+    }, 170);
+  }
+
+  // ── React helpers ──────────────────────────────────────────────────────────
+  e(t,p,...c){ return React.createElement(t,p,...c.filter(x=>x!=null)); }
+  d(s,...c){ return React.createElement('div',{style:s},...c.filter(x=>x!=null)); }
+  sp(s,txt){ return React.createElement('span',{style:s},txt); }
+  btn(p,...c){ return React.createElement('button',{type:'button',...p},...c.filter(x=>x!=null)); }
+  toggle(val,onChange){ return this.btn({onClick:onChange,role:'switch','aria-checked':val.toString(),style:{width:'40px',height:'22px',borderRadius:'11px',border:'none',cursor:'pointer',background:val?'var(--accent)':'var(--border)',position:'relative',flexShrink:0,padding:0}},this.d({width:'18px',height:'18px',borderRadius:'50%',background:'white',position:'absolute',top:'2px',left:val?'20px':'2px',transition:'left 0.15s'})); }
+
+  // ── Nav style ──────────────────────────────────────────────────────────────
+  navStyle(id) {
+    const pg = this.state.page; const c = this.state.collapsed;
+    const active = id==='strategies'?(pg==='strategies'):id==='analysis'?(pg==='analysis'||pg==='analysis-detail'):false;
+    const map = { overview:'#CAFF33,rgba(202,255,51,.12)', strategies:'#3DD5A8,rgba(61,213,168,.12)', analysis:'#3DD5A8,rgba(61,213,168,.12)', chart:'#FBB23A,rgba(251,178,58,.10)', journal:'#FBB23A,rgba(251,178,58,.10)', audit:'#FBB23A,rgba(251,178,58,.10)', accounts:'#F87171,rgba(248,113,113,.10)', configure:'#F87171,rgba(248,113,113,.10)', signal:'#F87171,rgba(248,113,113,.10)', settings:'#C4CBD4,rgba(255,255,255,.06)' };
+    const [ac,bg] = (map[id]||'#8B95A4,transparent').split(',');
+    return `display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;text-decoration:none;cursor:pointer;white-space:nowrap;overflow:hidden;${c?'justify-content:center;':''}color:${active?ac:'#8B95A4'};background:${active?bg:'transparent'};font-weight:${active?500:400};box-shadow:${active?`inset 3px 0 0 0 ${ac}`:'none'};`;
+  }
+
+  // ── Data ───────────────────────────────────────────────────────────────────
+  strategies() {
+    return [
+      {id:'m1',name:'Momentum Breakout',status:'live',version:'v2.4',broker:'Alpaca',lastMod:'2h ago',score:87,pnl:'+$8,432',pnlPos:true,wr:67.4,winRate:'67.4%',trades:'312',signals:'48',inds:['EMA(9)','EMA(21)','ATR(14)','RSI(14)'],tf:'5m',asset:'NASDAQ top 20',flagged:false,insight:{b:'NY session is your edge',r:' — 78% of wins occur in the first 2 hours of the session.'},instances:[{n:1,asset:'ES',tf:'5m',preset:'Intraday',score:87,wr:'67.4%',pnl:'+$8,432',pnlPos:true,status:'live',date:'Jun 11'},{n:2,asset:'ES',tf:'15m',preset:'Swing',score:72,wr:'61.2%',pnl:'+$4,180',pnlPos:true,status:'paper',date:'Jun 9'},{n:3,asset:'NQ',tf:'5m',preset:'Intraday',score:58,wr:'54.1%',pnl:'+$1,240',pnlPos:true,status:'draft',date:'Jun 7'}]},
+      {id:'m2',name:'Mean Reversion RSI',status:'paper',version:'v1.1',broker:'Alpaca',lastMod:'5h ago',score:72,pnl:'+$3,218',pnlPos:true,wr:58.1,winRate:'58.1%',trades:'247',signals:'31',inds:['RSI(14)','BB(20)','MACD'],tf:'15m',asset:'S&P 500 ETF',flagged:false,insight:{b:'Strong entries but exits need work',r:' — avg loss is larger than avg win.'},instances:[{n:1,asset:'SPY',tf:'15m',preset:'Swing',score:72,wr:'58.1%',pnl:'+$3,218',pnlPos:true,status:'paper',date:'Jun 10'},{n:2,asset:'QQQ',tf:'15m',preset:'Swing',score:64,wr:'55.0%',pnl:'+$1,910',pnlPos:true,status:'draft',date:'Jun 8'}]},
+      {id:'m3',name:'VWAP Scalper',status:'paper',version:'v3.0',broker:'Alpaca',lastMod:'1d ago',score:43,pnl:'-$1,247',pnlPos:false,wr:41.2,winRate:'41.2%',trades:'189',signals:'22',inds:['VWAP','Volume','RSI(7)'],tf:'1m',asset:'TSLA,NVDA,AMD',flagged:true,insight:{b:'Only 22 signals in 30 days',r:' — conditions too restrictive. AI has 3 fixes ready.'},instances:[{n:1,asset:'TSLA',tf:'1m',preset:'Scalping',score:43,wr:'41.2%',pnl:'-$1,247',pnlPos:false,status:'paper',date:'Jun 9'}]},
+      {id:'m4',name:'Overnight Gap Fade',status:'draft',version:'v0.1',broker:'—',lastMod:'3d ago',score:null,pnl:'—',pnlPos:null,wr:0,winRate:'—',trades:'0',signals:'0',inds:[],tf:'Daily',asset:'US Equities',flagged:false},
+      {id:'m5',name:'Default Strategy',status:'locked',version:'v1.0',broker:'—',lastMod:'System',score:null,pnl:'—',pnlPos:null,wr:0,winRate:'—',trades:'—',signals:'—',inds:[],tf:'—',asset:'—',flagged:false},
+    ];
+  }
+  analyses() {
+    return [
+      {id:'a1',type:'backtest',strategy:'Momentum Breakout',date:'Jun 11, 2026',range:'Jan–Jun 2024',ret:'+34.2%',retPos:true,sharpe:'1.87',dd:'-8.3%',wr:'67.4%',trades:312},
+      {id:'a2',type:'optimization',strategy:'Mean Reversion RSI',date:'Jun 10, 2026',range:'Jan–Jun 2024',ret:'+18.7%',retPos:true,sharpe:'1.42',dd:'-5.1%',wr:'58.1%',trades:247},
+      {id:'a3',type:'backtest',strategy:'VWAP Scalper',date:'Jun 9, 2026',range:'Mar–Jun 2024',ret:'-4.8%',retPos:false,sharpe:'0.61',dd:'-12.4%',wr:'41.2%',trades:189},
+      {id:'a4',type:'custom',strategy:'Momentum Breakout',date:'Jun 8, 2026',range:'Full year 2023',ret:'+28.6%',retPos:true,sharpe:'1.55',dd:'-9.7%',wr:'63.1%',trades:284},
+    ];
+  }
+
+  // ── Equity curve SVG ───────────────────────────────────────────────────────
+  equitySVG(w=560,h=150) {
+    let v=100000;
+    const pts=[];
+    for(let i=0;i<=60;i++){v=Math.max(70000,Math.min(175000,v*(1+0.0045+(Math.sin(i*.7)*.012)+(Math.random()-.48)*.018)));pts.push({x:(i/60)*w,y:h-((v-70000)/110000)*h});}
+    const ln=pts.map((p,i)=>`${i===0?'M':'L'}${p.x.toFixed(1)},${Math.max(0,p.y).toFixed(1)}`).join(' ');
+    const fl=ln+` L${w},${h} L0,${h}Z`;
+    return this.e('svg',{width:'100%',height:h,viewBox:`0 0 ${w} ${h}`,preserveAspectRatio:'none'},
+      this.e('defs',{},this.e('linearGradient',{id:'eq-fill',x1:'0',y1:'0',x2:'0',y2:'1'},this.e('stop',{offset:'0%',stopColor:'var(--profit)',stopOpacity:0.28}),this.e('stop',{offset:'100%',stopColor:'var(--profit)',stopOpacity:0}))),
+      this.e('path',{d:fl,fill:'url(#eq-fill)'}),this.e('path',{d:ln,fill:'none',stroke:'var(--profit)',strokeWidth:2})
+    );
+  }
+
+  // ── Monthly heatmap ────────────────────────────────────────────────────────
+  monthlyHeatmap() {
+    const m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const v=[3.2,-1.1,4.8,2.1,-0.5,6.3,1.9,-2.3,3.7,0.8,5.1,-1.4];
+    return this.d({display:'flex',gap:'5px',flexWrap:'wrap'},
+      ...m.map((mn,i)=>{const val=v[i],pos=val>=0,int=Math.min(1,Math.abs(val)/6),bg=pos?`rgba(21,128,61,${.1+int*.5})`:`rgba(220,38,38,${.1+int*.5})`;
+        return this.d({width:'46px',padding:'7px 4px',borderRadius:'5px',background:bg,textAlign:'center'},
+          this.sp({fontSize:'9px',fontWeight:600,color:'var(--muted)',display:'block',marginBottom:'3px'},mn),
+          this.sp({fontSize:'11px',fontWeight:700,color:pos?'var(--profit)':'var(--loss)',fontVariantNumeric:'tabular-nums'},(pos?'+':'')+val.toFixed(1)+'%')
+        );
+      })
+    );
+  }
+
+  // ── Strategies page ────────────────────────────────────────────────────────
+  buildStrategiesEl() {
+    const all=this.strategies();
+    const running=all.filter(x=>x.status==='live'||x.status==='paper');
+    const pnlSum=running.reduce((a,x)=>{const n=parseFloat(x.pnl.replace(/[^0-9.]/g,'')||0);return a+(x.pnlPos?n:-n);},0);
+    const avgWr=running.filter(x=>x.wr>0).reduce((a,x,_,arr)=>a+x.wr/arr.length,0);
+
+    const summary=this.d({background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'10px',display:'grid',gridTemplateColumns:'repeat(5,1fr)',overflow:'hidden',marginBottom:'16px'},
+      ...[{v:(pnlSum>=0?'+':'')+'$'+Math.abs(pnlSum).toLocaleString('en-US',{maximumFractionDigits:0}),l:'Total P&L · 7D',c:pnlSum>=0?'var(--profit)':'var(--loss)'},{v:running.reduce((a,x)=>a+parseInt(x.trades)||0,0).toString(),l:'Total trades',c:'var(--head)'},{v:avgWr.toFixed(1)+'%',l:'Avg win rate',c:avgWr>=50?'var(--profit)':'var(--warn)'},{v:running.reduce((a,x)=>a+parseInt(x.signals)||0,0).toString(),l:'Signals fired',c:'var(--head)'},{v:running.filter(x=>x.status==='live').length+' live · '+running.filter(x=>x.status==='paper').length+' paper',l:'Running now',c:'var(--head)'}]
+        .map((m,i)=>this.d({padding:'12px 18px',borderRight:i<4?'1px solid var(--border)':'none'},this.sp({fontSize:'18px',fontWeight:700,color:m.c,fontVariantNumeric:'tabular-nums',display:'block',marginBottom:'2px'},m.v),this.sp({fontSize:'11px',color:'var(--muted)'},m.l)))
+    );
+
+    const toolbar=this.d({display:'flex',alignItems:'center',gap:'10px',marginBottom:'12px',flexWrap:'wrap'},
+      this.e('div',{style:{position:'relative',flexShrink:0}},
+        this.e('svg',{width:14,height:14,viewBox:'0 0 24 24',fill:'none',stroke:'var(--muted)',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round',style:{position:'absolute',left:'9px',top:'50%',transform:'translateY(-50%)',pointerEvents:'none'},'aria-hidden':true},this.e('circle',{cx:11,cy:11,r:8}),this.e('path',{d:'m21 21-4.35-4.35'})),
+        this.e('input',{type:'text',placeholder:'Search strategies…',value:this.state.searchQuery,onChange:(e)=>this.setState({searchQuery:e.target.value}),style:{height:'34px',padding:'0 11px 0 30px',fontFamily:'var(--sans)',fontSize:'13px',color:'var(--head)',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'8px',outline:'none',minWidth:'190px'}})
+      ),
+      this.d({display:'flex',alignItems:'center',gap:'6px'},
+        ...['All','Live','Paper','Draft'].map(l=>{const on=this.state.statusFilter===l;return this.btn({key:l,onClick:()=>this.setState({statusFilter:l}),style:{padding:'5px 12px',borderRadius:'6px',fontSize:'12px',fontWeight:on?600:500,border:`1px solid ${on?'var(--accent-ring)':'var(--border)'}`,background:on?'var(--accent-soft)':'var(--bg)',color:on?'var(--accent)':'var(--muted)',cursor:'pointer',fontFamily:'var(--sans)'}},l);})
+      ),
+      this.d({flex:'1'}),
+      this.d({display:'flex',alignItems:'center',gap:'6px'},
+        this.sp({fontSize:'12px',color:'var(--muted)'},'Sort by'),
+        this.e('select',{value:this.state.sortBy,onChange:(e)=>this.setState({sortBy:e.target.value}),style:{height:'34px',padding:'0 10px',fontFamily:'var(--sans)',fontSize:'12px',color:'var(--body)',background:'var(--subtle)',border:'1px solid var(--border)',borderRadius:'8px',cursor:'pointer',outline:'none'}},
+          this.e('option',{value:'wr'},'Win rate'),this.e('option',{value:'pnl'},'P&L (7D)'),this.e('option',{value:'score'},'AI score'),this.e('option',{value:'trades'},'Trades'),this.e('option',{value:'name'},'Name (A–Z)')
+        )
+      ),
+      this.btn({onClick:()=>this.setState({builderOpen:true,builderStep:1,builderDirty:false,bName:'',bAiPrompt:'',bType:null,bMode:'ai',bAiExpand:false,mInds:[],mPick:null,mPickerOpen:false,mEditIdx:null}),style:{display:'flex',alignItems:'center',gap:'7px',height:'34px',padding:'0 14px',background:'var(--accent)',color:'var(--accent-on)',border:'none',borderRadius:'8px',fontFamily:'var(--sans)',fontSize:'13px',fontWeight:600,cursor:'pointer',whiteSpace:'nowrap'}},
+        this.e('svg',{width:14,height:14,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2.5,strokeLinecap:'round',strokeLinejoin:'round','aria-hidden':true},this.e('path',{d:'M12 5v14'}),this.e('path',{d:'M5 12h14'})),'New strategy'
+      )
+    );
+
+    const scfg={live:{b:'var(--profit)',badge:{bg:'var(--profit-soft)',c:'var(--profit)',bdr:'rgba(21,128,61,.3)',txt:'LIVE'}},paper:{b:'#818CF8',badge:{bg:'#EEF2FF',c:'#4338CA',bdr:'#C7D2FE',txt:'PAPER'}},draft:{b:'var(--warn)',badge:{bg:'var(--warn-soft)',c:'var(--warn)',bdr:'rgba(217,119,6,.3)',txt:'DRAFT'}},locked:{b:'var(--muted)',badge:{bg:'var(--subtle)',c:'var(--muted)',bdr:'var(--border)',txt:'LOCKED'}}};
+    // Sort
+    const pnlVal=(x)=>{const n=parseFloat(String(x.pnl).replace(/[^0-9.]/g,''))||0;return x.pnlPos===false?-n:n;};
+    const sortFns={wr:(a,b)=>b.wr-a.wr,pnl:(a,b)=>pnlVal(b)-pnlVal(a),score:(a,b)=>(b.score||0)-(a.score||0),trades:(a,b)=>(parseInt(b.trades)||0)-(parseInt(a.trades)||0),name:(a,b)=>a.name.localeCompare(b.name)};
+    const fmap={All:null,Live:'live',Paper:'paper',Draft:'draft'};
+    const fst=fmap[this.state.statusFilter];
+    const sq=this.state.searchQuery.trim().toLowerCase();
+    const filtered=all.filter(x=>(!fst||x.status===fst)&&(!sq||x.name.toLowerCase().includes(sq)||(x.asset||'').toLowerCase().includes(sq)||(x.inds||[]).join(' ').toLowerCase().includes(sq)));
+    const sorted=[...filtered].sort(sortFns[this.state.sortBy]||sortFns.wr);
+    // 3-dot menu
+    const closeMenu=()=>this.setState({cardMenuId:null});
+    const msvg=(...kids)=>this.e('svg',{width:15,height:15,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round',style:{flexShrink:0,opacity:0.7}},...kids);
+    const mp=(d)=>this.e('path',{d});
+    const mItem=(icon,label,onClick,danger)=>this.btn({onClick:(e)=>{e.stopPropagation();closeMenu();onClick&&onClick();},style:{display:'flex',alignItems:'center',gap:'10px',width:'100%',padding:'8px 11px',background:'transparent',border:'none',borderRadius:'6px',cursor:'pointer',textAlign:'left',fontFamily:'var(--sans)',fontSize:'13px',fontWeight:500,color:danger?'var(--loss)':'var(--body)'}},icon,label);
+    const cardMenu=(x)=>{
+      const dup=mItem(msvg(this.e('rect',{x:9,y:9,width:13,height:13,rx:2}),mp('M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1')),'Duplicate',()=>this.toast('“'+x.name+'” duplicated','success'));
+      const items = x.status==='locked'
+        ? [mItem(msvg(mp('M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z'),this.e('circle',{cx:12,cy:12,r:3})),'View details',()=>this.toast('Opening details…','success')),dup]
+        : [mItem(msvg(mp('M12 20h9'),mp('M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z')),'Edit strategy',()=>this.setState({builderOpen:true,builderStep:1,builderDirty:false,bName:x.name,bAiPrompt:'',bMode:'ai',bAiExpand:false,mInds:[],mPick:null,mPickerOpen:false,mEditIdx:null})),
+           dup,
+           mItem(msvg(mp('M3 3v18h18'),mp('m19 9-5 5-4-4-3 3')),'View backtests',()=>this.setState({page:'analysis'})),
+           (x.status==='live'||x.status==='paper')?mItem(msvg(this.e('rect',{x:6,y:4,width:4,height:16,rx:1}),this.e('rect',{x:14,y:4,width:4,height:16,rx:1})),x.status==='live'?'Pause — move to paper':'Promote to live',()=>this.toast(x.status==='live'?'Moved to paper trading':'Promoted to live','success')):null,
+           (x.status==='draft')?mItem(msvg(mp('m5 3 14 9-14 9V3Z')),'Activate strategy',()=>this.toast('Strategy activated','success')):null,
+           this.d({height:'1px',background:'var(--border)',margin:'6px 6px'}),
+           mItem(msvg(mp('M3 6h18'),mp('M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6'),mp('M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2')),'Delete strategy',()=>this.toast('“'+x.name+'” deleted','warning'),true)];
+      return this.d({position:'absolute',top:'calc(100% + 6px)',right:0,zIndex:80,minWidth:'212px',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'10px',boxShadow:'0 16px 40px -12px rgba(0,0,0,0.35)',padding:'6px'},...items.filter(Boolean));
+    };
+    const cards=sorted.map(x=>{
+      const sc=scfg[x.status],bb=sc.badge;
+      const pC=x.pnlPos===true?'var(--profit)':x.pnlPos===false?'var(--loss)':'var(--muted)';
+      const wC=x.wr>=50?'var(--profit)':x.wr>0?'var(--warn)':'var(--muted)';
+      const statsEl=this.d({display:'flex',alignItems:'stretch',flexShrink:0,border:'1px solid var(--border)',borderRadius:'8px',overflow:'hidden'},
+        ...[{v:x.pnl,c:pC,l:'P&L · 7D'},{v:x.winRate,c:wC,l:'Win rate'},{v:x.trades,c:'var(--head)',l:'Trades'},{v:x.signals,c:'var(--head)',l:'Signals'}]
+          .map((m,i)=>this.d({padding:'8px 12px',borderLeft:i>0?'1px solid var(--border)':'none',display:'flex',flexDirection:'column',alignItems:'flex-start',minWidth:'64px'},this.sp({fontSize:'14px',fontWeight:700,color:m.c,fontVariantNumeric:'tabular-nums',display:'block',marginBottom:'1px'},m.v),this.sp({fontSize:'9px',fontWeight:600,color:'var(--muted)',textTransform:'uppercase',letterSpacing:'0.06em'},m.l)))
+      );
+      const scoreEl=x.score?this.sp({fontSize:'10px',fontWeight:700,padding:'2px 8px',borderRadius:'4px',background:x.score>=80?'var(--profit-soft)':x.score>=60?'var(--warn-soft)':'var(--loss-soft)',color:x.score>=80?'var(--profit)':x.score>=60?'var(--warn)':'var(--loss)',border:`1px solid ${x.score>=80?'rgba(21,128,61,.3)':x.score>=60?'rgba(217,119,6,.3)':'rgba(220,38,38,.3)'}`},`Score ${x.score}`):null;
+      const btPrimary=x.status==='draft';
+      const insightEl=x.score?this.d({borderTop:'1px solid var(--border)',background:'var(--subtle)',padding:'8px 16px',display:'flex',alignItems:'center',gap:'8px',borderBottomLeftRadius:'9px',borderBottomRightRadius:'9px'},
+        this.e('svg',{width:13,height:13,viewBox:'0 0 24 24',fill:'none',stroke:'#7C3AED',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round',style:{flexShrink:0}},
+          this.e('path',{d:'M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z'}),
+          this.e('path',{d:'M20 3v4'}),this.e('path',{d:'M22 5h-4'}),this.e('path',{d:'M4 17v2'}),this.e('path',{d:'M5 18H3'})
+        ),
+        this.e('span',{style:{fontSize:'11px',color:'var(--muted)',lineHeight:'1.45'}},this.sp({fontWeight:700,color:'var(--head)'},x.insight.b),x.insight.r)
+      ):null;
+      const instSt={live:{bg:'var(--profit-soft)',c:'var(--profit)',t:'LIVE'},paper:{bg:'#EEF2FF',c:'#4338CA',t:'PAPER'},draft:{bg:'var(--warn-soft)',c:'var(--warn)',t:'DRAFT'}};
+      const instAct=(inst)=>{ if(inst.status==='live')return['View on chart',false,()=>this.setState({page:'analysis'})]; if(inst.status==='paper')return['View analysis',false,()=>this.setState({page:'analysis'})]; if(inst.score>=55)return['Deploy to paper',true,()=>this.toast('Deploy “'+x.name+' · '+inst.asset+'·'+inst.tf+'” to paper?','warning')]; return['Go Optimize',true,()=>this.toast('Opening optimizer for '+x.name+'…','success')]; };
+      const instRow=(inst)=>{const ss=instSt[inst.status];const a=instAct(inst);const sc=inst.score;const scC=sc>=80?'var(--profit)':sc>=60?'var(--warn)':'var(--loss)';const scBg=sc>=80?'var(--profit-soft)':sc>=60?'var(--warn-soft)':'var(--loss-soft)';return this.e('div',{key:inst.n,onClick:()=>this.setState({page:'analysis'}),style:{display:'flex',alignItems:'center',gap:'12px',padding:'10px 16px',borderTop:'1px solid var(--border)',cursor:'pointer',background:'var(--bg)'}},
+        this.d({width:'22px',height:'22px',borderRadius:'6px',background:'var(--subtle)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0},this.sp({fontSize:'11px',fontWeight:700,color:'var(--muted)'},String(inst.n))),
+        this.d({flex:1,minWidth:0},this.sp({fontSize:'13px',fontWeight:600,color:'var(--head)',display:'block'},inst.asset+' · '+inst.tf+' · '+inst.preset),this.sp({fontSize:'10px',color:'var(--muted)'},'Backtested '+inst.date)),
+        this.sp({fontSize:'10px',fontWeight:700,padding:'2px 7px',borderRadius:'4px',background:scBg,color:scC,border:`1px solid ${scC}33`,whiteSpace:'nowrap'},'Score '+sc),
+        this.d({textAlign:'right',minWidth:'48px'},this.sp({fontSize:'13px',fontWeight:700,color:parseFloat(inst.wr)>=50?'var(--profit)':'var(--head)',display:'block',fontVariantNumeric:'tabular-nums'},inst.wr),this.sp({fontSize:'9px',color:'var(--muted)',textTransform:'uppercase',letterSpacing:'0.05em'},'Win')),
+        this.d({textAlign:'right',minWidth:'62px'},this.sp({fontSize:'13px',fontWeight:700,color:inst.pnlPos?'var(--profit)':'var(--loss)',display:'block',fontVariantNumeric:'tabular-nums'},inst.pnl),this.sp({fontSize:'9px',color:'var(--muted)',textTransform:'uppercase',letterSpacing:'0.05em'},'P&L')),
+        this.sp({fontSize:'9px',fontWeight:700,padding:'2px 7px',borderRadius:'4px',textTransform:'uppercase',letterSpacing:'0.05em',background:ss.bg,color:ss.c,whiteSpace:'nowrap'},ss.t),
+        this.btn({onClick:(e)=>{e.stopPropagation();a[2]();},style:{height:'30px',padding:'0 12px',borderRadius:'6px',fontFamily:'var(--sans)',fontSize:'12px',fontWeight:600,cursor:'pointer',whiteSpace:'nowrap',flexShrink:0,background:a[1]?'var(--accent)':'var(--subtle)',color:a[1]?'var(--accent-on)':'var(--body)',border:a[1]?'none':'1px solid var(--border)'}},a[0])
+      );};
+      const instListEl=(x.instances&&this.state.expandedStrat===x.id)?this.d({borderTop:'1px solid var(--border)',background:'var(--subtle)',borderBottomLeftRadius:'9px',borderBottomRightRadius:'9px',overflow:'hidden'},
+        this.d({padding:'9px 16px',display:'flex',alignItems:'center',justifyContent:'space-between'},this.sp({fontSize:'10px',fontWeight:700,letterSpacing:'0.06em',color:'var(--muted)',textTransform:'uppercase'},x.instances.length+' instances · best first'),this.sp({fontSize:'10px',color:'var(--muted)'},'Tap a row to open its analysis')),
+        ...x.instances.slice().sort((a,b)=>b.score-a.score).map(instRow)
+      ):null;
+      return this.d({background:'var(--bg)',border:'1px solid var(--border)',borderLeft:`3px solid ${sc.b}`,borderRadius:'10px',overflow:'visible',marginBottom:'8px'},
+        this.d({padding:'14px 16px',display:'flex',alignItems:'center',gap:'14px'},
+          this.e('div',{onClick:x.instances?()=>this.setState(s=>({expandedStrat:s.expandedStrat===x.id?null:x.id})):undefined,style:{flex:1,minWidth:0,cursor:x.instances?'pointer':'default'}},
+            this.d({display:'flex',alignItems:'center',gap:'7px',marginBottom:'5px',flexWrap:'wrap'},
+              this.sp({fontSize:'13px',fontWeight:700,color:'var(--head)'},x.name),
+              this.sp({fontSize:'9px',fontWeight:700,padding:'2px 7px',borderRadius:'4px',textTransform:'uppercase',letterSpacing:'0.05em',background:bb.bg,color:bb.c,border:`1px solid ${bb.bdr}`},bb.txt),
+              scoreEl,
+              x.instances?this.d({display:'inline-flex',alignItems:'center',gap:'4px',fontSize:'9px',fontWeight:600,padding:'2px 6px 2px 8px',borderRadius:'999px',background:'var(--accent-soft)',color:'var(--accent)',border:'1px solid var(--accent-ring)'},this.sp({},x.instances.length+' instances'),this.e('svg',{width:11,height:11,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2.4,strokeLinecap:'round',strokeLinejoin:'round',style:{transition:'transform .15s',transform:this.state.expandedStrat===x.id?'rotate(180deg)':'none'}},this.e('path',{d:'m6 9 6 6 6-6'}))):null
+            ),
+            this.d({display:'flex',alignItems:'center',gap:'7px',flexWrap:'wrap'},this.sp({fontSize:'11px',color:'var(--muted)'},x.lastMod),this.sp({fontSize:'11px',color:'var(--border)'},'·'),this.sp({fontSize:'11px',color:'var(--muted)'},x.version),x.broker!=='—'?this.sp({fontSize:'11px',color:'var(--border)'},'·'):null,x.broker!=='—'?this.sp({fontSize:'11px',color:'var(--muted)'},x.broker):null,x.flagged?this.sp({fontSize:'11px',color:'var(--border)'},'·'):null,x.flagged?this.sp({fontSize:'11px',fontWeight:600,color:'var(--loss)'},'Needs review'):null)
+          ),
+          statsEl,
+          this.d({display:'flex',alignItems:'center',gap:'6px',flexShrink:0,onClick:(e)=>e.stopPropagation()},
+            this.btn({'aria-label':'Version history',style:{width:'30px',height:'30px',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'6px',border:'1px solid var(--border)',background:'var(--bg)',color:'var(--muted)',cursor:'pointer'}},this.e('svg',{width:13,height:13,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},this.e('circle',{cx:12,cy:12,r:9}),this.e('polyline',{points:'12 7 12 12 15 15'}))),
+            x.status!=='locked'?this.btn({onClick:(e)=>{e.stopPropagation();this.setState({btOpen:true,btStep:'config',btCardId:x.id,btProgress:0,btLogs:[]});},style:{height:'30px',padding:'0 12px',borderRadius:'6px',fontFamily:'var(--sans)',fontSize:'12px',fontWeight:600,cursor:'pointer',whiteSpace:'nowrap',background:btPrimary?'var(--accent)':'var(--subtle)',color:btPrimary?'var(--accent-on)':'var(--body)',border:btPrimary?'none':'1px solid var(--border)'}},x.status==='draft'?'Run first backtest':'Run backtest'):null,
+            this.e('div',{style:{position:'relative'}},
+              this.btn({'aria-label':'More options',onClick:(e)=>{e.stopPropagation();this.setState(s=>({cardMenuId:s.cardMenuId===x.id?null:x.id}));},style:{width:'30px',height:'30px',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'6px',border:'1px solid var(--border)',background:this.state.cardMenuId===x.id?'var(--subtle)':'var(--bg)',color:'var(--muted)',cursor:'pointer'}},this.e('svg',{width:14,height:14,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},this.e('circle',{cx:5,cy:12,r:1.2}),this.e('circle',{cx:12,cy:12,r:1.2}),this.e('circle',{cx:19,cy:12,r:1.2}))),
+              this.state.cardMenuId===x.id?cardMenu(x):null,
+              this.state.cardMenuId===x.id?this.e('div',{onClick:(e)=>{e.stopPropagation();this.setState({cardMenuId:null});},style:{position:'fixed',inset:0,zIndex:70}}):null
+            )
+          )
+        ),
+        insightEl,
+        instListEl
+      );
+    });
+    const emptyState=this.d({padding:'48px 20px',textAlign:'center',border:'1px dashed var(--border)',borderRadius:'12px',background:'var(--bg)'},
+      this.sp({fontSize:'14px',fontWeight:600,color:'var(--head)',display:'block',marginBottom:'4px'},'No strategies match'),
+      this.sp({fontSize:'13px',color:'var(--muted)',display:'block',marginBottom:'14px'},this.state.searchQuery?`No results for “${this.state.searchQuery}”${fst?' in '+this.state.statusFilter:''}.`:`No ${this.state.statusFilter.toLowerCase()} strategies right now.`),
+      this.btn({onClick:()=>this.setState({statusFilter:'All',searchQuery:''}),style:{height:'32px',padding:'0 14px',background:'var(--subtle)',border:'1px solid var(--border)',borderRadius:'7px',fontFamily:'var(--sans)',fontSize:'12px',fontWeight:600,color:'var(--body)',cursor:'pointer'}},'Clear filters')
+    );
+    return this.d({height:'100%',overflowY:'auto',padding:'20px'},summary,toolbar,...(cards.length?cards:[emptyState]));
+  }
+
+  // ── Analysis landing ───────────────────────────────────────────────────────
+  buildAnalysisEl() {
+    const st=this.state;
+    const sg=(size,col,...kids)=>this.e('svg',{width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:col,strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round',style:{flexShrink:0}},...kids);
+    const sp=(d)=>this.e('path',{d});
+    const spark=[sp('M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z'),sp('M20 3v4'),sp('M22 5h-4'),sp('M4 17v2'),sp('M5 18H3')];
+    const groups=this.analysisGroups();
+    const gicon={g1:[this.e('circle',{cx:12,cy:12,r:3}),sp('M12 2a4 4 0 0 0-4 4 4 4 0 0 0-4 4 4 4 0 0 0 0 4 4 4 0 0 0 4 4 4 4 0 0 0 8 0 4 4 0 0 0 4-4 4 4 0 0 0 0-4 4 4 0 0 0-4-4 4 4 0 0 0-4-4Z')],g2:[sp('M22 12h-4l-3 9L9 3l-3 9H2')],g3:[sp('m16 3 4 4-4 4'),sp('M20 7H4'),sp('m8 21-4-4 4-4'),sp('M4 17h16')]};
+    const scoreColor=(s)=>s>=70?'var(--profit)':s>=60?'var(--accent)':s>=50?'var(--warn)':'var(--loss)';
+    const ringColor=(z)=>z==='live'?'var(--profit)':z==='paper'?'#6366F1':'var(--muted)';
+    const stBadge={live:{bg:'var(--profit-soft)',c:'var(--profit)',t:'LIVE'},paper:{bg:'#EEF2FF',c:'#4338CA',t:'PAPER'},draft:{bg:'var(--subtle)',c:'var(--muted)',t:'DRAFT'}};
+    const action=(inst)=>inst.status==='live'?'View':inst.status==='paper'?(inst.score>=70?'Deploy':'Tweak'):(inst.score>=55?'Deploy':'Needs work');
+    const stat=(label,val,col)=>this.d({display:'flex',flexDirection:'column',alignItems:'flex-start',minWidth:'62px'},this.sp({fontSize:'15px',fontWeight:700,color:col,fontVariantNumeric:'tabular-nums',display:'block'},val),this.sp({fontSize:'9px',fontWeight:600,color:'var(--muted)',textTransform:'uppercase',letterSpacing:'0.05em',marginTop:'2px'},label));
+    const instRow=(g,inst)=>{const ss=stBadge[inst.status];const act=action(inst);const go=()=>this.setState({page:'analysis-detail',analysisDetailId:'a1',analysisTab:'overview'});return this.e('div',{key:g.id+inst.n,onClick:go,style:{display:'flex',alignItems:'center',gap:'16px',padding:'14px 18px',borderTop:'1px solid var(--border)',cursor:'pointer'}},
+      this.d({width:'26px',height:'26px',borderRadius:'50%',border:`2px solid ${ringColor(inst.status)}`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0},this.sp({fontSize:'11px',fontWeight:700,color:ringColor(inst.status)},String(inst.n))),
+      this.d({flex:1,minWidth:0},this.sp({fontSize:'14px',fontWeight:700,color:'var(--head)',display:'block',marginBottom:'3px'},inst.asset+' · '+inst.tf+' · '+inst.preset),this.sp({fontSize:'12px',color:'var(--muted)',lineHeight:'1.4'},inst.cfg)),
+      this.d({display:'flex',alignItems:'center',gap:'14px',flexShrink:0},stat('Return',inst.ret,inst.retPos?'var(--profit)':'var(--loss)'),stat('Win rate',inst.wr,'var(--profit)'),stat('Max DD',inst.dd,'var(--loss)')),
+      this.sp({fontSize:'20px',fontWeight:800,color:scoreColor(inst.score),fontVariantNumeric:'tabular-nums',flexShrink:0,minWidth:'28px',textAlign:'center'},String(inst.score)),
+      this.sp({fontSize:'9px',fontWeight:700,padding:'3px 8px',borderRadius:'4px',textTransform:'uppercase',letterSpacing:'0.05em',background:ss.bg,color:ss.c,flexShrink:0,whiteSpace:'nowrap'},ss.t),
+      this.btn({onClick:(e)=>{e.stopPropagation();if(act==='View')go();else if(act==='Tweak')this.setState({btOpen:true,btStep:'config',btCardId:null,btProgress:0,btLogs:[]});else if(act==='Deploy')this.toast('Deploy '+inst.asset+' · '+inst.tf+' to paper?','warning');else this.toast('Optimize '+g.name+' — change its logic in the builder','success');},style:{display:'flex',alignItems:'center',gap:'7px',height:'42px',padding:'0 18px',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'10px',fontFamily:'var(--sans)',fontSize:'14px',fontWeight:700,color:'var(--head)',cursor:'pointer',whiteSpace:'nowrap',flexShrink:0}},act,sg(15,'currentColor',sp('M5 12h14'),sp('m12 5 7 7-7 7')))
+    );};
+    const groupEl=(g)=>{const collapsed=st.anaCollapsed.includes(g.id);return this.d({border:'1px solid var(--border)',borderRadius:'14px',overflow:'hidden',marginBottom:'16px',background:'var(--bg)'},
+      this.e('div',{onClick:()=>this.setState(s=>({anaCollapsed:s.anaCollapsed.includes(g.id)?s.anaCollapsed.filter(z=>z!==g.id):[...s.anaCollapsed,g.id]})),style:{display:'flex',alignItems:'center',gap:'13px',padding:'16px 18px',cursor:'pointer'}},
+        this.d({width:'42px',height:'42px',borderRadius:'11px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:g.tileBg},sg(20,'#fff',...(gicon[g.id]||[]))),
+        this.d({flex:1,minWidth:0},this.sp({fontSize:'16px',fontWeight:700,color:'var(--head)',display:'block',marginBottom:'2px'},g.name),this.sp({fontSize:'13px',color:'var(--muted)'},g.logic)),
+        this.sp({fontSize:'11px',fontWeight:600,padding:'4px 11px',borderRadius:'999px',background:'var(--subtle)',color:'var(--body)',border:'1px solid var(--border)',flexShrink:0,whiteSpace:'nowrap'},g.instances.length+(g.instances.length===1?' instance':' instances')),
+        sg(18,'var(--muted)',sp(collapsed?'m6 9 6 6 6-6':'m18 15-6-6-6 6'))
+      ),
+      collapsed?null:this.d({},
+        this.d({display:'flex',gap:'11px',alignItems:'flex-start',padding:'13px 18px',background:'linear-gradient(135deg, var(--accent-soft), rgba(45,212,191,0.12))',borderTop:'1px solid var(--accent-ring)'},
+          this.d({width:'26px',height:'26px',borderRadius:'50%',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(135deg,var(--accent),#2DD4BF)'},sg(14,'#fff',...spark)),
+          this.e('span',{style:{fontSize:'13px',color:'var(--body)',lineHeight:'1.5'}},this.sp({fontWeight:700,color:'var(--accent)'},g.insight.b),g.insight.t)
+        ),
+        ...g.instances.map(inst=>instRow(g,inst))
+      )
+    );};
+    const insights=[
+      {color:'var(--profit)',soft:'var(--profit-soft)',ic:[this.e('polyline',{points:'22 7 13.5 15.5 8.5 10.5 2 17'}),this.e('polyline',{points:'16 7 22 7 22 13'})],b:'Tuesday and Wednesday NY open (9:30–11am) is your strongest window.',t:' Momentum Breakout and VWAP Scalper both peak during this window across ES and EUR/USD instances. 3 of 4 applicable instances agree.',conf:'High',pct:90},
+      {color:'var(--warn)',soft:'var(--warn-soft)',ic:[sp('M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'),this.e('line',{x1:12,y1:9,x2:12,y2:13}),sp('M12 17h.01')],b:'VWAP Scalper on GBP/USD is underperforming.',t:' Score 44 with -12.4% max drawdown. The same logic works on EUR/USD (score 71). Consider whether GBP/USD fits this strategy’s logic or remove that instance.',conf:'Medium',pct:62},
+      {color:'#6366F1',soft:'rgba(99,102,241,.12)',ic:[this.e('circle',{cx:12,cy:12,r:9}),sp('M12 7v5l3 3')],b:'Not enough data for Monday and Friday patterns.',t:' Your instances have less than 60 days of Monday/Friday data each. Run 3M+ backtests to get reliable day-of-week patterns.',conf:'Low — more data needed',pct:30},
+    ];
+    const insightCard=(i)=>this.d({background:i.soft,border:`1px solid ${i.color}33`,borderRadius:'12px',padding:'15px 16px',marginBottom:'10px'},
+      this.d({display:'flex',gap:'12px',alignItems:'flex-start',marginBottom:'12px'},
+        sg(18,i.color,...i.ic),
+        this.e('span',{style:{fontSize:'14px',color:i.color,lineHeight:'1.55'}},this.sp({fontWeight:700},i.b),this.sp({opacity:0.82},i.t))
+      ),
+      this.d({display:'flex',alignItems:'center',gap:'12px'},
+        this.sp({fontSize:'12px',fontWeight:600,color:i.color},'Confidence'),
+        this.d({flex:1,height:'7px',borderRadius:'999px',background:'var(--subtle)',overflow:'hidden'},this.d({width:i.pct+'%',height:'100%',borderRadius:'999px',background:i.color})),
+        this.sp({fontSize:'12px',fontWeight:700,color:i.color,whiteSpace:'nowrap'},i.conf)
+      )
+    );
+    const aiBar=this.d({border:'1px solid var(--border)',borderRadius:'14px',overflow:'hidden',marginBottom:'18px',background:'var(--bg)'},
+      this.e('div',{onClick:()=>this.setState(s=>({aiInsightsOpen:!s.aiInsightsOpen})),style:{display:'flex',alignItems:'center',gap:'13px',padding:'16px 18px',cursor:'pointer'}},
+        this.d({width:'42px',height:'42px',borderRadius:'50%',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(135deg,var(--accent),#2DD4BF)'},sg(20,'#fff',...spark)),
+        this.d({flex:1,minWidth:0},this.sp({fontSize:'16px',fontWeight:700,color:'var(--head)',display:'block',marginBottom:'2px'},'AI insights — across all strategies'),this.sp({fontSize:'13px',color:'var(--muted)'},'Based on 6 instances · 8 months of data · updated 2 hours ago')),
+        sg(18,'var(--muted)',sp(st.aiInsightsOpen?'m18 15-6-6-6 6':'m6 9 6 6 6-6'))
+      ),
+      st.aiInsightsOpen?this.d({padding:'14px 18px 18px',borderTop:'1px solid var(--border)'},
+        ...insights.map(insightCard),
+        this.d({display:'flex',gap:'10px',alignItems:'flex-start',marginTop:'4px'},
+          sg(15,'var(--muted)',this.e('ellipse',{cx:12,cy:5,rx:9,ry:3}),sp('M3 5v14a9 3 0 0 0 18 0V5'),sp('M3 12a9 3 0 0 0 18 0')),
+          this.sp({fontSize:'12px',color:'var(--muted)',lineHeight:'1.5'},'AI is reading backtest data only — live data not yet connected. Insights will deepen as instances go live and real performance is recorded.')
+        )
+      ):null
+    );
+    const header=this.d({marginBottom:'18px'},this.sp({fontSize:'22px',fontWeight:700,color:'var(--head)',display:'block',marginBottom:'4px'},'Analysis'),this.sp({fontSize:'13px',color:'var(--muted)'},groups.length+' strategies · '+groups.reduce((a,g)=>a+g.instances.length,0)+' saved instances'));
+    return this.d({height:'100%',overflowY:'auto',padding:'20px'},header,aiBar,...groups.map(groupEl));
+  }
+  analysisGroups(){
+    return [
+      {id:'g1',name:'Momentum Breakout',logic:'MACD · RSI · Session filter',tileBg:'linear-gradient(135deg,#6366F1,#2DD4BF)',insight:{b:'Best on ES 5m',t:' (score 74). The 5m timeframe consistently outperforms 15m for this logic — faster signal, same win rate. Instance 1 is your strongest candidate to deploy.'},instances:[
+        {n:1,asset:'ES Futures',tf:'5m',preset:'Intraday',cfg:'1.5× ATR stop · 2R TP · 1% risk · 3M data · Jun 11',ret:'+34.2%',retPos:true,wr:'67.4%',dd:'-8.3%',score:74,status:'live'},
+        {n:2,asset:'ES Futures',tf:'15m',preset:'Swing',cfg:'2× ATR stop · 3R TP · 1% risk · 6M data · Jun 10',ret:'+18.7%',retPos:true,wr:'58.1%',dd:'-5.1%',score:61,status:'paper'},
+        {n:3,asset:'NQ Futures',tf:'5m',preset:'Intraday',cfg:'1.5× ATR stop · 2R TP · 0.5% risk · 3M data · Jun 8',ret:'+28.6%',retPos:true,wr:'63.1%',dd:'-9.7%',score:58,status:'draft'},
+      ]},
+      {id:'g2',name:'VWAP Scalper',logic:'VWAP · EMA · Volume filter',tileBg:'linear-gradient(135deg,#0D9488,#2DD4BF)',insight:{b:'EUR/USD works, GBP/USD does not.',t:' Same logic, very different results. The spread on GBP/USD is likely eating your edge on a scalping timeframe. Consider removing the GBP/USD instance.'},instances:[
+        {n:1,asset:'EUR/USD',tf:'1H',preset:'Swing',cfg:'ATR stop · 2R TP · 1% risk · 6M data · Jun 9',ret:'+22.3%',retPos:true,wr:'61.2%',dd:'-7.1%',score:71,status:'paper'},
+        {n:2,asset:'GBP/USD',tf:'1H',preset:'Swing',cfg:'ATR stop · 2R TP · 1% risk · 3M data · Jun 8',ret:'-4.8%',retPos:false,wr:'41.2%',dd:'-12.4%',score:44,status:'draft'},
+      ]},
+      {id:'g3',name:'Mean Reversion RSI',logic:'RSI · Bollinger Bands · Session filter',tileBg:'linear-gradient(135deg,#D97706,#F59E0B)',insight:{b:'Only 1 instance —',t:' not enough data for cross-instance comparison. Run 2–3 more configurations (different timeframes or assets) to see if this logic generalises.'},instances:[
+        {n:1,asset:'NQ Futures',tf:'5m',preset:'Intraday',cfg:'ATR stop · 2R TP · 1% risk · 6M data · Jun 10',ret:'+18.7%',retPos:true,wr:'58.1%',dd:'-5.1%',score:61,status:'paper'},
+      ]},
+    ];
+  }
+
+  // ── Analysis detail ────────────────────────────────────────────────────────
+  buildAnalysisDetailEl() {
+    const st=this.state,a=this.analyses().find(x=>x.id===st.analysisDetailId)||this.analyses()[0];
+    const rC=a.retPos?'var(--profit)':'var(--loss)';
+    const tmap={backtest:{bg:'rgba(59,130,246,.12)',c:'#3B82F6',bdr:'rgba(59,130,246,.3)',txt:'Backtest'},optimization:{bg:'var(--accent-soft)',c:'var(--accent)',bdr:'var(--accent-ring)',txt:'Optimization'},custom:{bg:'var(--warn-soft)',c:'var(--warn)',bdr:'rgba(217,119,6,.3)',txt:'Custom'}};
+    const tc=tmap[a.type];
+    const breadcrumb=this.d({display:'flex',alignItems:'center',gap:'8px',marginBottom:'16px'},
+      this.btn({onClick:()=>this.setState({page:'analysis'}),style:{fontSize:'13px',color:'var(--accent)',background:'none',border:'none',cursor:'pointer',padding:0,fontFamily:'var(--sans)'}},'← Analysis'),
+      this.sp({color:'var(--muted)'},'/'),this.sp({fontSize:'13px',color:'var(--muted)'},a.strategy)
+    );
+    const header=this.d({display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:'20px'},
+      this.d({},
+        this.d({display:'flex',alignItems:'center',gap:'10px',marginBottom:'6px'},this.sp({fontSize:'22px',fontWeight:700,color:'var(--head)'},a.strategy),this.sp({fontSize:'10px',fontWeight:700,padding:'3px 10px',borderRadius:'4px',background:tc.bg,color:tc.c,border:`1px solid ${tc.bdr}`},tc.txt)),
+        this.d({display:'flex',alignItems:'center',gap:'8px'},this.sp({fontSize:'12px',color:'var(--muted)'},a.date),this.sp({color:'var(--border)'},'·'),this.sp({fontSize:'12px',color:'var(--muted)'},a.range))
+      ),
+      this.d({display:'flex',gap:'8px'},
+        this.btn({style:{height:'34px',padding:'0 14px',background:'var(--subtle)',border:'1px solid var(--border)',borderRadius:'7px',fontFamily:'var(--sans)',fontSize:'13px',fontWeight:500,color:'var(--body)',cursor:'pointer'}},'Export CSV'),
+        this.btn({onClick:()=>this.setState({btOpen:true,btStep:'config',btProgress:0,btLogs:[]}),style:{height:'34px',padding:'0 14px',background:'var(--accent)',color:'var(--accent-on)',border:'none',borderRadius:'7px',fontFamily:'var(--sans)',fontSize:'13px',fontWeight:600,cursor:'pointer'}},'Re-run backtest')
+      )
+    );
+    const metrics=this.d({display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'12px',marginBottom:'20px'},
+      ...[{v:a.ret,c:rC,l:'Total return'},{v:a.sharpe,c:'var(--head)',l:'Sharpe ratio'},{v:a.dd,c:'var(--loss)',l:'Max drawdown'},{v:a.wr,c:'var(--profit)',l:'Win rate'}]
+        .map(m=>this.d({background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'10px',padding:'16px'},this.sp({fontSize:'26px',fontWeight:700,color:m.c,fontVariantNumeric:'tabular-nums',display:'block',marginBottom:'4px'},m.v),this.sp({fontSize:'12px',color:'var(--muted)'},m.l)))
+    );
+    const tabs=this.d({display:'flex',borderBottom:'1px solid var(--border)',marginBottom:'20px'},
+      ...['overview','trades'].map(tab=>this.btn({onClick:()=>this.setState({analysisTab:tab}),style:{padding:'10px 18px',fontSize:'13px',fontWeight:500,cursor:'pointer',background:'none',border:'none',fontFamily:'var(--sans)',color:st.analysisTab===tab?'var(--head)':'var(--muted)',borderBottom:`2px solid ${st.analysisTab===tab?'var(--accent)':'transparent'}`,marginBottom:'-1px'}},tab.charAt(0).toUpperCase()+tab.slice(1)))
+    );
+    let tabContent;
+    if (st.analysisTab==='overview') {
+      tabContent=this.d({},
+        this.d({background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'10px',padding:'18px',marginBottom:'16px'},this.sp({fontSize:'11px',fontWeight:700,color:'var(--muted)',textTransform:'uppercase',letterSpacing:'0.08em',display:'block',marginBottom:'12px'},'Equity curve'),this.equitySVG()),
+        this.d({background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'10px',padding:'18px'},this.sp({fontSize:'11px',fontWeight:700,color:'var(--muted)',textTransform:'uppercase',letterSpacing:'0.08em',display:'block',marginBottom:'12px'},'Monthly returns · 2024'),this.monthlyHeatmap())
+      );
+    } else {
+      const trades=[{sym:'AAPL',dir:'LONG',entry:'$218.40',exit:'$224.30',pnl:'+$590',pos:true,date:'Jun 3',dur:'4h 20m'},{sym:'NVDA',dir:'LONG',entry:'$847.20',exit:'$831.50',pnl:'-$314',pos:false,date:'Jun 5',dur:'2h 10m'},{sym:'MSFT',dir:'LONG',entry:'$422.10',exit:'$430.80',pnl:'+$870',pos:true,date:'Jun 7',dur:'6h 45m'},{sym:'TSLA',dir:'SHORT',entry:'$178.60',exit:'$171.20',pnl:'+$740',pos:true,date:'Jun 8',dur:'1h 55m'},{sym:'AMZN',dir:'LONG',entry:'$189.30',exit:'$191.70',pnl:'+$240',pos:true,date:'Jun 9',dur:'3h 30m'}];
+      const cols='80px 70px 110px 110px 90px 80px 80px';
+      tabContent=this.d({background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'10px',overflow:'hidden'},
+        this.d({display:'grid',gridTemplateColumns:cols,padding:'10px 16px',borderBottom:'1px solid var(--border)',background:'var(--subtle)'},...['Symbol','Dir','Entry','Exit','P&L','Date','Hold'].map(h=>this.sp({fontSize:'10px',fontWeight:700,color:'var(--muted)',textTransform:'uppercase',letterSpacing:'0.06em'},h))),
+        ...trades.map((t,i)=>this.d({display:'grid',gridTemplateColumns:cols,padding:'11px 16px',borderBottom:i<trades.length-1?'1px solid var(--border)':'none',alignItems:'center'},
+          this.sp({fontSize:'13px',fontWeight:700,color:'var(--head)'},t.sym),
+          this.sp({fontSize:'10px',fontWeight:700,padding:'2px 7px',borderRadius:'4px',background:t.dir==='LONG'?'var(--profit-soft)':'var(--loss-soft)',color:t.dir==='LONG'?'var(--profit)':'var(--loss)'},t.dir),
+          this.sp({fontSize:'12px',color:'var(--body)',fontVariantNumeric:'tabular-nums'},t.entry),
+          this.sp({fontSize:'12px',color:'var(--body)',fontVariantNumeric:'tabular-nums'},t.exit),
+          this.sp({fontSize:'12px',fontWeight:600,color:t.pos?'var(--profit)':'var(--loss)',fontVariantNumeric:'tabular-nums'},t.pnl),
+          this.sp({fontSize:'12px',color:'var(--muted)'},t.date),
+          this.sp({fontSize:'11px',color:'var(--muted)'},t.dur)
+        ))
+      );
+    }
+    return this.d({height:'100%',overflowY:'auto',padding:'20px'},breadcrumb,header,metrics,tabs,tabContent);
+  }
+
+  // ── Strategy Builder Drawer ────────────────────────────────────────────────
+  buildBuilderEl() {
+    const st=this.state;
+    if (st.bMode==='manual') return this.buildManualEl();
+    const bsvg=(size,color,sw,...kids)=>this.e('svg',{width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:color,strokeWidth:sw||2,strokeLinecap:'round',strokeLinejoin:'round',style:{flexShrink:0}},...kids);
+    const bp=(d)=>this.e('path',{d});
+    const bspark=[bp('M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z'),bp('M20 3v4'),bp('M22 5h-4'),bp('M4 17v2'),bp('M5 18H3')];
+    const inp={height:'38px',padding:'0 12px',fontFamily:'var(--sans)',fontSize:'13px',color:'var(--head)',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'7px',outline:'none',width:'100%',boxSizing:'border-box'};
+    const field=(lbl,ctrl)=>this.d({display:'flex',flexDirection:'column',gap:'6px',marginBottom:'16px'},this.sp({fontSize:'12px',fontWeight:500,color:'var(--body)'},lbl),ctrl);
+    const steps=['Start','Entry','Exit','Risk','Review'];
+    const stepBar=this.d({display:'flex',alignItems:'center',padding:'12px 18px',borderBottom:'1px solid var(--border)',background:'var(--subtle)',flexShrink:0},
+      ...steps.map((lbl,i)=>{const n=i+1,done=n<st.builderStep,active=n===st.builderStep;
+        return this.d({display:'flex',alignItems:'center'},
+          this.d({display:'flex',alignItems:'center',gap:'6px',padding:'4px 8px',borderRadius:'6px',background:active?'var(--accent-soft)':'transparent'},
+            this.d({width:'20px',height:'20px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'10px',fontWeight:700,flexShrink:0,background:done?'var(--profit)':active?'var(--accent)':'var(--border)',color:done||active?'white':'var(--muted)'},done?'✓':n.toString()),
+            this.sp({fontSize:'12px',fontWeight:active?600:400,color:active?'var(--accent)':done?'var(--profit)':'var(--muted)'},lbl)
+          ),
+          i<steps.length-1?this.d({width:'14px',height:'1px',background:'var(--border)',margin:'0 2px'}):null
+        );
+      })
+    );
+    let body;
+    if (st.builderStep===1) {
+      const aiLen=st.bAiPrompt.trim().length;
+      const genReady=aiLen>=10;
+      const exPrompts=[
+        'Buy when MACD crosses above its signal line and RSI is above 50. Only trade the New York session. Exit on the reverse MACD cross or the stop.',
+        'Go long when the 9 EMA crosses above the 21 EMA on the 15m, exit on the reverse cross or a 2R target.',
+        'After a liquidity sweep of the prior session high or low, enter on the first Fair Value Gap fill in the discount zone, stop beyond the sweep, target opposing liquidity.',
+        'On a confirmed break of structure, enter on the retrace into the origin order block and target the next liquidity pool.',
+        'Use the 1H trend; on the 5m, buy pullbacks into the 0.618–0.786 Fibonacci zone with momentum confirmation, 2R target.',
+      ];
+      const aiHeader=this.d({display:'flex',alignItems:'flex-start',gap:'12px'},
+        this.d({width:'40px',height:'40px',borderRadius:'10px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(135deg,#2DD4BF,var(--accent))'},bsvg(18,'#fff',1.8,...bspark)),
+        this.d({flex:1,minWidth:0},
+          this.d({display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap',marginBottom:'4px'},
+            this.sp({fontSize:'14.5px',fontWeight:700,color:'var(--accent)'},'Describe it — AI builds the logic'),
+            this.sp({fontSize:'9px',fontWeight:700,letterSpacing:'0.05em',textTransform:'uppercase',color:'var(--accent-on)',background:'var(--accent)',borderRadius:'999px',padding:'3px 8px'},'Recommended')
+          ),
+          this.sp({fontSize:'12.5px',color:'var(--body)',display:'block',lineHeight:'1.5'},'Tell AI your strategy in plain English. Works for everything from simple MACD setups to complex multi-timeframe SMC concepts.')
+        )
+      );
+      const chipB=(label,accent)=>this.sp({fontSize:'11px',fontWeight:600,color:accent?'var(--accent)':'var(--body)',background:accent?'var(--accent-soft)':'var(--subtle)',border:`1px solid ${accent?'var(--accent-ring)':'var(--border)'}`,borderRadius:'7px',padding:'4px 9px',display:'inline-block'},label);
+      const approachCard=(opts)=>this.btn({onClick:opts.onClick,style:{display:'flex',alignItems:'flex-start',gap:'13px',width:'100%',textAlign:'left',padding:'15px',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'12px',cursor:'pointer',marginBottom:'12px'}},
+        this.d({width:'44px',height:'44px',borderRadius:'10px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:opts.tileBg,color:opts.tileColor},opts.icon),
+        this.d({flex:1,minWidth:0},
+          this.d({display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap',marginBottom:'4px'},
+            this.sp({fontSize:'15px',fontWeight:700,color:'var(--head)'},opts.title),
+            opts.badge?this.sp({fontSize:'10px',fontWeight:700,color:'var(--accent)',background:'var(--accent-soft)',border:'1px solid var(--accent-ring)',borderRadius:'999px',padding:'2px 8px'},opts.badge):null
+          ),
+          this.sp({fontSize:'12.5px',color:'var(--muted)',display:'block',lineHeight:'1.5',marginBottom:'10px'},opts.desc),
+          this.d({display:'flex',flexWrap:'wrap',gap:'7px'},...opts.chips.map(c=>chipB(c,opts.accentChips)))
+        ),
+        this.d({alignSelf:'center',flexShrink:0},bsvg(18,'var(--muted)',2,bp('m9 18 6-6-6-6')))
+      );
+      body=this.d({},
+        this.d({marginBottom:'20px'},
+          this.e('input',{type:'text',value:st.bName,autoFocus:true,placeholder:'Name your strategy…',onChange:(e)=>this.setState({bName:e.target.value,builderDirty:true}),onBlur:()=>{if(st.bName.trim())this.setState({builderDirty:true});},style:{height:'48px',width:'100%',boxSizing:'border-box',padding:'0 14px',fontFamily:'var(--sans)',fontSize:'17px',fontWeight:700,color:'var(--head)',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'10px',outline:'none'}})
+        ),
+        this.d({marginBottom:'16px'},
+          this.sp({fontSize:'17px',fontWeight:700,color:'var(--head)',display:'block',marginBottom:'4px'},'How do you trade?'),
+          this.sp({fontSize:'13px',color:'var(--muted)',lineHeight:'1.5'},'Choose the approach that matches how you think about your strategy.')
+        ),
+        st.bAiExpand
+          ? this.d({borderRadius:'14px',border:'1px solid var(--accent-ring)',background:'linear-gradient(135deg, rgba(124,58,237,0.10), rgba(45,212,191,0.10))',padding:'16px',marginBottom:'8px'},
+              this.d({display:'flex',alignItems:'flex-start',gap:'12px',marginBottom:'14px'},
+                this.d({width:'40px',height:'40px',borderRadius:'10px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(135deg,#2DD4BF,var(--accent))'},bsvg(18,'#fff',1.8,...bspark)),
+                this.d({flex:1,minWidth:0},
+                  this.sp({fontSize:'16px',fontWeight:700,color:'var(--accent)',display:'block',marginBottom:'2px'},'Describe your strategy'),
+                  this.sp({fontSize:'13px',color:'var(--body)'},'Simple or complex — AI understands both.')
+                )
+              ),
+              this.e('textarea',{value:st.bAiPrompt,autoFocus:true,maxLength:800,placeholder:'e.g. Buy when MACD crosses above signal and RSI is above 50, NY session only…',onChange:(e)=>this.setState({bAiPrompt:e.target.value,builderDirty:true}),style:{width:'100%',boxSizing:'border-box',minHeight:'118px',resize:'vertical',padding:'14px',fontFamily:'var(--sans)',fontSize:'15px',lineHeight:'1.5',color:'var(--head)',background:'var(--bg)',border:'1px solid var(--accent-ring)',borderRadius:'10px',outline:'none'}}),
+              this.d({display:'flex',alignItems:'center',justifyContent:'space-between',gap:'10px',margin:'10px 0 16px'},
+                this.sp({fontSize:'12px',fontWeight:600,color:'var(--muted)'},aiLen+' / 800'),
+                this.btn({disabled:!genReady,onClick:()=>{if(!genReady)return;this.startAiGen();},style:{display:'flex',alignItems:'center',gap:'8px',height:'44px',padding:'0 20px',background:genReady?'var(--accent)':'var(--subtle)',color:genReady?'var(--accent-on)':'var(--muted)',border:genReady?'none':'1px solid var(--border)',borderRadius:'10px',fontFamily:'var(--sans)',fontSize:'15px',fontWeight:700,cursor:genReady?'pointer':'not-allowed'}},bsvg(16,'currentColor',1.8,...bspark),'Build strategy')
+              ),
+              this.sp({fontSize:'10px',fontWeight:700,letterSpacing:'0.07em',color:'var(--accent)',textTransform:'uppercase',display:'block',marginBottom:'9px'},'Examples — simple to complex'),
+              this.d({display:'flex',flexWrap:'wrap',gap:'9px'},
+                ...['MACD + RSI','EMA crossover','SMC Liquidity + FVG','BOS + Order Block','MTF Fibonacci'].map((lbl,i)=>this.btn({key:lbl,onClick:()=>this.setState({bAiPrompt:exPrompts[i],builderDirty:true}),style:{padding:'9px 14px',borderRadius:'999px',background:'var(--bg)',border:'1px solid var(--accent-ring)',color:'var(--accent)',fontFamily:'var(--sans)',fontSize:'13px',fontWeight:600,cursor:'pointer'}},lbl))
+              )
+            )
+          : this.btn({onClick:()=>this.setState({bAiExpand:true}),style:{display:'block',width:'100%',textAlign:'left',borderRadius:'14px',border:'1px solid var(--accent-ring)',background:'linear-gradient(135deg, rgba(124,58,237,0.10), rgba(45,212,191,0.10))',padding:'16px',cursor:'pointer',marginBottom:'8px'}},aiHeader),
+        this.d({display:'flex',alignItems:'center',gap:'12px',margin:'14px 0 16px'},
+          this.d({flex:1,height:'1px',background:'var(--border)'}),
+          this.sp({fontSize:'12px',color:'var(--muted)',whiteSpace:'nowrap'},'or choose a specific approach'),
+          this.d({flex:1,height:'1px',background:'var(--border)'})
+        ),
+        approachCard({onClick:()=>this.setState({bMode:'manual',bTab:'indicators',mInds:[],mPick:null,mPickerOpen:false,mEditIdx:null,mSearch:'',mBuyMode:'all',mSellMode:'first',mBuyThresh:2,mSellThresh:1,mLogicEdit:null,mAskAI:null,mSuggestDismissed:false,bGenerating:false,bAiGen:false,bType:'indicators',builderDirty:true}),tileBg:'var(--subtle)',tileColor:'var(--body)',icon:bsvg(20,'currentColor',2,bp('M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4 2.6-2.6Z')),title:'Build with indicators',desc:'Add MACD, RSI, EMA and other technical indicators one at a time. AI pre-fills buy and sell conditions for each.',chips:['MACD','RSI','EMA','VWAP','Bollinger Bands','ATR','+ more'],accentChips:false}),
+        approachCard({onClick:()=>this.toast('Advanced / market structure — coming in Phase 2','warning'),tileBg:'var(--navy)',tileColor:'var(--lime)',icon:bsvg(20,'currentColor',2,bp('M10 18v-7'),bp('M11.12 2.198a2 2 0 0 1 1.76.006l7.866 3.847c.476.233.31.949-.22.949H3.474c-.53 0-.695-.716-.22-.949z'),bp('M14 18v-7'),bp('M18 18v-7'),bp('M3 22h18'),bp('M6 18v-7')),title:'Advanced / market structure',badge:'Phase 2',desc:'Multi-timeframe, sequential logic, Smart Money Concepts. Liquidity sweeps, Fair Value Gaps, Order Blocks, Break of Structure.',chips:['Liquidity','FVG','Order Blocks','BOS / CHoCH','Multi-timeframe','Sequential logic'],accentChips:true}),
+        this.btn({onClick:()=>this.toast('Import — choose a .pine or .json file','success'),style:{display:'flex',alignItems:'center',gap:'14px',width:'100%',textAlign:'left',padding:'16px',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'12px',cursor:'pointer'}},
+          this.d({width:'24px',display:'flex',justifyContent:'center',flexShrink:0},bsvg(19,'var(--body)',2,bp('M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'),bp('M17 8l-5-5-5 5'),bp('M12 3v12'))),
+          this.e('span',{style:{flex:1,minWidth:0,fontSize:'14px',color:'var(--head)',lineHeight:'1.45'}},this.sp({fontWeight:700},'Import Pine Script or JSON'),this.sp({color:'var(--muted)'},' — bring in existing strategy logic')),
+          bsvg(18,'var(--muted)',2,bp('m9 18 6-6-6-6'))
+        )
+      );
+    } else if (st.builderStep===2) {
+      body=this.d({},
+        field('Strategy name',this.e('input',{type:'text',value:st.bName,onChange:(e)=>this.setState({bName:e.target.value,builderDirty:true}),style:inp})),
+        field('Symbol / Universe',this.e('input',{type:'text',value:st.bSymbol,onChange:(e)=>this.setState({bSymbol:e.target.value,builderDirty:true}),placeholder:'e.g. SPY, AAPL, "NASDAQ top 20"',style:inp})),
+        field('Timeframe',this.e('select',{value:st.bTf,onChange:(e)=>this.setState({bTf:e.target.value,builderDirty:true}),style:{...inp,cursor:'pointer'}},
+          ...['1m','5m','15m','30m','1h','4h','1d'].map(tf=>this.e('option',{key:tf,value:tf},tf))
+        )),
+        this.d({display:'flex',flexDirection:'column',gap:'6px',marginBottom:'16px'},
+          this.d({display:'flex',alignItems:'center',justifyContent:'space-between'},
+            this.sp({fontSize:'12px',fontWeight:500,color:'var(--body)'},'Indicators'),
+            this.btn({onClick:()=>this.setState(s=>({bIndicators:[...s.bIndicators,'RSI(14)'],builderDirty:true})),style:{fontSize:'11px',color:'var(--accent)',background:'none',border:'none',cursor:'pointer',fontFamily:'var(--sans)',padding:0}},'+ Add')
+          ),
+          this.d({display:'flex',flexWrap:'wrap',gap:'6px',padding:'10px',background:'var(--subtle)',borderRadius:'7px',border:'1px solid var(--border)',minHeight:'48px'},
+            ...st.bIndicators.map((ind,i)=>this.d({display:'inline-flex',alignItems:'center',gap:'6px',padding:'4px 10px',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'5px'},
+              this.sp({fontSize:'12px',color:'var(--body)'},ind),
+              this.btn({onClick:()=>this.setState(s=>({bIndicators:s.bIndicators.filter((_,j)=>j!==i),builderDirty:true})),style:{border:'none',background:'none',cursor:'pointer',color:'var(--muted)',padding:0,fontSize:'16px',lineHeight:1,fontFamily:'var(--sans)'}},'×')
+            ))
+          )
+        )
+      );
+    } else if (st.builderStep===3) {
+      body=this.d({},
+        field('Take profit (%)',this.e('input',{type:'number',value:st.bTp,onChange:(e)=>this.setState({bTp:e.target.value,builderDirty:true}),min:'0.1',step:'0.1',style:inp})),
+        field('Stop loss (%)',this.e('input',{type:'number',value:st.bSl,onChange:(e)=>this.setState({bSl:e.target.value,builderDirty:true}),min:'0.1',step:'0.1',style:inp})),
+        this.d({display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 14px',background:'var(--subtle)',border:'1px solid var(--border)',borderRadius:'8px'},
+          this.d({},this.sp({fontSize:'13px',fontWeight:500,color:'var(--head)',display:'block',marginBottom:'2px'},'Trailing stop'),this.sp({fontSize:'11px',color:'var(--muted)'},'Adjust stop as price moves in your favor')),
+          this.toggle(st.bTrailing,()=>this.setState(s=>({bTrailing:!s.bTrailing,builderDirty:true})))
+        )
+      );
+    } else if (st.builderStep===4) {
+      body=this.d({},
+        field('Position size (% of portfolio)',this.e('input',{type:'number',value:st.bPosSz,onChange:(e)=>this.setState({bPosSz:e.target.value,builderDirty:true}),min:'0.5',max:'100',step:'0.5',style:inp})),
+        field('Max daily loss (%)',this.e('input',{type:'number',value:st.bMaxLoss,onChange:(e)=>this.setState({bMaxLoss:e.target.value,builderDirty:true}),min:'1',max:'100',step:'0.5',style:inp})),
+        field('Max concurrent trades',this.e('input',{type:'number',value:st.bMaxTrades,onChange:(e)=>this.setState({bMaxTrades:e.target.value,builderDirty:true}),min:'1',max:'20',step:'1',style:inp}))
+      );
+    } else {
+      const rows=[['Type',st.bType||'—'],['Name',st.bName],['Symbol',st.bSymbol],['Timeframe',st.bTf],['Indicators',st.bIndicators.join(', ')||'None'],['Take profit',st.bTp+'%'],['Stop loss',st.bSl+'%'],['Trailing stop',st.bTrailing?'Enabled':'Disabled'],['Position size',st.bPosSz+'%'],['Max daily loss',st.bMaxLoss+'%'],['Max concurrent',st.bMaxTrades]];
+      body=this.d({background:'var(--subtle)',border:'1px solid var(--border)',borderRadius:'10px',overflow:'hidden'},
+        ...rows.map(([l,v],i)=>this.d({display:'flex',alignItems:'center',justifyContent:'space-between',padding:'11px 14px',borderBottom:i<rows.length-1?'1px solid var(--border)':'none'},this.sp({fontSize:'12px',color:'var(--muted)'},l),this.sp({fontSize:'13px',fontWeight:500,color:'var(--head)'},v)))
+      );
+    }
+    const footer=this.d({flexShrink:0,padding:'12px 18px',borderTop:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'space-between',background:'var(--bg)'},
+      this.sp({fontSize:'11px',color:'var(--muted)'},st.builderDirty?'● Draft · auto-saved':'No changes'),
+      this.d({display:'flex',alignItems:'center',gap:'8px'},
+        st.builderStep>1?this.btn({onClick:()=>this.setState(s=>({builderStep:s.builderStep-1})),style:{height:'34px',padding:'0 14px',background:'var(--subtle)',border:'1px solid var(--border)',borderRadius:'7px',fontFamily:'var(--sans)',fontSize:'13px',fontWeight:500,color:'var(--body)',cursor:'pointer'}},'Back'):null,
+        st.builderStep<5?this.btn({onClick:()=>{if(st.builderStep===1&&!st.bType)return;this.setState(s=>({builderStep:s.builderStep+1}));},style:{height:'34px',padding:'0 14px',background:'var(--accent)',color:'var(--accent-on)',border:'none',borderRadius:'7px',fontFamily:'var(--sans)',fontSize:'13px',fontWeight:600,cursor:'pointer'}},'Continue →'):null,
+        st.builderStep===5?this.btn({onClick:()=>{this.setState({builderOpen:false,builderDirty:false,builderStep:1});this.toast(`"${st.bName}" saved as draft`,'success');},style:{height:'34px',padding:'0 14px',background:'var(--accent)',color:'var(--accent-on)',border:'none',borderRadius:'7px',fontFamily:'var(--sans)',fontSize:'13px',fontWeight:600,cursor:'pointer'}},'Save strategy'):null
+      )
+    );
+    return this.e('aside',{role:'dialog','aria-modal':true,'aria-label':'Strategy Builder',onClick:(e)=>e.stopPropagation(),style:{position:'fixed',top:0,right:0,bottom:0,zIndex:151,width:'max(420px, 33vw)',background:'var(--bg)',borderLeft:'1px solid var(--border)',boxShadow:'-24px 0 60px -20px rgba(0,0,0,0.18)',display:'flex',flexDirection:'column'}},
+      this.d({flexShrink:0,padding:'13px 16px',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'space-between'},
+        this.d({display:'flex',alignItems:'center',gap:'10px'},
+          this.btn({onClick:()=>{if(st.builderDirty)this.setState({discardOpen:true});else this.setState({builderOpen:false});},'aria-label':'Close',style:{width:'30px',height:'30px',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'6px',border:'1px solid var(--border)',background:'var(--bg)',color:'var(--muted)',cursor:'pointer'}},
+            this.e('svg',{width:14,height:14,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2.2,strokeLinecap:'round',strokeLinejoin:'round'},this.e('path',{d:'M18 6 6 18'}),this.e('path',{d:'m6 6 12 12'}))
+          ),
+          this.d({},this.sp({fontSize:'14px',fontWeight:600,color:'var(--head)',display:'block'},'Strategy Builder'),this.sp({fontSize:'11px',color:'var(--muted)'},st.builderStep===1?'Create a new strategy':`Step ${st.builderStep} of 5`))
+        ),
+        this.btn({style:{height:'28px',padding:'0 10px',background:'var(--subtle)',border:'1px solid var(--border)',borderRadius:'6px',fontFamily:'var(--sans)',fontSize:'11px',color:'var(--muted)',cursor:'pointer'}},'Save draft')
+      ),
+      st.builderStep>1?stepBar:null,
+      this.d({flex:1,overflowY:'auto',padding:'18px'},body),
+      st.builderStep>1?footer:null
+    );
+  }
+
+  // ── Manual indicator builder ────────────────────────────────────────────────
+  manualIndicators() {
+    return [
+      {id:'macd',name:'MACD',cat:'Momentum',params:'(12,26,9)',c:'#7C3AED',s:'var(--accent-soft)',sb:'MACD \u00d7 signal \u2191',ss:'MACD \u00d7 signal \u2193',ai:"I've pre-selected the classic pair: MACD crosses above signal \u2192 Buy and crosses below \u2192 Sell. Change either if needed.",
+        buy:[{v:'MACD crosses above signal line',d:'Classic momentum entry \u2014 buy when bullish pressure builds'},{v:'MACD histogram turns positive',d:'Earlier signal \u2014 triggers when histogram crosses zero'},{v:'MACD crosses above zero line',d:'Strong momentum only \u2014 filters weaker signals'}],
+        sell:[{v:'MACD crosses below signal line',d:'Mirror of buy \u2014 natural exit when momentum reverses'},{v:'MACD histogram turns negative',d:'Earlier exit \u2014 locks in profit sooner'},{v:'Let stop loss handle exit',d:'No MACD sell signal \u2014 trade management exits'}]},
+      {id:'rsi',name:'RSI',cat:'Oscillator',params:'(14)',c:'#15803D',s:'var(--profit-soft)',sb:'RSI > 50',ss:'RSI < 50',ai:"Defaulted to the classic pair: buy as RSI pushes above 50, sell as it slips below.",
+        buy:[{v:'RSI crosses above 50',d:'Trend confirmation \u2014 buy with momentum'},{v:'RSI crosses above 30',d:'Oversold bounce \u2014 buy as momentum turns up'},{v:'RSI bullish divergence',d:'Reversal \u2014 price down while RSI turns up'}],
+        sell:[{v:'RSI crosses below 50',d:'Momentum fading \u2014 exit as strength leaves'},{v:'RSI crosses below 70',d:'Overbought exit \u2014 sell into strength'},{v:'Let stop loss handle exit',d:'No RSI sell signal \u2014 trade management exits'}]},
+      {id:'ema',name:'EMA',cat:'Trend',params:'(9,21)',c:'#2563EB',s:'rgba(37,99,235,.12)',sb:'EMA cross \u2191',ss:'EMA cross \u2193',ai:"Set the 9/21 EMA cross as buy and the reverse cross as sell. Adjust either side if you prefer.",
+        buy:[{v:'9 EMA crosses above 21 EMA',d:'Golden cross \u2014 fast over slow signals an uptrend'},{v:'Price closes above 21 EMA',d:'Pullback entry \u2014 buy strength above the trend'},{v:'EMA slope turns up',d:'Trend shift \u2014 momentum rotating higher'}],
+        sell:[{v:'9 EMA crosses below 21 EMA',d:'Death cross \u2014 natural exit when trend flips'},{v:'Price closes below 21 EMA',d:'Trend break \u2014 exit on weakness'},{v:'Let stop loss handle exit',d:'No EMA sell signal \u2014 trade management exits'}]},
+      {id:'vwap',name:'VWAP',cat:'Volume',params:'(session)',c:'#0D9488',s:'rgba(13,148,136,.12)',sb:'Price > VWAP',ss:'Price < VWAP',ai:"Defaulted to a simple VWAP cross: buy above, exit below. Tune to your session if needed.",
+        buy:[{v:'Price crosses above VWAP',d:'Intraday strength \u2014 buy above the average'},{v:'Price reclaims VWAP after a dip',d:'Reversion entry \u2014 buy the reclaim'},{v:'Price holds above VWAP',d:'Trend filter \u2014 longs only above VWAP'}],
+        sell:[{v:'Price crosses below VWAP',d:'Loss of strength \u2014 exit below the average'},{v:'Price tags upper VWAP band',d:'Mean-reversion target \u2014 sell the stretch'},{v:'Let stop loss handle exit',d:'No VWAP sell signal \u2014 trade management exits'}]},
+      {id:'session',name:'Session filter',cat:'Filter',params:'(NY)',c:'#6366F1',s:'rgba(99,102,241,.12)',sb:'NY session',ss:'Session close',ai:"Session filters constrain when trades can fire \u2014 I set New York hours by default.",
+        buy:[{v:'Only trade the New York session',d:'9:30am\u20134pm ET \u2014 highest liquidity window'},{v:'Only trade the London session',d:'3am\u201311am ET \u2014 European hours'},{v:'Trade the London + NY overlap',d:'8am\u201311am ET \u2014 peak volatility'}],
+        sell:[{v:'Flat by session close',d:'Exit any open trade at the session end'},{v:'No time-based exit',d:'Let other conditions manage the exit'}]},
+      {id:'atr',name:'ATR',cat:'Volatility',params:'(14)',c:'#DC2626',s:'var(--loss-soft)',hasVal:true,unit:'pts',db:'20',ds:'15',sb:'ATR > thresh',ss:'ATR < thresh',ai:"ATR is unique \u2014 buy and sell can use the same condition with different values. Enter when ATR is high enough, and I've defaulted sell to the same threshold. Adjust each value independently.",
+        buy:[{v:'ATR above threshold',d:'Only trade when the market is volatile enough',val:true},{v:'ATR above average (last 20 bars)',d:'Relative volatility \u2014 adjusts to conditions'},{v:'ATR is rising (expanding volatility)',d:'Market starting to move \u2014 momentum building'}],
+        sell:[{v:'ATR above threshold',d:'Same condition \u2014 exit if volatility drops below your value',val:true},{v:'ATR drops below average',d:'Volatility fading \u2014 step aside'},{v:'Let stop loss handle exit',d:'No ATR sell signal \u2014 trade management exits'}]},
+      {id:'bb',name:'Bollinger Bands',cat:'Volatility',params:'(20,2)',c:'#7C3AED',s:'var(--accent-soft)',sb:'Price < lower band',ss:'Price > upper band',ai:"Defaulted to a band reversion: buy the lower-band tag, sell at the upper band. Flip to breakout if you prefer.",
+        buy:[{v:'Price tags the lower band',d:'Mean reversion — buy the stretch back toward the middle'},{v:'Price closes above the upper band',d:'Breakout — ride expansion out of the bands'},{v:'Bands squeeze then expand up',d:'Volatility breakout — buy the release higher'}],
+        sell:[{v:'Price tags the upper band',d:'Reversion target — sell into the stretch'},{v:'Price returns to the middle band',d:'Take profit at the mean'},{v:'Let stop loss handle exit',d:'No band sell signal — trade management exits'}]},
+      {id:'stoch',name:'Stochastic',cat:'Oscillator',params:'(14,3,3)',c:'#15803D',s:'var(--profit-soft)',sb:'%K ↑ from oversold',ss:'%K ↓ from overbought',ai:"Set the classic 20/80 cross: buy leaving oversold, sell leaving overbought.",
+        buy:[{v:'%K crosses above 20',d:'Oversold turn — buy as momentum recovers'},{v:'%K crosses above %D',d:'Signal cross — faster confirmation'},{v:'Bullish divergence',d:'Reversal — price down while stochastic turns up'}],
+        sell:[{v:'%K crosses below 80',d:'Overbought turn — exit into strength'},{v:'%K crosses below %D',d:'Signal cross down — momentum fading'},{v:'Let stop loss handle exit',d:'No stochastic sell — trade management exits'}]},
+      {id:'supertrend',name:'SuperTrend',cat:'Trend',params:'(10,3)',c:'#0D9488',s:'rgba(13,148,136,.12)',sb:'Flips bullish',ss:'Flips bearish',ai:"SuperTrend flips define the trade: buy when it turns green, exit when it turns red.",
+        buy:[{v:'SuperTrend flips to bullish',d:'Trend start — buy the flip up'},{v:'Price closes above SuperTrend',d:'Pullback entry inside the uptrend'},{v:'SuperTrend slope steepens',d:'Accelerating trend'}],
+        sell:[{v:'SuperTrend flips to bearish',d:'Trend end — natural exit on the flip'},{v:'Price closes below SuperTrend',d:'Early exit on weakness'},{v:'Let stop loss handle exit',d:'No SuperTrend sell — trade management exits'}]},
+      {id:'adx',name:'ADX',cat:'Trend',params:'(14)',c:'#2563EB',s:'rgba(37,99,235,.12)',hasVal:true,unit:'',db:'25',ds:'20',sb:'ADX > 25',ss:'ADX < 20',ai:"ADX gates entries by trend strength — buy only above the threshold, exit as the trend fades.",
+        buy:[{v:'ADX above threshold',d:'Only trade when a real trend is present',val:true},{v:'+DI crosses above −DI',d:'Directional turn — buy the bullish cross'},{v:'ADX rising',d:'Strengthening trend — momentum building'}],
+        sell:[{v:'ADX above threshold',d:'Same gate — exit when ADX drops below your value',val:true},{v:'−DI crosses above +DI',d:'Bearish directional cross'},{v:'Let stop loss handle exit',d:'No ADX sell signal — trade management exits'}]},
+      {id:'volume',name:'Volume',cat:'Volume',params:'(20)',c:'#D97706',s:'var(--warn-soft)',sb:'Volume surge',ss:'Volume dries up',ai:"Volume confirms intent — I default to buying on a surge above average.",
+        buy:[{v:'Volume above 20-bar average',d:'Participation confirms the move'},{v:'Volume spike on breakout',d:'Institutional backing — fewer false breaks'},{v:'Rising volume trend',d:'Building interest'}],
+        sell:[{v:'Volume drops below average',d:'Move losing fuel — step aside'},{v:'Climactic volume spike',d:'Exhaustion — take profit into the blow-off'},{v:'Let stop loss handle exit',d:'No volume sell signal — trade management exits'}]},
+      {id:'cci',name:'CCI',cat:'Oscillator',params:'(20)',c:'#DC2626',s:'var(--loss-soft)',sb:'CCI > +100',ss:'CCI < −100',ai:"Set the ±100 breakout pair: buy above +100, exit below −100.",
+        buy:[{v:'CCI crosses above +100',d:'Momentum breakout to the upside'},{v:'CCI crosses above 0',d:'Earlier shift into bullish territory'},{v:'CCI bullish divergence',d:'Reversal signal'}],
+        sell:[{v:'CCI crosses below −100',d:'Momentum breakdown — exit'},{v:'CCI crosses below 0',d:'Shift back to bearish'},{v:'Let stop loss handle exit',d:'No CCI sell signal — trade management exits'}]},
+    ];
+  }
+  buildManualEl() {
+    const st=this.state;
+    const cat=this.manualIndicators();
+    const byId=(id)=>cat.find(c=>c.id===id);
+    const sg=(size,col,...kids)=>this.e('svg',{width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:col,strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round',style:{flexShrink:0}},...kids);
+    const sp=(d)=>this.e('path',{d});
+    const spark=[sp('M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z'),sp('M20 3v4'),sp('M22 5h-4'),sp('M4 17v2'),sp('M5 18H3')];
+    const icon=(id,col)=>{const m={macd:[sp('M3 13h3l2.5-8 3.5 15 2.5-9H17')],rsi:[sp('M22 12h-4l-3 9L9 3l-3 9H2')],ema:[this.e('polyline',{points:'22 7 13.5 15.5 8.5 10.5 2 17'}),this.e('polyline',{points:'16 7 22 7 22 13'})],vwap:[sp('M3 15l5-6 4 3 5-7 4 5'),sp('M3 19h18')],session:[this.e('circle',{cx:12,cy:12,r:9}),sp('M12 7v5l3 3')],atr:[sp('M22 12h-4l-3 9L9 3l-3 9H2')],bb:[sp('M4 4v16'),sp('M20 4v16'),sp('M12 7v10')],stoch:[sp('M4 14a8 8 0 0 1 16 0'),sp('M4 14v3'),sp('M20 14v3')],supertrend:[sp('M3 17l6-6 4 4 8-8'),sp('M15 7h6v6')],adx:[sp('M4 20V8'),sp('M10 20V4'),sp('M16 20v-7'),sp('M22 20H2')],volume:[sp('M5 20V10'),sp('M10 20V4'),sp('M15 20v-8'),sp('M20 20v-5')],cci:[sp('M3 12h4l3-7 4 14 3-7h4')]};return sg(16,col,...(m[id]||[sp('M22 12h-4l-3 9L9 3l-3 9H2')]));};
+    const tile=(id,sz)=>{const c=byId(id);return this.d({width:(sz||36)+'px',height:(sz||36)+'px',borderRadius:'9px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:c.s},icon(id,c.c));};
+    const base={position:'fixed',top:0,right:0,bottom:0,zIndex:151,width:'max(440px, 34vw)',background:'var(--bg)',borderLeft:'1px solid var(--border)',boxShadow:'-24px 0 60px -20px rgba(0,0,0,0.18)',display:'flex',flexDirection:'column'};
+    const close=()=>{ if(st.builderDirty)this.setState({discardOpen:true}); else this.setState({builderOpen:false,bMode:'ai'}); };
+    if (st.bGenerating) {
+      const gsteps=['Reading your strategy','Selecting indicators','Building conditions','Finalising'];
+      const gpct=Math.min(100,Math.round((st.genStep)/gsteps.length*100));
+      return this.e('aside',{role:'dialog','aria-modal':true,'aria-label':'Building strategy',onClick:(e)=>e.stopPropagation(),style:base},
+        this.d({flexShrink:0,padding:'14px 16px',borderBottom:'1px solid var(--border)'},this.sp({fontSize:'16px',fontWeight:700,color:'var(--head)',display:'block'},'Building strategy…'),this.sp({fontSize:'12px',color:'var(--muted)'},'This takes just a moment')),
+        this.d({flex:1,overflowY:'auto',padding:'34px 24px',display:'flex',flexDirection:'column',alignItems:'center',textAlign:'center'},
+          this.d({width:'72px',height:'72px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(135deg,var(--accent),#2DD4BF)',marginBottom:'20px',animation:'tvbreathe 1.8s ease-in-out infinite'},sg(30,'#fff',...spark)),
+          this.sp({fontSize:'19px',fontWeight:700,color:'var(--head)',display:'block',marginBottom:'16px'},'Building your strategy…'),
+          this.sp({display:'inline-block',maxWidth:'100%',fontSize:'13px',fontStyle:'italic',color:'var(--body)',background:'var(--subtle)',border:'1px solid var(--border)',borderRadius:'10px',padding:'10px 14px',marginBottom:'24px',lineHeight:'1.5'},'“'+(st.bAiPrompt.trim()||'Your strategy')+'”'),
+          this.d({display:'flex',flexDirection:'column',gap:'14px',alignItems:'flex-start',width:'100%',maxWidth:'300px',marginBottom:'24px'},
+            ...gsteps.map((s,i)=>{const done=i<st.genStep,active=i===st.genStep;return this.d({display:'flex',alignItems:'center',gap:'11px'},
+              done?this.d({width:'20px',height:'20px',borderRadius:'50%',background:'var(--profit)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0},sg(12,'#fff',sp('M20 6 9 17l-5-5')))
+              :active?this.e('div',{style:{width:'18px',height:'18px',borderRadius:'50%',border:'2px solid var(--accent-soft)',borderTopColor:'var(--accent)',flexShrink:0,animation:'tvspin .7s linear infinite'}})
+              :this.d({width:'20px',height:'20px',borderRadius:'50%',border:'2px solid var(--border)',flexShrink:0}),
+              this.sp({fontSize:'14px',fontWeight:active?700:500,color:done||active?'var(--head)':'var(--muted)'},s)
+            );})
+          ),
+          this.d({width:'100%',maxWidth:'300px',height:'5px',borderRadius:'999px',background:'var(--subtle)',overflow:'hidden'},this.d({width:gpct+'%',height:'100%',borderRadius:'999px',background:'linear-gradient(90deg,var(--accent),#2DD4BF)',transition:'width .4s ease'}))
+        )
+      );
+    }
+    const header=this.d({flexShrink:0,padding:'14px 16px',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',gap:'12px'},
+      this.btn({onClick:close,'aria-label':'Close',style:{width:'30px',height:'30px',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'6px',border:'1px solid var(--border)',background:'var(--bg)',color:'var(--muted)',cursor:'pointer',flexShrink:0}},sg(14,'currentColor',sp('M18 6 6 18'),sp('m6 6 12 12'))),
+      this.d({flex:1,minWidth:0},this.sp({fontSize:'16px',fontWeight:700,color:'var(--head)',display:'block'},'Strategy builder'),this.sp({fontSize:'12px',color:'var(--muted)'},st.bTab==='conditions'?'Conditions':'Manual mode \u2014 AI guides each step')),
+      this.btn({'aria-label':'More',onClick:()=>{},style:{width:'34px',height:'34px',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'8px',border:'1px solid var(--border)',background:'var(--bg)',color:'var(--muted)',cursor:'pointer',flexShrink:0}},sg(16,'currentColor',this.e('circle',{cx:5,cy:12,r:1.3}),this.e('circle',{cx:12,cy:12,r:1.3}),this.e('circle',{cx:19,cy:12,r:1.3})))
+    );
+    const nameRow=this.d({flexShrink:0,padding:'12px 16px',background:'var(--subtle)',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',gap:'12px'},
+      this.e('input',{type:'text',value:st.bName,placeholder:'Name your strategy\u2026',onChange:(e)=>this.setState({bName:e.target.value,builderDirty:true}),style:{flex:1,height:'46px',boxSizing:'border-box',padding:'0 14px',fontFamily:'var(--sans)',fontSize:'16px',fontWeight:700,color:'var(--head)',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'10px',outline:'none'}}),
+      this.d({display:'flex',alignItems:'center',gap:'6px',flexShrink:0},this.d({width:'7px',height:'7px',borderRadius:'50%',background:'var(--profit)'}),this.sp({fontSize:'12px',color:'var(--muted)'},'Saved'))
+    );
+    const tabs=[{k:'indicators',n:'Indicators'},{k:'conditions',n:'Conditions'}];
+    const ti=tabs.findIndex(t=>t.k===st.bTab);
+    const canCond=st.mInds.length>0;
+    const tabBar=this.d({flexShrink:0,display:'flex',alignItems:'center',gap:'2px',padding:'0 16px',borderBottom:'1px solid var(--border)'},
+      ...tabs.map((t,i)=>{const active=st.bTab===t.k;const done=i<ti;return this.btn({key:t.k,onClick:()=>{ if(t.k==='conditions'&&!canCond)return; this.setState({bTab:t.k,mPick:null,mPickerOpen:false,mEditIdx:null}); },style:{display:'flex',alignItems:'center',gap:'8px',padding:'14px 12px',background:'none',border:'none',borderBottom:`2px solid ${active?'var(--accent)':'transparent'}`,cursor:(t.k==='conditions'&&!canCond)?'not-allowed':'pointer',fontFamily:'var(--sans)',opacity:(t.k==='conditions'&&!canCond)?0.5:1}},
+        this.d({width:'22px',height:'22px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',background:done?'var(--profit-soft)':active?'var(--accent-soft)':'var(--subtle)'},done?sg(13,'var(--profit)',sp('M20 6 9 17l-5-5')):this.sp({fontSize:'11px',fontWeight:700,color:active?'var(--accent)':'var(--muted)'},String(i+1))),
+        this.sp({fontSize:'14px',fontWeight:active?700:500,color:active?'var(--accent)':'var(--head)'},t.n)
+      );}),
+      this.d({flex:1}),
+      this.d({display:'flex',alignItems:'center',gap:'6px'},this.d({width:'7px',height:'7px',borderRadius:'50%',background:'var(--accent)',animation:'tvpulse 1.8s infinite'}),this.sp({fontSize:'13px',fontWeight:700,color:'var(--accent)'},'AI'))
+    );
+    const chipKinds={green:['var(--profit)','var(--profit-soft)','rgba(21,128,61,.3)'],red:['var(--loss)','var(--loss-soft)','rgba(220,38,38,.3)'],blue:['var(--info)','rgba(37,99,235,.12)','rgba(37,99,235,.3)']};
+    const miniChip=(txt,kind)=>{const k=chipKinds[kind];return this.sp({fontSize:'12px',fontWeight:600,color:k[0],background:k[1],border:`1px solid ${k[2]}`,borderRadius:'7px',padding:'4px 9px',whiteSpace:'nowrap'},txt);};
+    const conn=(txt)=>this.sp({fontSize:'11px',fontWeight:700,color:'var(--muted)',letterSpacing:'0.04em'},txt);
+    const ckind=(m,side)=>byId(m.id).cat==='Filter'?'blue':(side==='buy'?'green':'red');
+    const joinChips=(side)=>{const out=[];st.mInds.forEach((m,i)=>{const c=byId(m.id);if(i>0)out.push(conn(side==='buy'?(st.mBuyMode==='all'?'AND':'OR'):(st.mSellMode==='all'?'AND':'OR')));out.push(miniChip(side==='buy'?c.sb:c.ss,ckind(m,side)));});return out;};
+    const liveStrip=this.d({flexShrink:0,padding:'12px 16px',background:'var(--subtle)',borderBottom:'1px solid var(--border)'},
+      this.sp({fontSize:'10px',fontWeight:700,letterSpacing:'0.08em',color:'var(--muted)',textTransform:'uppercase',display:'block',marginBottom:'9px'},'Live conditions'),
+      st.mInds.length===0
+        ? this.d({display:'flex',alignItems:'center',gap:'10px'},this.sp({fontSize:'12px',fontWeight:700,color:'var(--profit)'},'BUY WHEN'),this.sp({fontSize:'12px',fontStyle:'italic',color:'var(--muted)'},'Add an indicator below to start'))
+        : this.d({display:'flex',flexDirection:'column',gap:'8px'},
+            this.d({display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap'},this.sp({fontSize:'12px',fontWeight:700,color:'var(--profit)'},'BUY WHEN'),...joinChips('buy'),st.mInds.length>1?this.sp({fontSize:'11px',fontWeight:700,color:'var(--accent)',background:'var(--accent-soft)',borderRadius:'7px',padding:'4px 8px'},st.mBuyMode==='all'?'All '+st.mInds.length+' agree':st.mBuyMode==='any'?'Any fires':st.mBuyThresh+' of '+st.mInds.length):null),
+            this.d({display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap'},this.sp({fontSize:'12px',fontWeight:700,color:'var(--loss)'},'SELL WHEN'),...joinChips('sell'),st.mInds.length>1?this.sp({fontSize:'11px',fontWeight:700,color:'var(--accent)',background:'var(--accent-soft)',borderRadius:'7px',padding:'4px 8px'},st.mSellMode==='first'?'First wins':st.mSellMode==='all'?'All agree':st.mSellThresh+' of '+st.mInds.length):null)
+          )
+    );
+    const secHead=(label,sub,up)=>this.d({display:'flex',alignItems:'center',gap:'9px',margin:'12px 0 10px'},
+      this.d({width:'24px',height:'24px',borderRadius:'50%',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:up?'var(--profit-soft)':'var(--loss-soft)'},sg(13,up?'var(--profit)':'var(--loss)',up?sp('M12 19V5'):sp('M12 5v14'),up?sp('m5 12 7-7 7 7'):sp('m5 12 7 7 7-7'))),
+      this.sp({fontSize:'14px',fontWeight:700,color:'var(--head)'},label),this.d({flex:1}),this.sp({fontSize:'12px',color:'var(--muted)'},sub)
+    );
+    const optRow=(o,i,sel,side,onSel,d,set)=>{const isSel=sel===i;const ac=side==='buy'?'var(--profit)':'var(--loss)';const sf=side==='buy'?'var(--profit-soft)':'var(--loss-soft)';return this.e('div',{key:side+i,onClick:onSel,style:{border:`1px solid ${isSel?ac:'var(--border)'}`,background:isSel?sf:'var(--bg)',borderRadius:'10px',padding:'12px 13px',marginBottom:'8px',cursor:'pointer',display:'flex',alignItems:'flex-start',gap:'11px'}},
+      isSel?this.d({width:'20px',height:'20px',borderRadius:'50%',background:ac,flexShrink:0,marginTop:'1px',display:'flex',alignItems:'center',justifyContent:'center'},sg(12,'#fff',sp('M20 6 9 17l-5-5'))):this.d({width:'20px',height:'20px',borderRadius:'50%',border:'2px solid var(--border)',flexShrink:0,marginTop:'1px'}),
+      this.d({flex:1,minWidth:0},
+        this.sp({fontSize:'13.5px',fontWeight:700,color:'var(--head)',display:'block',marginBottom:'2px'},o.v),
+        this.sp({fontSize:'12px',color:'var(--muted)',display:'block'},o.d),
+        (isSel&&o.val)?this.d({display:'flex',alignItems:'center',gap:'10px',marginTop:'11px'},this.sp({fontSize:'12px',fontWeight:600,color:'var(--body)'},'Value:'),this.e('input',{type:'text',value:side==='buy'?d.buyVal:d.sellVal,onClick:(e)=>e.stopPropagation(),onChange:(e)=>set(side==='buy'?{buyVal:e.target.value}:{sellVal:e.target.value}),style:{flex:1,height:'40px',boxSizing:'border-box',padding:'0 12px',textAlign:'center',fontFamily:'var(--sans)',fontSize:'15px',fontWeight:700,color:'var(--head)',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'8px',outline:'none'}}),this.sp({fontSize:'13px',color:'var(--muted)'},byId(d.id).unit||'pts')):null
+      )
+    );};
+    const editor=(d,set,onConfirm,onCancel,confirmLabel)=>{const ind=byId(d.id);return this.d({border:'1px solid var(--accent-ring)',borderLeft:'3px solid var(--accent)',borderRadius:'12px',overflow:'hidden',marginBottom:'12px'},
+      this.d({display:'flex',gap:'10px',alignItems:'flex-start',padding:'12px 14px',background:'var(--accent-soft)'},
+        this.d({width:'26px',height:'26px',borderRadius:'50%',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(135deg,#2DD4BF,var(--accent))'},sg(14,'#fff',...spark)),
+        this.sp({fontSize:'12.5px',color:'var(--body)',lineHeight:'1.5'},ind.ai)
+      ),
+      this.d({padding:'4px 14px 0'},
+        secHead('Buy','entry condition',true),
+        ...ind.buy.map((o,i)=>optRow(o,i,d.buyIdx,'buy',()=>set({buyIdx:i}),d,set)),
+        secHead('Sell','exit condition',false),
+        ...ind.sell.map((o,i)=>optRow(o,i,d.sellIdx,'sell',()=>set({sellIdx:i}),d,set))
+      ),
+      this.d({display:'flex',gap:'10px',padding:'12px 14px',background:'var(--subtle)'},
+        this.btn({onClick:onCancel,style:{height:'42px',padding:'0 18px',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'9px',fontFamily:'var(--sans)',fontSize:'13px',fontWeight:600,color:'var(--body)',cursor:'pointer'}},'Cancel'),
+        this.btn({onClick:onConfirm,style:{flex:1,display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',height:'42px',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'9px',fontFamily:'var(--sans)',fontSize:'14px',fontWeight:700,color:'var(--head)',cursor:'pointer'}},sg(15,'currentColor',sp('M20 6 9 17l-5-5')),confirmLabel)
+      )
+    );};
+    const editPencil=(col,cb)=>this.btn({'aria-label':'Edit',onClick:cb,style:{border:'none',background:'none',cursor:'pointer',color:col,padding:0,display:'flex'}},sg(13,'currentColor',sp('M12 20h9'),sp('M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z')));
+    const cardEl=(m,idx)=>{const ind=byId(m.id);const exp=st.mEditIdx===idx;return this.d({border:'1px solid var(--border)',borderLeft:'3px solid var(--profit)',borderRadius:'10px',overflow:'hidden',marginBottom:'12px'},
+      this.d({display:'flex',alignItems:'center',gap:'11px',padding:'12px 13px'},
+        tile(m.id),
+        this.d({flex:1,minWidth:0},this.e('span',{},this.sp({fontSize:'14px',fontWeight:700,color:'var(--head)'},ind.name+' '),this.sp({fontSize:'12px',color:'var(--muted)'},ind.params)),this.sp({fontSize:'11px',color:'var(--profit)',display:'block',fontWeight:600},'Confirmed \u2713')),
+        this.btn({'aria-label':'Delete',onClick:()=>this.setState(s=>({mInds:s.mInds.filter((_,j)=>j!==idx),mEditIdx:null,builderDirty:true})),style:{width:'30px',height:'30px',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'6px',border:'none',background:'transparent',color:'var(--muted)',cursor:'pointer'}},sg(15,'currentColor',sp('M3 6h18'),sp('M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6'),sp('M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2'))),
+        this.btn({'aria-label':'Expand',onClick:()=>this.setState(s=>({mEditIdx:s.mEditIdx===idx?null:idx})),style:{width:'30px',height:'30px',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'6px',border:'none',background:'transparent',color:'var(--muted)',cursor:'pointer'}},sg(16,'currentColor',sp(exp?'m18 15-6-6-6 6':'m6 9 6 6 6-6')))
+      ),
+      exp
+        ? editor(m,(patch)=>this.setState(s=>({mInds:s.mInds.map((x,j)=>j===idx?{...x,...patch}:x),builderDirty:true})),()=>this.setState({mEditIdx:null}),()=>this.setState({mEditIdx:null}),'Confirm')
+        : this.d({display:'grid',gridTemplateColumns:'1fr 1fr',borderTop:'1px solid var(--border)'},
+            this.d({background:'var(--profit-soft)',padding:'11px 13px'},this.d({display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'4px'},this.sp({fontSize:'10px',fontWeight:700,letterSpacing:'0.05em',color:'var(--profit)'},'BUY'),editPencil('var(--profit)',()=>this.setState({mEditIdx:idx}))),this.sp({fontSize:'13px',color:'var(--head)',lineHeight:'1.4'},ind.buy[m.buyIdx].v)),
+            this.d({background:'var(--loss-soft)',padding:'11px 13px',borderLeft:'1px solid var(--border)'},this.d({display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'4px'},this.sp({fontSize:'10px',fontWeight:700,letterSpacing:'0.05em',color:'var(--loss)'},'SELL'),editPencil('var(--loss)',()=>this.setState({mEditIdx:idx}))),this.sp({fontSize:'13px',color:'var(--head)',lineHeight:'1.4'},ind.sell[m.sellIdx].v))
+          )
+    );};
+    const sqv=st.mSearch.trim().toLowerCase();
+    const picker=this.d({border:'1px solid var(--border)',borderRadius:'12px',overflow:'hidden',marginBottom:'12px'},
+      this.e('div',{style:{position:'relative',padding:'10px',borderBottom:'1px solid var(--border)'}},
+        this.e('div',{style:{position:'absolute',left:'24px',top:'50%',transform:'translateY(-50%)',pointerEvents:'none',display:'flex'}},sg(16,'var(--muted)',this.e('circle',{cx:11,cy:11,r:8}),sp('m21 21-4.35-4.35'))),
+        this.e('input',{type:'text',value:st.mSearch,autoFocus:true,placeholder:'Search indicators\u2026 MACD, RSI, EMA, VWAP',onChange:(e)=>this.setState({mSearch:e.target.value}),style:{width:'100%',boxSizing:'border-box',height:'44px',padding:'0 12px 0 40px',fontFamily:'var(--sans)',fontSize:'15px',color:'var(--head)',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'9px',outline:'none'}})
+      ),
+      ...cat.filter(c=>!sqv||c.name.toLowerCase().includes(sqv)||c.cat.toLowerCase().includes(sqv)).map((c,i,arr)=>this.e('div',{key:c.id,onClick:()=>this.setState({mPick:{id:c.id,buyIdx:0,sellIdx:0,buyVal:c.db||'',sellVal:c.ds||''},mPickerOpen:false,mSearch:'',builderDirty:true}),style:{display:'flex',alignItems:'center',gap:'12px',padding:'13px 14px',cursor:'pointer',borderBottom:i<arr.length-1?'1px solid var(--border)':'none'}},
+        tile(c.id,34),this.sp({flex:1,fontSize:'15px',fontWeight:700,color:'var(--head)'},c.name),this.sp({fontSize:'13px',color:'var(--muted)'},c.cat)
+      ))
+    );
+    const addBtn=this.btn({onClick:()=>this.setState({mPickerOpen:true}),style:{display:'flex',alignItems:'center',justifyContent:'center',gap:'9px',width:'100%',padding:'14px',background:'transparent',border:'1px dashed var(--border)',borderRadius:'10px',cursor:'pointer',color:'var(--body)',fontFamily:'var(--sans)',fontSize:'13px',fontWeight:600}},sg(16,'var(--muted)',sp('M12 5v14'),sp('M5 12h14')),'Add another indicator');
+
+    let content;
+    if (st.bTab==='indicators') {
+      const kids=[];
+      st.mInds.forEach((m,idx)=>kids.push(cardEl(m,idx)));
+      if (st.mPick) kids.push(editor(st.mPick,(patch)=>this.setState(s=>({mPick:{...s.mPick,...patch}})),()=>this.setState(s=>({mInds:[...s.mInds,s.mPick],mPick:null,builderDirty:true})),()=>this.setState({mPick:null}),'Confirm \u2014 add to strategy'));
+      if (!st.mPick && st.mInds.length===0) { kids.push(this.sp({fontSize:'14px',color:'var(--body)',display:'block',lineHeight:'1.55',marginBottom:'14px'},'Pick an indicator \u2014 AI will ask about your buy and sell conditions together.')); kids.push(picker); }
+      if (!st.mPick && st.mInds.length>0 && st.mPickerOpen) kids.push(picker);
+      if (!st.mPick && st.mInds.length>0 && !st.mPickerOpen) kids.push(addBtn);
+      content=this.d({flex:1,overflowY:'auto',padding:'16px'},...kids);
+    } else {
+      const n=st.mInds.length;
+      const single=n<=1;
+      const stepper=(val,set)=>this.d({display:'flex',alignItems:'center',gap:'10px',marginTop:'10px'},
+        this.btn({onClick:(e)=>{e.stopPropagation();set(Math.max(1,val-1));},style:{width:'34px',height:'34px',borderRadius:'8px',border:'1px solid var(--border)',background:'var(--bg)',color:'var(--head)',fontSize:'18px',fontWeight:700,cursor:'pointer',lineHeight:0}},'\u2212'),
+        this.sp({minWidth:'72px',textAlign:'center',fontSize:'14px',fontWeight:700,color:'var(--head)'},val+' of '+n),
+        this.btn({onClick:(e)=>{e.stopPropagation();set(Math.min(n,val+1));},style:{width:'34px',height:'34px',borderRadius:'8px',border:'1px solid var(--border)',background:'var(--bg)',color:'var(--head)',fontSize:'18px',fontWeight:700,cursor:'pointer',lineHeight:0}},'+')
+      );
+      const editOpt=(label,badge,bcol,desc,active,onSel,extra)=>this.e('div',{key:label,onClick:onSel,style:{border:`1px solid ${active?'var(--accent)':'var(--border)'}`,background:active?'var(--accent-soft)':'var(--bg)',borderRadius:'10px',padding:'12px 13px',marginBottom:'8px',cursor:'pointer',display:'flex',alignItems:'flex-start',gap:'11px'}},
+        active?this.d({width:'20px',height:'20px',borderRadius:'50%',background:'var(--accent)',flexShrink:0,marginTop:'1px',display:'flex',alignItems:'center',justifyContent:'center'},sg(12,'#fff',sp('M20 6 9 17l-5-5'))):this.d({width:'20px',height:'20px',borderRadius:'50%',border:'2px solid var(--border)',flexShrink:0,marginTop:'1px'}),
+        this.d({flex:1,minWidth:0},
+          this.d({display:'flex',alignItems:'center',gap:'8px',marginBottom:'2px'},this.sp({fontSize:'13.5px',fontWeight:700,color:'var(--head)'},label),this.sp({fontSize:'9px',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.04em',color:bcol,background:'var(--subtle)',borderRadius:'999px',padding:'2px 7px'},badge)),
+          this.sp({fontSize:'12px',color:'var(--muted)',display:'block'},desc),
+          (active&&extra)?extra:null
+        )
+      );
+      const logicCard=(side)=>{const up=side==='buy';const mode=up?st.mBuyMode:st.mSellMode;const thr=up?st.mBuyThresh:st.mSellThresh;const ac=up?'var(--profit)':'var(--loss)';const sf=up?'var(--profit-soft)':'var(--loss-soft)';
+        const title=single?'Single condition':(mode==='all'?'All '+n+' must agree':(mode==='any'||mode==='first')?(up?'Any condition fires':'First condition wins'):thr+' of '+n+' must agree');
+        const desc=single?(up?'Fires whenever your one condition triggers':'Exits whenever your one condition triggers'):(up?(mode==='all'?'All '+n+' conditions must be true at the same time to trigger a buy':mode==='any'?'Any single condition triggers a buy':'At least '+thr+' of '+n+' conditions must agree to trigger a buy'):(mode==='first'?'First exit condition to fire closes the trade immediately':mode==='all'?'Every exit condition must be true to close':'At least '+thr+' of '+n+' exit conditions must agree to close'));
+        const editing=st.mLogicEdit===side; const asking=st.mAskAI===side;
+        const setMode=(mm)=>this.setState(up?{mBuyMode:mm,builderDirty:true}:{mSellMode:mm,builderDirty:true});
+        const setThr=(v)=>this.setState(up?{mBuyThresh:v,mBuyMode:'threshold',builderDirty:true}:{mSellThresh:v,mSellMode:'threshold',builderDirty:true});
+        return this.d({border:`1px solid var(--border)`,borderLeft:`3px solid ${ac}`,borderRadius:'12px',overflow:'hidden',marginBottom:'12px'},
+          this.d({display:'flex',alignItems:'center',gap:'11px',padding:'13px 14px'},
+            this.d({width:'34px',height:'34px',borderRadius:'9px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:sf},sg(16,ac,up?sp('M12 19V5'):sp('M12 5v14'),up?sp('m5 12 7-7 7 7'):sp('m5 12 7 7 7-7'))),
+            this.d({flex:1,minWidth:0},this.sp({fontSize:'15px',fontWeight:700,color:ac,display:'block'},up?'Buy logic':'Sell logic'),this.sp({fontSize:'12.5px',color:'var(--muted)'},title)),
+            single?null:this.btn({onClick:()=>this.setState({mAskAI:asking?null:side,mLogicEdit:null,mAskText:''}),style:{display:'flex',alignItems:'center',gap:'6px',height:'34px',padding:'0 12px',borderRadius:'8px',border:'1px solid var(--accent-ring)',background:asking?'var(--accent)':'var(--accent-soft)',color:asking?'var(--accent-on)':'var(--accent)',fontFamily:'var(--sans)',fontSize:'12px',fontWeight:600,cursor:'pointer'}},sg(13,asking?'var(--accent-on)':'var(--accent)',...spark),'Ask AI'),
+            single?null:this.btn({onClick:()=>this.setState({mLogicEdit:editing?null:side,mAskAI:null}),style:{display:'flex',alignItems:'center',gap:'6px',height:'34px',padding:'0 12px',borderRadius:'8px',border:'1px solid var(--border)',background:editing?'var(--subtle)':'var(--bg)',color:'var(--body)',fontFamily:'var(--sans)',fontSize:'12px',fontWeight:600,cursor:'pointer'}},sg(13,'currentColor',sp('M12 20h9'),sp('M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z')),'Edit')
+          ),
+          asking?this.d({padding:'0 14px 14px'},
+            this.e('textarea',{value:st.mAskText,autoFocus:true,placeholder:up?'e.g. require at least 2 of my conditions to agree before buying\u2026':'e.g. exit as soon as any one signal fires\u2026',onChange:(e)=>this.setState({mAskText:e.target.value}),style:{width:'100%',boxSizing:'border-box',minHeight:'70px',resize:'vertical',padding:'11px 12px',fontFamily:'var(--sans)',fontSize:'13px',lineHeight:'1.5',color:'var(--head)',background:'var(--bg)',border:'1px solid var(--accent-ring)',borderRadius:'9px',outline:'none'}}),
+            this.d({display:'flex',gap:'8px',marginTop:'9px',justifyContent:'flex-end'},
+              this.btn({onClick:()=>this.setState({mAskAI:null,mAskText:''}),style:{height:'36px',padding:'0 14px',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'8px',fontFamily:'var(--sans)',fontSize:'13px',fontWeight:600,color:'var(--body)',cursor:'pointer'}},'Cancel'),
+              this.btn({onClick:()=>{const t=st.mAskText.toLowerCase();let mm=mode;if(/all|every|both/.test(t))mm='all';else if(/any|either/.test(t))mm=up?'any':'first';else if(/first/.test(t))mm='first';else if(/most|least|threshold| of /.test(t))mm='threshold';this.setState(up?{mBuyMode:mm,mAskAI:null,mAskText:'',builderDirty:true}:{mSellMode:mm,mAskAI:null,mAskText:'',builderDirty:true});this.toast('AI updated your '+(up?'buy':'sell')+' logic','success');},style:{display:'flex',alignItems:'center',gap:'6px',height:'36px',padding:'0 14px',background:'var(--accent)',color:'var(--accent-on)',border:'none',borderRadius:'8px',fontFamily:'var(--sans)',fontSize:'13px',fontWeight:700,cursor:'pointer'}},sg(13,'currentColor',...spark),'Apply')
+            )
+          ):null,
+          editing?this.d({padding:'0 14px 14px'},
+            up?editOpt('All conditions must agree','Strictest','var(--profit)','Highest-quality entries \u2014 every signal must line up',mode==='all',()=>setMode('all')):editOpt('First condition wins','Recommended','var(--profit)','Any exit signal closes the trade immediately',mode==='first',()=>setMode('first')),
+            editOpt('Most must agree','Flexible','var(--warn)','Balance signal quality and frequency',mode==='threshold',()=>setMode('threshold'),stepper(thr,setThr)),
+            up?editOpt('Any condition triggers entry','Most signals','var(--info)','Most trades \u2014 any single signal fires a buy',mode==='any',()=>setMode('any')):editOpt('All must agree','Slowest','var(--loss)','Rarely recommended \u2014 waits for every exit signal',mode==='all',()=>setMode('all')),
+            this.btn({onClick:()=>this.setState({mLogicEdit:null}),style:{width:'100%',display:'flex',alignItems:'center',justifyContent:'center',gap:'7px',height:'42px',marginTop:'4px',background:'var(--accent)',color:'var(--accent-on)',border:'none',borderRadius:'9px',fontFamily:'var(--sans)',fontSize:'14px',fontWeight:700,cursor:'pointer'}},sg(15,'currentColor',sp('M20 6 9 17l-5-5')),'Confirm logic')
+          ):this.d({display:'flex',alignItems:'center',gap:'10px',padding:'12px 14px',background:sf,borderTop:'1px solid var(--border)'},
+            this.d({width:'22px',height:'22px',borderRadius:'50%',flexShrink:0,background:ac,display:'flex',alignItems:'center',justifyContent:'center'},sg(13,'#fff',sp('M20 6 9 17l-5-5'))),
+            this.sp({fontSize:'13.5px',fontWeight:600,color:'var(--head)'},desc)
+          )
+        );
+      };
+      content=this.d({flex:1,overflowY:'auto',padding:'16px'},logicCard('buy'),logicCard('sell'));
+    }
+    let footer;
+    if (st.bTab==='indicators') {
+      const ready=st.mInds.length>0;
+      footer=this.d({flexShrink:0,padding:'12px 16px',borderTop:'1px solid var(--border)',display:'flex',gap:'10px'},
+        this.btn({onClick:close,style:{height:'44px',padding:'0 18px',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'10px',fontFamily:'var(--sans)',fontSize:'14px',fontWeight:600,color:'var(--body)',cursor:'pointer'}},'Cancel'),
+        this.btn({onClick:()=>{this.setState({builderDirty:false});this.toast('Draft saved','success');},style:{display:'flex',alignItems:'center',gap:'7px',height:'44px',padding:'0 16px',background:'var(--subtle)',border:'1px solid var(--border)',borderRadius:'10px',fontFamily:'var(--sans)',fontSize:'14px',fontWeight:600,color:'var(--body)',cursor:'pointer'}},sg(15,'currentColor',sp('M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z'),sp('M17 21v-8H7v8'),sp('M7 3v5h8')),'Save'),
+        this.btn({disabled:!ready,onClick:()=>{if(!ready)return;this.setState({bTab:'conditions',mPick:null,mPickerOpen:false,mEditIdx:null});},style:{flex:1,display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',height:'44px',background:ready?'var(--accent)':'var(--subtle)',color:ready?'var(--accent-on)':'var(--muted)',border:ready?'none':'1px solid var(--border)',borderRadius:'10px',fontFamily:'var(--sans)',fontSize:'14px',fontWeight:700,cursor:ready?'pointer':'not-allowed'}},sg(16,'currentColor',sp('M5 12h14'),sp('m12 5 7 7-7 7')),'Next: Conditions')
+      );
+    } else {
+      footer=this.d({flexShrink:0,padding:'12px 16px',borderTop:'1px solid var(--border)',display:'flex',gap:'10px'},
+        this.btn({onClick:()=>this.setState({bTab:'indicators'}),style:{display:'flex',alignItems:'center',gap:'7px',height:'44px',padding:'0 16px',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'10px',fontFamily:'var(--sans)',fontSize:'14px',fontWeight:600,color:'var(--body)',cursor:'pointer'}},sg(15,'currentColor',sp('m12 19-7-7 7-7'),sp('M19 12H5')),'Back'),
+        this.btn({onClick:()=>{this.setState({builderDirty:false});this.toast('Draft saved','success');},style:{display:'flex',alignItems:'center',gap:'7px',height:'44px',padding:'0 16px',background:'var(--subtle)',border:'1px solid var(--border)',borderRadius:'10px',fontFamily:'var(--sans)',fontSize:'14px',fontWeight:600,color:'var(--body)',cursor:'pointer'}},sg(15,'currentColor',sp('M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z'),sp('M17 21v-8H7v8'),sp('M7 3v5h8')),'Save'),
+        this.btn({onClick:()=>{this.setState({builderOpen:false,bMode:'ai',builderDirty:false,btOpen:true,btStep:'config'});this.toast('\u201c'+(st.bName.trim()||'Strategy')+'\u201d saved \u2014 configure backtest','success');},style:{flex:1,display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',height:'44px',background:'var(--accent)',color:'var(--accent-on)',border:'none',borderRadius:'10px',fontFamily:'var(--sans)',fontSize:'14px',fontWeight:700,cursor:'pointer'}},sg(16,'currentColor',sp('m14.5 12.5-8 8a2.12 2.12 0 0 1-3-3l8-8')),'Save & backtest')
+      );
+    }
+    return this.e('aside',{role:'dialog','aria-modal':true,'aria-label':'Strategy builder \u2014 manual',onClick:(e)=>e.stopPropagation(),style:base},header,nameRow,tabBar,liveStrip,content,footer);
+  }
+
+  // ── Backtest Drawer ────────────────────────────────────────────────────────
+  buildBtEl() {
+    const st=this.state;
+    const inp={height:'38px',padding:'0 12px',fontFamily:'var(--sans)',fontSize:'13px',color:'var(--head)',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'7px',outline:'none',width:'100%',boxSizing:'border-box'};
+    const base={position:'fixed',top:0,right:0,bottom:0,zIndex:151,background:'var(--bg)',borderLeft:'1px solid var(--border)',boxShadow:'-24px 0 60px -20px rgba(0,0,0,0.18)',display:'flex',flexDirection:'column'};
+    const closeBtn=this.btn({onClick:()=>this.setState({btOpen:false,btStep:'config'}),'aria-label':'Close',style:{width:'30px',height:'30px',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'6px',border:'1px solid var(--border)',background:'var(--bg)',color:'var(--muted)',cursor:'pointer'}},
+      this.e('svg',{width:14,height:14,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2.2,strokeLinecap:'round',strokeLinejoin:'round'},this.e('path',{d:'M18 6 6 18'}),this.e('path',{d:'m6 6 12 12'}))
+    );
+    const stratName=(this.strategies().find(s=>s.id===st.btCardId)||{name:''}).name;
+
+    if (st.btStep==='config') {
+      const strat=this.strategies().find(s=>s.id===st.btCardId)||{};
+      const stratVer=strat.version||'';
+      const svg=(size,color,sw,...kids)=>this.e('svg',{width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:color,strokeWidth:sw||2,strokeLinecap:'round',strokeLinejoin:'round',style:{flexShrink:0}},...kids);
+      const P=(d)=>this.e('path',{d});
+      const L=(x1,y1,x2,y2)=>this.e('line',{x1,y1,x2,y2});
+      const B=(t)=>this.sp({fontWeight:700,color:'var(--accent)'},t);
+      const sparkKids=[P('M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z'),P('M20 3v4'),P('M22 5h-4'),P('M4 17v2'),P('M5 18H3')];
+      const sectionHeader=(num,label)=>this.d({display:'flex',alignItems:'center',gap:'9px',marginBottom:'12px'},
+        this.d({width:'22px',height:'22px',borderRadius:'50%',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0},this.sp({fontSize:'11px',fontWeight:700,color:'var(--muted)'},String(num))),
+        this.sp({fontSize:'12px',fontWeight:700,color:'var(--muted)',letterSpacing:'0.07em',textTransform:'uppercase'},label)
+      );
+
+      // ── Position calculator (light grey) ──
+      const parseNum=(v)=>parseFloat(String(v).replace(/[^0-9.\-]/g,''))||0;
+      const fmtAcct=(n)=>'$'+Math.round(n).toLocaleString('en-US');
+      const acctNum=parseNum(st.btAccount);
+      const riskNum=parseNum(st.btRisk);
+      const maxPosNum=parseNum(st.btMaxPos)||999;
+      const dollarRisk=acctNum*riskNum/100;
+      const asset=this.currentAsset();
+      const riskPerUnit=(asset.ptValue*asset.stopPts)||1;
+      const contracts=Math.max(0,Math.min(maxPosNum,Math.floor(dollarRisk/riskPerUnit*10)/10));
+      const stepField=(key,delta,min,max,fmt)=>{this.setState(s=>({[key]:fmt(Math.min(max,Math.max(min,+(parseNum(s[key])+delta).toFixed(2))))}));};
+      const stepBtnStyle={width:'19px',height:'19px',padding:0,display:'flex',alignItems:'center',justifyContent:'center',border:'1px solid var(--border)',borderRadius:'5px',background:'var(--subtle)',color:'var(--muted)',cursor:'pointer',lineHeight:0};
+      const calcInput=(label,key,opts)=>this.d({minWidth:0},
+        this.sp({fontSize:'10px',fontWeight:700,letterSpacing:'0.05em',color:'var(--muted)',textTransform:'uppercase',display:'block',marginBottom:'6px'},label),
+        this.e('div',{style:{position:'relative'}},
+          this.e('input',{type:'text',inputMode:'decimal',value:st[key],onChange:(e)=>this.setState({[key]:e.target.value}),onBlur:(e)=>this.setState({[key]:opts.fmt(Math.min(opts.max,Math.max(opts.min,parseNum(e.target.value))))}),style:{height:'46px',width:'100%',boxSizing:'border-box',padding:'0 28px 0 12px',fontFamily:'var(--sans)',fontSize:'17px',fontWeight:800,color:'var(--head)',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'9px',outline:'none',textAlign:opts.align}}),
+          this.d({position:'absolute',right:'5px',top:'50%',transform:'translateY(-50%)',display:'flex',flexDirection:'column',gap:'3px'},
+            this.btn({'aria-label':'Increase '+label,onClick:()=>stepField(key,opts.step,opts.min,opts.max,opts.fmt),style:stepBtnStyle},svg(11,'currentColor',2.4,P('m18 15-6-6-6 6'))),
+            this.btn({'aria-label':'Decrease '+label,onClick:()=>stepField(key,-opts.step,opts.min,opts.max,opts.fmt),style:stepBtnStyle},svg(11,'currentColor',2.4,P('m6 9 6 6 6-6')))
+          )
+        )
+      );
+      const resultTile=(label,value,sub)=>this.d({background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'10px',padding:'12px 14px'},
+        this.sp({fontSize:'9px',fontWeight:700,letterSpacing:'0.05em',color:'var(--muted)',textTransform:'uppercase',display:'block',marginBottom:'7px'},label),
+        this.sp({fontSize:'19px',fontWeight:800,color:'var(--profit)',display:'block',marginBottom:'4px',fontVariantNumeric:'tabular-nums'},value),
+        this.sp({fontSize:'11px',color:'var(--muted)'},sub)
+      );
+      const calcPanel=this.d({background:'var(--subtle)',border:'1px solid var(--border)',borderRadius:'12px',padding:'16px',marginBottom:'22px'},
+        this.d({display:'flex',alignItems:'flex-start',gap:'8px',marginBottom:'14px'},
+          svg(15,'var(--muted)',2,this.e('rect',{x:4,y:2,width:16,height:20,rx:2}),L(8,6,16,6),P('M8 10h.01'),P('M12 10h.01'),P('M16 10h.01'),P('M8 14h.01'),P('M12 14h.01'),P('M8 18h.01'),P('M12 18h.01'),L(16,14,16,18)),
+          this.sp({fontSize:'11px',fontWeight:700,letterSpacing:'0.05em',color:'var(--muted)',textTransform:'uppercase',lineHeight:'1.45'},'Position calculator — updates as you change settings')
+        ),
+        this.d({display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'10px',marginBottom:'14px'},
+          calcInput('Account','btAccount',{align:'left',step:1000,min:0,max:100000000,fmt:fmtAcct}),calcInput('Risk %','btRisk',{align:'center',step:0.25,min:0.25,max:100,fmt:(n)=>String(+n.toFixed(2))}),calcInput('Max pos.','btMaxPos',{align:'center',step:1,min:1,max:50,fmt:(n)=>String(Math.round(n))})
+        ),
+        this.d({height:'1px',background:'var(--border)',marginBottom:'14px'}),
+        this.d({display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px'},
+          resultTile('Dollar risk / trade','$'+dollarRisk.toLocaleString('en-US',{maximumFractionDigits:0}),riskNum+'% of account'),
+          resultTile('Position size',contracts.toFixed(1)+' '+asset.unit,asset.sym+' · $'+asset.ptValue+'/pt · '+asset.stopPts+'pt stop')
+        )
+      );
+
+      // ── ① Asset class & symbol (searchable combobox) ──
+      const classMeta=[
+        {k:'all',label:'All',icon:(c)=>svg(15,c,2,P('m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z'),P('m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65'),P('m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65'))},
+        {k:'forex',label:'Forex',icon:(c)=>this.sp({fontSize:'13px',fontWeight:800,color:c},'$')},
+        {k:'futures',label:'Futures',icon:(c)=>svg(15,c,2,L(4,21,4,14),L(4,10,4,3),L(12,21,12,12),L(12,8,12,3),L(20,21,20,16),L(20,12,20,3),L(1,14,7,14),L(9,8,15,8),L(17,16,23,16))},
+        {k:'equities',label:'Equities',icon:(c)=>svg(15,c,2,this.e('polyline',{points:'22 7 13.5 15.5 8.5 10.5 2 17'}),this.e('polyline',{points:'16 7 22 7 22 13'}))},
+        {k:'crypto',label:'Crypto',icon:(c)=>this.sp({fontSize:'13px',fontWeight:800,color:c},'₿')},
+        {k:'metals',label:'Metals',icon:(c)=>svg(15,c,2,P('M6 3h12l4 6-10 13L2 9Z'),P('M11 3 8 9l4 13 4-13-3-6'),L(2,9,22,9))},
+      ];
+      const classColor={forex:'#6366F1',futures:'#0D9488',equities:'var(--profit)',crypto:'var(--warn)',metals:'#64748B'};
+      const classSoft={forex:'rgba(99,102,241,.12)',futures:'rgba(13,148,136,.12)',equities:'var(--profit-soft)',crypto:'var(--warn-soft)',metals:'rgba(100,116,139,.14)'};
+      const classIcon={}; classMeta.forEach(m=>{ if(m.k!=='all') classIcon[m.k]=m.icon; });
+      const avatar=(ck)=>this.d({width:'30px',height:'30px',borderRadius:'50%',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:classSoft[ck]||'var(--subtle)'},classIcon[ck]?classIcon[ck](classColor[ck]||'var(--muted)'):null);
+      const pill=(m)=>{const on=st.btAssetFilter===m.k;return this.btn({key:m.k,onClick:()=>this.setState({btAssetFilter:m.k}),style:{display:'inline-flex',alignItems:'center',gap:'7px',padding:'7px 13px',borderRadius:'999px',cursor:'pointer',fontFamily:'var(--sans)',fontSize:'13px',fontWeight:600,background:on?'var(--accent-soft)':'var(--bg)',color:on?'var(--accent)':'var(--body)',border:`1px solid ${on?'var(--accent-ring)':'var(--border)'}`}},m.icon(on?'var(--accent)':'var(--muted)'),m.label)};
+      const cat=this.btAssets();
+      const q=st.btSymQuery.trim().toLowerCase();
+      let listItems=[];
+      if(q){ Object.keys(cat).forEach(ck=>cat[ck].forEach(a=>{ if(a.sym.toLowerCase().includes(q)||a.name.toLowerCase().includes(q)) listItems.push({...a,classKey:ck}); })); }
+      else if(st.btAssetFilter==='all'){ Object.keys(cat).forEach(ck=>cat[ck].forEach(a=>listItems.push({...a,classKey:ck}))); }
+      else { listItems=(cat[st.btAssetFilter]||[]).map(a=>({...a,classKey:st.btAssetFilter})); }
+      const symRow=(a)=>{const on=a.classKey===st.btAsset&&a.sym===st.btSymCode;return this.btn({key:a.classKey+a.sym,onClick:()=>this.selectAsset(a.classKey,a.sym),style:{display:'flex',alignItems:'center',gap:'11px',width:'100%',padding:'8px 11px',borderRadius:'8px',cursor:'pointer',textAlign:'left',background:on?'var(--accent-soft)':'transparent',border:'none',borderLeft:on?'3px solid var(--accent)':'3px solid transparent'}},
+        avatar(a.classKey),
+        this.sp({fontSize:'13px',fontWeight:700,color:on?'var(--accent)':'var(--head)',minWidth:'72px',flexShrink:0},a.sym),
+        this.sp({fontSize:'13px',color:'var(--muted)',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'},a.name),
+        this.sp({fontSize:'10px',fontWeight:600,color:'var(--muted)',textTransform:'uppercase',letterSpacing:'0.04em',flexShrink:0},this.assetClassLabel(a.classKey))
+      )};
+      const selDisplay=asset.sym+' — '+asset.name;
+      const assetSection=this.d({marginBottom:'22px'},
+        sectionHeader(1,'Asset class & symbol'),
+        this.e('div',{style:{position:'relative'}},
+          this.e('div',{style:{position:'relative',zIndex:61}},
+            this.e('div',{style:{position:'absolute',left:'15px',top:'50%',transform:'translateY(-50%)',pointerEvents:'none',display:'flex'}},svg(17,'var(--muted)',2,this.e('circle',{cx:11,cy:11,r:8}),L(21,21,16.65,16.65))),
+            this.e('input',{type:'text',placeholder:'Search asset class or symbol…',value:st.btAssetOpen?st.btSymQuery:selDisplay,onFocus:()=>this.setState({btAssetOpen:true,btSymQuery:''}),onChange:(e)=>this.setState({btSymQuery:e.target.value,btAssetOpen:true}),style:{height:'52px',width:'100%',boxSizing:'border-box',padding:'0 44px',fontFamily:'var(--sans)',fontSize:'15px',fontWeight:600,color:'var(--head)',background:'var(--subtle)',border:`1px solid ${st.btAssetOpen?'var(--accent-ring)':'var(--border)'}`,borderRadius:'12px',outline:'none'}}),
+            this.btn({'aria-label':'Toggle asset list',onClick:()=>this.setState(s=>({btAssetOpen:!s.btAssetOpen,btSymQuery:''})),style:{position:'absolute',right:'10px',top:'50%',transform:'translateY(-50%)',width:'30px',height:'30px',display:'flex',alignItems:'center',justifyContent:'center',border:'none',background:'transparent',color:'var(--muted)',cursor:'pointer'}},svg(18,'currentColor',2,P(st.btAssetOpen?'m18 15-6-6-6 6':'m6 9 6 6 6-6')))
+          ),
+          st.btAssetOpen?this.d({position:'absolute',top:'calc(100% + 8px)',left:0,right:0,zIndex:60,background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'12px',boxShadow:'0 18px 50px -12px rgba(0,0,0,0.35)',padding:'12px',maxHeight:'330px',display:'flex',flexDirection:'column'},
+            this.d({display:'flex',flexWrap:'wrap',gap:'7px',marginBottom:'10px',flexShrink:0},...classMeta.map(pill)),
+            this.d({height:'1px',background:'var(--border)',marginBottom:'8px',flexShrink:0}),
+            listItems.length?this.d({overflowY:'auto',display:'flex',flexDirection:'column',gap:'2px'},...listItems.map(symRow)):this.sp({fontSize:'13px',color:'var(--muted)',padding:'12px'},'No matches — try another symbol.')
+          ):null,
+          st.btAssetOpen?this.e('div',{onClick:()=>this.setState({btAssetOpen:false}),style:{position:'fixed',inset:0,zIndex:50}}):null
+        )
+      );
+
+      // ── ② Trading style (presets) ──
+      const styleOpts=[
+        {k:'scalping',name:'Scalping',sub:'1-5m · tight stops',icon:(c)=>svg(17,c,2,this.e('polygon',{points:'13 2 3 14 12 14 11 22 21 10 12 10'}))},
+        {k:'intraday',name:'Intraday',sub:'5-30m · ATR stops',icon:(c)=>svg(17,c,2,this.e('circle',{cx:12,cy:12,r:4}),L(12,2,12,4),L(12,20,12,22),L(4.9,4.9,6.3,6.3),L(17.7,17.7,19.1,19.1),L(2,12,4,12),L(20,12,22,12),L(4.9,19.1,6.3,17.7),L(17.7,6.3,19.1,4.9))},
+        {k:'swing',name:'Swing',sub:'1H-4H · wider stops',icon:(c)=>svg(17,c,2,P('M22 12h-4l-3 9L9 3l-3 9H2'))},
+        {k:'position',name:'Position',sub:'Daily+ · trends',icon:(c)=>svg(17,c,2,this.e('rect',{x:3,y:4,width:18,height:18,rx:2}),L(16,2,16,6),L(8,2,8,6),L(3,10,21,10))},
+      ];
+      const styleCard=(o)=>{const on=st.btStyle===o.k;const c=on?'var(--accent)':'var(--muted)';return this.btn({key:o.k,onClick:()=>this.selectBtStyle(o.k),style:{display:'flex',flexDirection:'column',gap:'5px',padding:'12px 13px',borderRadius:'10px',cursor:'pointer',textAlign:'left',background:on?'var(--accent-soft)':'var(--bg)',border:`1px solid ${on?'var(--accent-ring)':'var(--border)'}`}},
+        this.d({display:'flex',alignItems:'center',gap:'8px'},o.icon(c),this.sp({fontSize:'14px',fontWeight:700,color:on?'var(--accent)':'var(--head)'},o.name)),
+        this.sp({fontSize:'11px',color:'var(--muted)'},o.sub)
+      );};
+      const aiBanner=this.d({display:'flex',gap:'11px',alignItems:'flex-start',padding:'13px 14px',background:'var(--accent-soft)',border:'1px solid var(--accent-ring)',borderRadius:'11px',marginTop:'11px'},
+        this.d({width:'26px',height:'26px',borderRadius:'50%',background:'var(--accent)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0},svg(14,'var(--accent-on)',1.8,...sparkKids)),
+        this.e('span',{style:{fontSize:'12.5px',color:'var(--body)',lineHeight:'1.5'}},'For ',B((strat.name||'this strategy')+' on '+asset.sym+' '+this.assetClassLabel(st.btAsset)),', the ',B(this.styleLabel(st.btStyle)),' preset uses ',B(st.btStopLoss),' and ',B(st.btTakeProfit),'. Override any field below.')
+      );
+      const scalpWarn=st.btStyle==='scalping'?this.d({display:'flex',gap:'11px',alignItems:'flex-start',padding:'12px 14px',background:'var(--warn-soft)',border:'1px solid rgba(217,119,6,.3)',borderRadius:'11px',marginTop:'10px'},
+        svg(17,'var(--warn)',2,P('M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'),L(12,9,12,13),P('M12 17h.01')),
+        this.e('span',{style:{fontSize:'12.5px',color:'var(--body)',lineHeight:'1.5'}},this.sp({fontWeight:700,color:'var(--warn)'},'Scalping generates many signals.'),' High broker fees or wide spreads will erode your edge quickly — confirm your commission per trade is low before running.')
+      ):null;
+      const styleSection=this.d({marginBottom:'22px'},
+        sectionHeader(2,'Trading style'),
+        this.d({display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px'},...styleOpts.map(styleCard)),
+        aiBanner,scalpWarn
+      );
+
+      // ── ③ Detail level ──
+      const detailOpts=[{k:'simple',name:'Simple',sub:'3 settings'},{k:'standard',name:'Standard',sub:'+ exits'},{k:'advanced',name:'Advanced',sub:'Full control'}];
+      const detailCard=(o)=>{const on=st.btDetail===o.k;return this.btn({key:o.k,onClick:()=>this.setBtField('btDetail',o.k),style:{display:'flex',flexDirection:'column',alignItems:'center',gap:'3px',padding:'12px 6px',borderRadius:'10px',cursor:'pointer',background:on?'var(--accent-soft)':'var(--bg)',border:`1px solid ${on?'var(--accent-ring)':'var(--border)'}`}},
+        this.sp({fontSize:'14px',fontWeight:700,color:on?'var(--accent)':'var(--head)'},o.name),
+        this.sp({fontSize:'11px',color:'var(--muted)'},o.sub)
+      );};
+      const detailSection=this.d({marginBottom:'22px'},
+        sectionHeader(3,'Detail level'),
+        this.d({display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'10px'},...detailOpts.map(detailCard))
+      );
+
+      // ── ④ Settings (rows; visibility depends on detail level) ──
+      const selectField=(key,options)=>this.e('div',{style:{position:'relative',flex:1,minWidth:0}},
+        this.e('select',{value:st[key],onChange:(e)=>this.setBtField(key,e.target.value),style:{appearance:'none',WebkitAppearance:'none',MozAppearance:'none',height:'46px',width:'100%',boxSizing:'border-box',padding:'0 38px 0 14px',fontFamily:'var(--sans)',fontSize:'15px',fontWeight:700,color:'var(--head)',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'9px',outline:'none',cursor:'pointer',textOverflow:'ellipsis'}},...options.map(o=>this.e('option',{key:o,value:o},o))),
+        this.e('div',{style:{position:'absolute',right:'13px',top:'50%',transform:'translateY(-50%)',pointerEvents:'none',display:'flex'}},svg(16,'var(--muted)',2,P('m6 9 6 6 6-6')))
+      );
+      const settingDesc={
+        btTf:{'1m':'Fastest','5m':'Default','15m':'Balanced','30m':'Slower cadence','1H':'Multi-bar','4H':'Swing pace','Daily':'Slowest'},
+        btStopLoss:{'ATR-based (0.8×)':'Tight — quick exits','ATR-based (1.5×)':'Balanced','ATR-based (2×)':'Room to breathe','ATR-based (3×)':'Holds through noise','Previous swing':'Structure-based stop','Fixed ticks':'Manual distance'},
+        btTakeProfit:{'1.5R multiple':'Quick capture','2R multiple':'Standard','3R multiple':'Let it run','Open-ended (trail)':'Capture full trend'},
+        btPartialExit:{'None':'Single exit — high frequency','50% at TP1, run rest':'Lock profit, hold runner','50% at 1.5R':'Bank half early','33/33/33':'Scale out in thirds'},
+        btBreakEven:{'None':'No break-even move','Move to BE at 1R':'Protect after first target','Move to BE at TP1':'After partial exit fires'},
+        btTrailingStop:{'None':'Fixed R targets','ATR trail':'Trail the runner after TP1','Chandelier exit':'Institutional trail','Swing trail':'Trail under swings'},
+        btRiskPerTrade:{'0.5%':'Lower — higher trade count','1%':'Standard','1.5%':'Aggressive','2%':'High conviction'},
+        btSession:{'NY + London only':'Liquidity critical','NY only':'Strongest signals','London only':'EU hours','Any session':'Runs overnight'},
+      };
+      const stratNm=strat.name||'this strategy';
+      const cls=this.assetClassLabel(st.btAsset);
+      const A=(t)=>this.sp({fontWeight:700,color:'var(--head)'},t);
+      const unitSing=asset.unit==='oz'?'oz':asset.unit.replace(/s$/,'');
+      const tfPace={'1m':'tick-by-tick momentum','5m':'intraday momentum','15m':'session swings','30m':'session swings','1H':'multi-session trend','4H':'multi-session trend','Daily':'multi-day trend'};
+      const aiChips={btTf:['5m','15m','1H'],btStopLoss:['ATR-based (1.5×)','ATR-based (2×)','Previous swing'],btTakeProfit:['2R multiple','3R multiple','Open-ended (trail)'],btPartialExit:['50% at TP1, run rest','50% at 1.5R','None'],btBreakEven:['Move to BE at 1R','Move to BE at TP1','None'],btTrailingStop:['None','ATR trail','Chandelier exit'],btRiskPerTrade:['0.5%','1%','1.5%'],btSession:['NY only','NY + London only','Any session']};
+      const aiInfo={
+        btTf:{title:'About timeframe',body:()=>[['Your ',A(stratNm),' fires signals on the ',A(asset.sym+' '+cls),' chart. A faster timeframe means ',A('more trades but more noise'),'; slower means ',A('fewer, cleaner setups'),'.'],['At ',A(st.btTf),', you’re trading ',A(tfPace[st.btTf]||'the trend'),' — a natural fit for a ',A(this.styleLabel(st.btStyle).toLowerCase()),' approach.']]},
+        btStopLoss:{title:'About stop loss placement',body:()=>[['ATR-based stops ',A('adapt to market volatility'),' — wider when the market is moving fast, tighter when it’s quiet. This keeps your stop from being too tight in choppy conditions or too wide in calm ones.'],['For ',A(asset.sym+' '+cls+' on a '+st.btTf+' chart'),', a ',A(asset.stopPts+'pt stop'),' is about ',A('$'+(asset.ptValue*asset.stopPts).toLocaleString()),' of risk per '+unitSing+' at $'+asset.ptValue+'/pt.']]},
+        btTakeProfit:{title:'About take profit',body:()=>[['Take-profit sets the ',A('reward side of every trade'),'. A higher R multiple wins less often but pays more per win; a lower one banks quicker.'],['On ',A(asset.sym+' '+cls),' with a ',A(asset.stopPts+'pt stop'),', a 2R target is roughly ',A((asset.stopPts*2)+' pts'),' — realistic for the '+st.btTf+' range.']]},
+        btPartialExit:{title:'About partial exits',body:()=>[['Scaling out ',A('locks in profit early'),' while leaving a runner for a larger move. It smooths the equity curve at the cost of some upside.'],['For a ',A(this.styleLabel(st.btStyle).toLowerCase()+' '+stratNm),' setup, banking 50% at the first target and trailing the rest balances hit-rate and expectancy.']]},
+        btBreakEven:{title:'About break-even moves',body:()=>[['Moving the stop to break-even ',A('removes risk once a trade works'),' — but too early and a normal pullback stops you out for zero.'],['At ',A(st.btTf),' on ',A(asset.sym),', shifting to BE after the first target (1R) protects the position without choking the trade.']]},
+        btTrailingStop:{title:'About trailing stops',body:()=>[['A trailing stop ',A('follows price to lock in open profit'),' on the runner. Fixed-R exits are simpler but leave trend profit on the table.'],['For ',A(asset.sym+' '+cls),', an ATR trail on the runner after TP1 captures extended moves while respecting '+st.btTf+' volatility.']]},
+        btRiskPerTrade:{title:'About risk per trade',body:()=>[['Risk per trade caps ',A('how much one loss can cost the account'),'. Lower risk survives losing streaks; higher risk compounds faster but draws down harder.'],['At ',A(st.btRiskPerTrade),' of ',A(fmtAcct(acctNum)),', each trade risks about ',A('$'+Math.round(acctNum*(parseNum(st.btRiskPerTrade))/100).toLocaleString()),'.']]},
+        btSession:{title:'About session filter',body:()=>[['Restricting to specific sessions ',A('concentrates trades in high-liquidity hours'),' where spreads are tight and moves are cleaner.'],['For ',A(asset.sym+' '+cls),', the ',A('NY session'),' carries the strongest volume — off-session signals are noisier and cost more in spread.']]},
+      };
+      const aiChip=(c)=>{const on=st.aiPick===c;return this.btn({key:c,onClick:()=>this.setState({aiPick:c}),style:{padding:'9px 15px',borderRadius:'9px',fontFamily:'var(--sans)',fontSize:'13px',fontWeight:700,cursor:'pointer',background:on?'var(--accent)':'var(--bg)',color:on?'var(--accent-on)':'var(--accent)',border:`1px solid ${on?'var(--accent)':'var(--accent-ring)'}`}},c)};
+      const aiBubble=(key)=>{const info=aiInfo[key]||{title:'About this setting',body:()=>[]};const chips=[...new Set([st[key],...(aiChips[key]||[])])].slice(0,3);return this.d({marginTop:'10px',background:'var(--accent-soft)',border:'1px solid var(--accent-ring)',borderRadius:'12px',overflow:'hidden'},
+        this.d({padding:'14px 15px',display:'flex',gap:'12px',alignItems:'flex-start'},
+          this.d({width:'30px',height:'30px',borderRadius:'50%',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(135deg,#2DD4BF,var(--accent))'},svg(15,'#fff',1.8,...sparkKids)),
+          this.d({flex:1,minWidth:0},
+            this.sp({fontSize:'13.5px',fontWeight:700,color:'var(--accent)',display:'block',marginBottom:'7px'},info.title),
+            ...info.body().map((par,i)=>this.e('p',{key:i,style:{margin:'0 0 8px',fontSize:'13px',color:'var(--body)',lineHeight:'1.55'}},...par)),
+            this.d({marginTop:'4px',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'10px',padding:'12px'},
+              this.sp({fontSize:'10px',fontWeight:700,letterSpacing:'0.06em',color:'var(--accent)',textTransform:'uppercase',display:'block',marginBottom:'9px'},'AI suggestion'),
+              this.d({display:'flex',flexWrap:'wrap',gap:'8px'},...chips.map(aiChip))
+            )
+          )
+        ),
+        this.d({borderTop:'1px solid var(--accent-ring)',padding:'10px 15px',display:'flex',alignItems:'center',justifyContent:'space-between'},
+          this.btn({onClick:()=>this.setState({aiOpenKey:null,aiPick:null}),style:{background:'transparent',border:'none',cursor:'pointer',fontFamily:'var(--sans)',fontSize:'13px',fontWeight:600,color:'var(--muted)',padding:'6px 4px'}},'Dismiss'),
+          this.btn({onClick:()=>this.aiApply(key),style:{display:'flex',alignItems:'center',gap:'7px',height:'40px',padding:'0 18px',background:'var(--accent)',color:'var(--accent-on)',border:'none',borderRadius:'9px',fontFamily:'var(--sans)',fontSize:'13px',fontWeight:700,cursor:'pointer'}},svg(15,'currentColor',2.4,P('M20 6 9 17l-5-5')),'Apply')
+        )
+      );};
+      const settingRow=(label,key,options)=>{const open=st.aiOpenKey===key;const dim=st.aiOpenKey&&!open?0.4:1;return this.d({marginBottom:'13px',opacity:dim,transition:'opacity 140ms'},
+        this.d({display:'flex',alignItems:'center',gap:'10px'},
+          this.sp({width:'98px',flexShrink:0,fontSize:'13px',fontWeight:600,color:'var(--head)'},label),
+          selectField(key,options),
+          this.btn({onClick:()=>this.openAi(key),'aria-label':'AI help: '+label,style:{width:'44px',height:'46px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'9px',border:`1px solid ${open?'var(--accent)':'var(--accent-ring)'}`,background:open?'var(--accent)':'var(--accent-soft)',color:open?'var(--accent-on)':'var(--accent)',cursor:'pointer'}},svg(16,open?'var(--accent-on)':'var(--accent)',1.7,...sparkKids))
+        ),
+        (settingDesc[key]&&settingDesc[key][st[key]])?this.sp({fontSize:'11px',color:'var(--muted)',display:'block',marginLeft:'108px',marginTop:'5px'},settingDesc[key][st[key]]):null,
+        open?aiBubble(key):null
+      );};
+      const settingDefs=[
+        ['Timeframe','btTf',['1m','5m','15m','30m','1H','4H','Daily']],
+        ['Stop loss','btStopLoss',['ATR-based (0.8×)','ATR-based (1.5×)','ATR-based (2×)','ATR-based (3×)','Previous swing','Fixed ticks']],
+        ['Take profit','btTakeProfit',['1.5R multiple','2R multiple','3R multiple','Open-ended (trail)']],
+        ['Partial exit','btPartialExit',['None','50% at TP1, run rest','50% at 1.5R','33/33/33']],
+        ['Break even','btBreakEven',['None','Move to BE at 1R','Move to BE at TP1']],
+        ['Trailing stop','btTrailingStop',['None','ATR trail','Chandelier exit','Swing trail']],
+        ['Risk per trade','btRiskPerTrade',['0.5%','1%','1.5%','2%']],
+        ['Session filter','btSession',['NY + London only','NY only','London only','Any session']],
+      ];
+      const detailRows={simple:['Timeframe','Stop loss','Take profit'],standard:['Timeframe','Stop loss','Take profit','Partial exit','Break even','Trailing stop'],advanced:['Timeframe','Stop loss','Take profit','Partial exit','Break even','Trailing stop','Risk per trade','Session filter']};
+      const shownSettings=settingDefs.filter(d=>(detailRows[st.btDetail]||detailRows.standard).includes(d[0]));
+      const settingsSection=this.d({marginBottom:'22px'},
+        sectionHeader(4,'Settings'),
+        ...shownSettings.map(([label,key,opts])=>settingRow(label,key,opts))
+      );
+
+      // ── ⑤ Date range ──
+      const dateLabels={'1M':'Mar 15 → Jun 13, 2026','3M':'Mar 15 → Jun 13, 2026','6M':'Dec 13 → Jun 13, 2026','1Y':'Jun 13, 2025 → Jun 13, 2026','2Y':'Jun 13, 2024 → Jun 13, 2026','Custom':'Pick a custom range'};
+      const dateDays={'1M':'31 days','3M':'91 days','6M':'182 days','1Y':'365 days','2Y':'730 days','Custom':''};
+      const dateSection=this.d({marginBottom:'4px'},
+        sectionHeader(5,'Date range'),
+        this.d({display:'flex',gap:'7px',flexWrap:'wrap'},...['1M','3M','6M','1Y','2Y','Custom'].map(p=>this.btn({key:p,onClick:()=>this.setBtField('btDatePreset',p),style:{padding:'7px 15px',borderRadius:'8px',fontSize:'13px',fontWeight:600,cursor:'pointer',fontFamily:'var(--sans)',background:st.btDatePreset===p?'var(--subtle)':'var(--bg)',color:'var(--head)',border:`1px solid ${st.btDatePreset===p?'var(--muted)':'var(--border)'}`}},p))),
+        this.e('div',{style:{marginTop:'11px',fontSize:'13px',color:'var(--muted)'}},dateLabels[st.btDatePreset]||'',dateDays[st.btDatePreset]?' · ':'',dateDays[st.btDatePreset]?this.sp({fontWeight:700,color:'var(--profit)'},dateDays[st.btDatePreset]):null)
+      );
+
+      // ── Reset-preset confirm dialog ──
+      const resetDialog=st.btResetOpen?this.d({position:'fixed',inset:0,zIndex:200,background:'rgba(0,0,0,0.45)',display:'flex',alignItems:'center',justifyContent:'center',padding:'20px'},
+        this.d({background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'14px',boxShadow:'0 24px 60px -15px rgba(0,0,0,0.45)',maxWidth:'380px',width:'100%',padding:'22px'},
+          this.sp({fontSize:'16px',fontWeight:700,color:'var(--head)',display:'block',marginBottom:'8px'},'Reset to '+this.styleLabel(st.btPendingStyle)+' defaults?'),
+          this.sp({fontSize:'13px',color:'var(--muted)',display:'block',marginBottom:'20px',lineHeight:'1.5'},"You've changed some fields. Resetting applies the "+this.styleLabel(st.btPendingStyle)+" preset and you'll lose your changes."),
+          this.d({display:'flex',gap:'10px',justifyContent:'flex-end'},
+            this.btn({onClick:()=>this.setState({btStyle:st.btPendingStyle,btResetOpen:false,btPendingStyle:null}),style:{height:'40px',padding:'0 16px',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'9px',fontFamily:'var(--sans)',fontSize:'13px',fontWeight:600,color:'var(--body)',cursor:'pointer'}},'Keep my changes'),
+            this.btn({onClick:()=>this.applyBtPreset(st.btPendingStyle),style:{height:'40px',padding:'0 18px',background:'var(--accent)',color:'var(--accent-on)',border:'none',borderRadius:'9px',fontFamily:'var(--sans)',fontSize:'13px',fontWeight:700,cursor:'pointer'}},'Reset all')
+          )
+        )
+      ):null;
+
+      return this.e('aside',{role:'dialog','aria-modal':true,'aria-label':'Configure backtest',onClick:(e)=>e.stopPropagation(),style:{...base,width:'max(440px, 34vw)'}},
+        this.d({flexShrink:0,padding:'14px 16px',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',gap:'12px'},
+          closeBtn,
+          this.d({flex:1,minWidth:0},this.sp({fontSize:'16px',fontWeight:700,color:'var(--head)',display:'block'},'Configure backtest'),this.sp({fontSize:'12px',color:'var(--muted)'},(strat.name||'Strategy')+(stratVer?' · '+stratVer:''))),
+          this.btn({'aria-label':'Expand',style:{width:'36px',height:'36px',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'8px',border:'1px solid var(--border)',background:'var(--bg)',color:'var(--muted)',cursor:'pointer',flexShrink:0}},svg(16,'currentColor',2,P('M8 3H5a2 2 0 0 0-2 2v3'),P('M21 8V5a2 2 0 0 0-2-2h-3'),P('M3 16v3a2 2 0 0 0 2 2h3'),P('M16 21h3a2 2 0 0 0 2-2v-3')))
+        ),
+        this.d({flex:1,overflowY:'auto',padding:'18px'},assetSection,calcPanel,styleSection,detailSection,settingsSection,dateSection),
+        this.d({flexShrink:0,padding:'12px 18px',borderTop:'1px solid var(--border)',display:'flex',gap:'10px'},
+          this.btn({onClick:()=>this.setState({btOpen:false,btStep:'config'}),style:{flexShrink:0,height:'44px',padding:'0 22px',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'10px',fontFamily:'var(--sans)',fontSize:'14px',fontWeight:600,color:'var(--body)',cursor:'pointer'}},'Cancel'),
+          this.btn({onClick:()=>this.setState({btStep:'running',btProgress:0,btLogs:[]}),style:{flex:1,height:'44px',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',background:'var(--accent)',color:'var(--accent-on)',border:'none',borderRadius:'10px',fontFamily:'var(--sans)',fontSize:'14px',fontWeight:700,cursor:'pointer'}},this.e('svg',{width:14,height:14,viewBox:'0 0 24 24',fill:'currentColor'},this.e('path',{d:'M7 4v16l13-8z'})),'Run backtest')
+        ),
+        resetDialog
+      );
+    }
+
+    if (st.btStep==='running') {
+      return this.e('aside',{role:'dialog','aria-modal':true,'aria-label':'Backtest running',onClick:(e)=>e.stopPropagation(),style:{...base,width:'max(380px, 30vw)'}},
+        this.d({flexShrink:0,padding:'13px 16px',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'space-between'},
+          this.sp({fontSize:'14px',fontWeight:600,color:'var(--head)'},'Running backtest…'),
+          this.btn({onClick:()=>this.setState({btOpen:false,btStep:'config',btLogs:[],btProgress:0}),style:{height:'30px',padding:'0 12px',background:'var(--subtle)',border:'1px solid var(--border)',borderRadius:'6px',fontFamily:'var(--sans)',fontSize:'12px',color:'var(--muted)',cursor:'pointer'}},'Cancel')
+        ),
+        this.d({flex:1,padding:'18px',display:'flex',flexDirection:'column',gap:'16px'},
+          this.d({},
+            this.d({display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'8px'},this.sp({fontSize:'13px',color:'var(--body)'},'Processing historical data…'),this.sp({fontSize:'12px',fontWeight:600,color:'var(--head)',fontVariantNumeric:'tabular-nums'},Math.round(st.btProgress)+'%')),
+            this.d({height:'6px',background:'var(--subtle)',borderRadius:'3px',overflow:'hidden'},this.d({height:'100%',background:'var(--accent)',borderRadius:'3px',width:st.btProgress+'%',transition:'width 0.12s ease'}))
+          ),
+          this.d({flex:1,background:'var(--subtle)',border:'1px solid var(--border)',borderRadius:'8px',padding:'12px',overflowY:'auto',fontFamily:'var(--mono)',fontSize:'11px',lineHeight:'1.7'},
+            ...st.btLogs.map((log,i)=>this.d({color:log.includes('[✓]')?'var(--profit)':log.includes('[~]')?'var(--muted)':'var(--body)',marginBottom:'1px'},log))
+          )
+        )
+      );
+    }
+
+    // Results
+    const mets=[{v:'+34.2%',c:'var(--profit)',l:'Total return'},{v:'1.87',c:'var(--head)',l:'Sharpe ratio'},{v:'-8.3%',c:'var(--loss)',l:'Max drawdown'},{v:'67.4%',c:'var(--profit)',l:'Win rate'},{v:'2.31',c:'var(--head)',l:'Profit factor'},{v:'247',c:'var(--head)',l:'Total trades'}];
+    return this.e('aside',{role:'dialog','aria-modal':true,'aria-label':'Backtest results',onClick:(e)=>e.stopPropagation(),style:{...base,width:'max(440px, 35vw)'}},
+      this.d({flexShrink:0,padding:'13px 16px',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'space-between'},
+        this.d({},this.sp({fontSize:'14px',fontWeight:600,color:'var(--head)',display:'block'},'Backtest results'),this.sp({fontSize:'11px',color:'var(--profit)'},'✓ Complete · 247 trades')),
+        this.d({display:'flex',gap:'8px'},
+          this.btn({style:{height:'30px',padding:'0 12px',background:'var(--subtle)',border:'1px solid var(--border)',borderRadius:'6px',fontFamily:'var(--sans)',fontSize:'12px',color:'var(--body)',cursor:'pointer'}},'Export CSV'),
+          this.btn({onClick:()=>{this.setState({btOpen:false,btStep:'config',page:'analysis'});this.toast('Backtest saved to Analysis','success');},style:{height:'30px',padding:'0 12px',background:'var(--accent)',color:'var(--accent-on)',border:'none',borderRadius:'6px',fontFamily:'var(--sans)',fontSize:'12px',fontWeight:600,cursor:'pointer'}},'View in Analysis →')
+        )
+      ),
+      this.d({flex:1,overflowY:'auto',padding:'16px'},
+        this.d({display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px',marginBottom:'16px'},...mets.map(m=>this.d({background:'var(--subtle)',border:'1px solid var(--border)',borderRadius:'8px',padding:'12px 14px'},this.sp({fontSize:'22px',fontWeight:700,color:m.c,fontVariantNumeric:'tabular-nums',display:'block',marginBottom:'3px'},m.v),this.sp({fontSize:'11px',color:'var(--muted)'},m.l)))),
+        this.d({background:'var(--subtle)',border:'1px solid var(--border)',borderRadius:'8px',padding:'14px',marginBottom:'12px'},this.sp({fontSize:'11px',fontWeight:700,color:'var(--muted)',textTransform:'uppercase',letterSpacing:'0.08em',display:'block',marginBottom:'10px'},'Equity curve'),this.equitySVG(480,120)),
+        this.d({background:'var(--subtle)',border:'1px solid var(--border)',borderRadius:'8px',padding:'14px'},this.sp({fontSize:'11px',fontWeight:700,color:'var(--muted)',textTransform:'uppercase',letterSpacing:'0.08em',display:'block',marginBottom:'10px'},'Trade summary'),
+          this.d({display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'8px'},...[{l:'Winning',v:'166'},{l:'Losing',v:'81'},{l:'Avg hold',v:'3.2h'},{l:'Avg win',v:'+$248'},{l:'Avg loss',v:'-$107'},{l:'Largest win',v:'+$1,145'}].map(s=>this.d({textAlign:'center',padding:'6px'},this.sp({fontSize:'16px',fontWeight:700,color:'var(--head)',display:'block',marginBottom:'2px'},s.v),this.sp({fontSize:'10px',color:'var(--muted)'},s.l))))
+        )
+      ),
+      this.d({flexShrink:0,padding:'12px 18px',borderTop:'1px solid var(--border)',display:'flex',gap:'8px',justifyContent:'flex-end'},
+        this.btn({onClick:()=>this.setState({btStep:'config'}),style:{height:'34px',padding:'0 14px',background:'var(--subtle)',border:'1px solid var(--border)',borderRadius:'7px',fontFamily:'var(--sans)',fontSize:'13px',fontWeight:500,color:'var(--body)',cursor:'pointer'}},'← Reconfigure'),
+        this.btn({onClick:()=>this.setState({btStep:'running',btProgress:0,btLogs:[]}),style:{height:'34px',padding:'0 14px',background:'var(--accent)',color:'var(--accent-on)',border:'none',borderRadius:'7px',fontFamily:'var(--sans)',fontSize:'13px',fontWeight:600,cursor:'pointer'}},'Re-run')
+      )
+    );
+  }
+
+  // ── Discard confirm ────────────────────────────────────────────────────────
+  buildDiscardEl() {
+    return this.d({position:'fixed',inset:'0',zIndex:210,display:'flex',alignItems:'center',justifyContent:'center',padding:'24px',background:'rgba(0,0,0,0.45)'},
+      this.d({width:'100%',maxWidth:'380px',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'12px',padding:'24px',boxShadow:'0 24px 60px rgba(0,0,0,.20)',onClick:(e)=>e.stopPropagation()},
+        this.sp({fontSize:'16px',fontWeight:700,color:'var(--head)',display:'block',marginBottom:'8px'},'Discard changes?'),
+        this.sp({fontSize:'13px',color:'var(--muted)',lineHeight:'1.5',display:'block',marginBottom:'20px'},'Your strategy has unsaved changes. Leaving now will lose your draft.'),
+        this.d({display:'flex',justifyContent:'flex-end',gap:'8px'},
+          this.btn({onClick:()=>this.setState({discardOpen:false}),style:{height:'36px',padding:'0 16px',background:'var(--subtle)',border:'1px solid var(--border)',borderRadius:'7px',fontFamily:'var(--sans)',fontSize:'13px',fontWeight:500,color:'var(--body)',cursor:'pointer'}},'Keep editing'),
+          this.btn({onClick:()=>this.setState({builderOpen:false,discardOpen:false,builderDirty:false,builderStep:1}),style:{height:'36px',padding:'0 16px',background:'var(--loss)',color:'white',border:'none',borderRadius:'7px',fontFamily:'var(--sans)',fontSize:'13px',fontWeight:600,cursor:'pointer'}},'Discard changes')
+        )
+      )
+    );
+  }
+
+  // ── Toast stack ────────────────────────────────────────────────────────────
+  buildToastsEl() {
+    if (!this.state.toasts.length) return null;
+    const ic={success:{bg:'var(--profit)',s:'✓'},error:{bg:'var(--loss)',s:'✕'},warning:{bg:'var(--warn)',s:'⚠'},info:{bg:'#2563EB',s:'ℹ'}};
+    return this.d({position:'fixed',bottom:'20px',right:'20px',zIndex:300,display:'flex',flexDirection:'column',gap:'8px',maxWidth:'360px'},
+      ...this.state.toasts.map(t=>{const c=ic[t.intent]||ic.info;
+        return this.d({display:'flex',alignItems:'center',gap:'10px',padding:'12px 14px',background:'var(--head)',borderRadius:'10px',boxShadow:'0 8px 24px rgba(0,0,0,.20)',cursor:'pointer',animation:'toast-in 0.2s ease',onClick:()=>this.dismissToast(t.id)},
+          this.d({width:'22px',height:'22px',borderRadius:'50%',background:c.bg,color:'white',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'11px',fontWeight:700,flexShrink:0},c.s),
+          this.d({flex:1,fontSize:'13px',fontWeight:500,color:'var(--bg)'},t.msg),
+          t.undoFn?this.btn({onClick:(e)=>{e.stopPropagation();t.undoFn();this.dismissToast(t.id);},style:{fontSize:'12px',fontWeight:700,color:c.bg,background:'none',border:'none',cursor:'pointer',fontFamily:'var(--sans)',padding:0,whiteSpace:'nowrap'}},'Undo'):null,
+          this.sp({fontSize:'18px',color:'rgba(255,255,255,.35)',marginLeft:'4px'},'×')
+        );
+      })
+    );
+  }
+
+  // ── renderVals ─────────────────────────────────────────────────────────────
+  renderVals() {
+    const st=this.state,c=st.collapsed;
+    const pmap={strategies:'Strategies',analysis:'Analysis','analysis-detail':'Analysis'};
+    const smap={strategies:'4 strategies · 1 live · 2 paper · 1 draft',analysis:`${this.analyses().length} runs · last 30 days`,'analysis-detail':this.analyses().find(a=>a.id===st.analysisDetailId)?.strategy||''};
+    const badgeB='font-size:9px;font-weight:600;padding:1px 5px;border-radius:3px;margin-left:auto;';
+    const isStrategies=st.page==='strategies',isAnalysis=st.page==='analysis'||st.page==='analysis-detail';
+    const anyDrawerOpen=st.builderOpen||st.btOpen;
+    const navIds=['overview','strategies','analysis','chart','journal','audit','accounts','configure','signal','settings'];
+
+    let contentEl;
+    if (st.page==='strategies') contentEl=this.buildStrategiesEl();
+    else if (st.page==='analysis') contentEl=this.buildAnalysisEl();
+    else contentEl=this.buildAnalysisDetailEl();
+
+    let drawerEl=null;
+    if (st.builderOpen) drawerEl=this.buildBuilderEl();
+    else if (st.btOpen) drawerEl=this.buildBtEl();
+
+    // Account switcher (upward drawer from the sidebar footer)
+    const accounts=[
+      {name:'Alpaca paper',type:'Paper trading',bal:'$100,000',active:true,live:false},
+      {name:'Alpaca live',type:'Live · margin',bal:'$48,320',active:false,live:true},
+      {name:'Interactive Brokers',type:'Live · cash',bal:'$12,905',active:false,live:true},
+    ];
+    const sg=(ds,col)=>this.e('svg',{width:15,height:15,viewBox:'0 0 24 24',fill:'none',stroke:col||'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round',style:{flexShrink:0}},...(Array.isArray(ds)?ds:[ds]).map((d,i)=>this.e('path',{key:i,d})));
+    const acctClose=()=>this.setState({accountMenuOpen:false});
+    const menuItem=(iconD,label,cb,danger)=>this.btn({key:label,onClick:()=>{acctClose();cb&&cb();},style:{display:'flex',alignItems:'center',gap:'10px',width:'100%',padding:'9px 10px',borderRadius:'8px',background:'transparent',border:'none',cursor:'pointer',textAlign:'left',fontFamily:'var(--sans)',fontSize:'13px',fontWeight:500,color:danger?'#FF8A8A':'#E6ECF2'}},sg(iconD,danger?'#FF8A8A':'var(--sb-muted)'),label);
+    const accountMenuEl = st.accountMenuOpen ? this.e('div',{},
+      this.e('div',{onClick:acctClose,style:{position:'fixed',inset:0,zIndex:190}}),
+      this.d({position:'absolute',left:0,right:0,bottom:'calc(100% + 10px)',zIndex:200,background:'#16222C',border:'1px solid var(--sb-border)',borderRadius:'12px',boxShadow:'0 -12px 44px -12px rgba(0,0,0,0.7)',padding:'6px'},
+        this.sp({fontSize:'10px',fontWeight:700,letterSpacing:'0.1em',color:'var(--sb-muted)',padding:'8px 10px 6px',display:'block'},'TRADING ACCOUNT'),
+        ...accounts.map(a=>this.btn({key:a.name,onClick:()=>{acctClose();if(!a.active)this.toast('Switched to '+a.name,'success');},style:{display:'flex',alignItems:'center',gap:'10px',width:'100%',padding:'8px 10px',borderRadius:'8px',background:a.active?'rgba(255,255,255,0.06)':'transparent',border:'none',cursor:'pointer',textAlign:'left'}},
+          this.d({width:'30px',height:'30px',borderRadius:'8px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:'var(--navy)',color:'var(--lime)',fontSize:'11px',fontWeight:700},a.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()),
+          this.d({flex:1,minWidth:0},
+            this.sp({fontSize:'13px',fontWeight:600,color:'#fff',display:'block'},a.name),
+            this.sp({fontSize:'11px',color:'var(--sb-muted)'},a.type+' · '+a.bal)
+          ),
+          a.active?sg('M20 6 9 17l-5-5','var(--lime)'):this.d({width:'7px',height:'7px',borderRadius:'50%',background:a.live?'var(--profit)':'var(--sb-muted)',flexShrink:0,marginRight:'4px'})
+        )),
+        this.d({height:'1px',background:'var(--sb-border)',margin:'5px 6px'}),
+        menuItem(['M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z','M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z'],'Account settings',()=>this.toast('Opening account settings…','success')),
+        menuItem(['M2 5h20v14H2z','M2 10h20'],'Billing & usage',()=>this.toast('Opening billing…','success')),
+        menuItem(['M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z','M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3','M12 17h.01'],'Help & docs',()=>this.toast('Opening help…','success')),
+        this.d({height:'1px',background:'var(--sb-border)',margin:'5px 6px'}),
+        menuItem(['M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4','M16 17l5-5-5-5','M21 12H9'],'Log out',()=>this.toast('Logged out','warning'),true)
+      )
+    ) : null;
+
+    return {
+      themeClass: st.dark?'tv-dark':'',
+      sbStyle: `width:${c?'66px':'234px'};flex:none;background:var(--sb-bg);display:flex;flex-direction:column;overflow:hidden;transition:width .18s ease;`,
+      collapseJustify: c?'justify-content:center;':'',
+      logoTextStyle: c?'display:none;':'',
+      labelStyle: c?'display:none;':'flex:1;',
+      sectionStyle: `padding:${c?'12px 0 4px':'14px 12px 5px'};font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--sb-muted);${c?'display:none;':''}`,
+      footerStyle: c?'display:none;':'flex:none;',
+      collapseTitle: c?'Expand navigation':'Collapse navigation',
+      collapseIconStyle: `flex:none;transition:transform .18s;transform:rotate(${c?'180deg':'0deg'});`,
+      onToggleCollapse: ()=>this.setState(s=>({collapsed:!s.collapsed})),
+      killLabel: st.killArmed?'ARMED':'KILL',
+      killStyle: st.killArmed?'display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:10px;border-radius:8px;border:1px solid var(--loss);background:var(--loss);color:#fff;font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:0.06em;cursor:pointer;':'display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:10px;border-radius:8px;border:1px solid rgba(220,38,38,.5);background:rgba(220,38,38,.14);color:#FF8A8A;font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:0.06em;cursor:pointer;',
+      onKill: ()=>this.setState(s=>({killArmed:!s.killArmed})),
+      onAccountClick: ()=>this.setState(s=>({accountMenuOpen:!s.accountMenuOpen})),
+      accountMenuEl,
+      acctChevron: `flex:none;transition:transform .18s;transform:rotate(${st.accountMenuOpen?'180deg':'0deg'});`,
+      clockRef: (el)=>{this._clockEl=el;if(el)el.textContent=this.fmtClock();},
+      themeMoon: `display:${st.dark?'none':'flex'};`,
+      themeSun: `display:${st.dark?'flex':'none'};color:var(--accent);`,
+      onToggleTheme: ()=>{const d=!st.dark;try{localStorage.setItem('tv-theme',d?'dark':'light');}catch(e){}this.setState({dark:d});},
+      nav: Object.fromEntries(navIds.map(id=>[id,this.navStyle(id)])),
+      aria: {strategies:isStrategies?'page':'false',analysis:isAnalysis?'page':'false'},
+      badge: {
+        strategies: badgeB+(isStrategies?'background:rgba(61,213,168,.18);color:#3DD5A8;':'background:rgba(255,255,255,.08);color:var(--sb-muted);'),
+        accounts: badgeB+'background:rgba(255,255,255,.08);color:var(--sb-muted);',
+      },
+      onPage: {
+        strategies: ()=>this.setState({page:'strategies'}),
+        analysis: ()=>this.setState({page:'analysis'}),
+      },
+      pageTitle: pmap[st.page]||'TraderVault',
+      pageSub: smap[st.page]||'',
+      hasPageSub: !!(smap[st.page]),
+      contentEl, anyDrawerOpen, drawerEl,
+      onCloseDimmer: ()=>{
+        if(st.builderOpen){if(st.builderDirty)this.setState({discardOpen:true});else this.setState({builderOpen:false});}
+        else if(st.btOpen)this.setState({btOpen:false});
+      },
+      discardOpen: st.discardOpen,
+      discardEl: this.buildDiscardEl(),
+      toastEl: this.buildToastsEl(),
+    };
+  }
+}
+</script>
+</body>
+</html>

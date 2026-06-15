@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="position:relative;width:100%;" ref="{{ rootRef }}">
+  <div style="{{ fieldStyle }}">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--muted);"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input value="{{ query }}" onInput="{{ onInput }}" onFocus="{{ onFocus }}" placeholder="{{ placeholder }}" style="flex:1;min-width:0;border:none;background:none;outline:none;color:var(--head);font-family:var(--mono);font-size:13px;padding:0;">
+    <button onClick="{{ onClear }}" style="{{ clearStyle }}" style-hover="color:var(--head)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div style="{{ menuStyle }}">
+    <sc-if value="{{ hasResults }}" hint-placeholder-val="{{ true }}">
+      <div style="max-height:280px;overflow-y:auto;padding:6px;">
+        <sc-for list="{{ results }}" as="row" hint-placeholder-count="5">
+          <button onClick="{{ row.onPick }}" style="display:flex;align-items:center;gap:11px;width:100%;padding:8px 10px;background:none;border:none;border-radius:8px;cursor:pointer;text-align:left;" style-hover="background:var(--subtle)">
+            <span style="{{ row.iconStyle }}">{{ row.iconText }}</span>
+            <div style="min-width:0;flex:1;">
+              <div style="font-size:13px;font-weight:600;color:var(--head);">{{ row.sym }}</div>
+              <div style="font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ row.name }}</div>
+            </div>
+            <span style="{{ row.tagStyle }}">{{ row.tag }}</span>
+            <span style="font-family:var(--mono);font-size:12px;color:var(--body);font-variant-numeric:tabular-nums;flex:none;">{{ row.price }}</span>
+          </button>
+        </sc-for>
+      </div>
+    </sc-if>
+    <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:22px 16px;text-align:center;font-size:13px;color:var(--muted);">No assets match &ldquo;{{ query }}&rdquo;</div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:300,&quot;height&quot;:340},&quot;placeholder&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Search symbol…&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state = { query:'', open:false };
+
+  ASSETS = [
+    {sym:'BTC/USD', name:'Bitcoin',        cls:'CRYPTO',  price:'61,258.89', color:'#F7931A'},
+    {sym:'ETH/USD', name:'Ethereum',       cls:'CRYPTO',  price:'3,412.06',  color:'#627EEA'},
+    {sym:'SOL/USD', name:'Solana',         cls:'CRYPTO',  price:'146.21',    color:'#14F195'},
+    {sym:'XRP/USD', name:'Ripple',         cls:'CRYPTO',  price:'0.5183',    color:'#23292F'},
+    {sym:'AAPL',    name:'Apple Inc.',     cls:'EQUITY',  price:'227.48',    color:'#1E293B'},
+    {sym:'TSLA',    name:'Tesla Inc.',     cls:'EQUITY',  price:'251.44',    color:'#E31937'},
+    {sym:'NVDA',    name:'NVIDIA Corp.',   cls:'EQUITY',  price:'132.65',    color:'#76B900'},
+    {sym:'MSFT',    name:'Microsoft Corp.',cls:'EQUITY',  price:'441.20',    color:'#0078D4'},
+    {sym:'SPY',     name:'S&P 500 ETF',    cls:'EQUITY',  price:'556.78',    color:'#1E293B'},
+    {sym:'EUR/USD', name:'Euro / US Dollar',cls:'FOREX',  price:'1.0842',    color:'#2563EB'},
+    {sym:'GBP/USD', name:'Pound / US Dollar',cls:'FOREX', price:'1.2715',    color:'#7C3AED'},
+    {sym:'USD/JPY', name:'US Dollar / Yen', cls:'FOREX',  price:'157.32',    color:'#DC2626'},
+    {sym:'US500',   name:'S&P 500 Index',   cls:'INDICES',price:'5,567.19',  color:'#0EA5E9'},
+    {sym:'NAS100',  name:'Nasdaq 100 Index',cls:'INDICES',price:'19,840.4',  color:'#0EA5E9'},
+    {sym:'US30',    name:'Dow Jones Index', cls:'INDICES',price:'40,287.5',  color:'#0EA5E9'},
+  ];
+
+  TAGCOLORS = {
+    CRYPTO:'background:rgba(247,147,26,.14);color:#F7931A;',
+    EQUITY:'background:rgba(59,130,246,.16);color:#3B82F6;',
+    FOREX: 'background:rgba(124,58,237,.16);color:#A78BFA;',
+    INDICES:'background:rgba(14,165,233,.16);color:#0EA5E9;',
+  };
+
+  componentDidMount(){
+    this._onDoc = (e)=>{ if(this._root && !this._root.contains(e.target)) this.setState({open:false}); };
+    document.addEventListener('mousedown', this._onDoc);
+  }
+  componentWillUnmount(){ document.removeEventListener('mousedown', this._onDoc); }
+
+  pick(sym){ this.setState({query:sym, open:false}); }
+
+  renderVals(){
+    const st = this.state;
+    const q = st.query.trim().toUpperCase();
+    const matches = this.ASSETS.filter(a =>
+      !q || a.sym.toUpperCase().includes(q) || a.name.toUpperCase().includes(q));
+    const results = matches.map(a => ({
+      sym:a.sym, name:a.name, tag:a.cls, price:a.price,
+      iconText:a.sym.replace(/[\/].*$/,'').slice(0,4),
+      iconStyle:`width:32px;height:32px;border-radius:8px;flex:none;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;background:${a.color};`,
+      tagStyle:`font-size:9px;font-weight:700;letter-spacing:0.05em;padding:2px 6px;border-radius:4px;flex:none;${this.TAGCOLORS[a.cls]}`,
+      onPick:()=>this.pick(a.sym),
+    }));
+    const open = st.open;
+    return {
+      rootRef:(el)=>{ this._root = el; },
+      query:st.query,
+      placeholder:this.props.placeholder ?? 'Search symbol…',
+      onInput:(e)=>this.setState({query:e.target.value, open:true}),
+      onFocus:()=>this.setState({open:true}),
+      onClear:()=>this.setState({query:'', open:true}),
+      clearStyle:`flex:none;display:${st.query?'inline-flex':'none'};align-items:center;justify-content:center;width:18px;height:18px;padding:0;border:none;background:none;color:var(--muted);cursor:pointer;`,
+      fieldStyle:`display:flex;align-items:center;gap:9px;width:100%;padding:8px 11px;border:1px solid ${open?'var(--accent)':'var(--input)'};border-radius:7px;background:var(--bg);transition:border-color .12s,box-shadow .12s;${open?'box-shadow:0 0 0 3px var(--accent-ring);':''}`,
+      menuStyle:`position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--bg);border:1px solid var(--border);border-radius:11px;box-shadow:0 12px 32px -8px rgba(13,27,42,.22),0 2px 8px -2px rgba(13,27,42,.12);z-index:60;overflow:hidden;transition:opacity .13s,transform .13s;transform-origin:top center;${open?'opacity:1;transform:translateY(0) scale(1);pointer-events:auto;':'opacity:0;transform:translateY(-6px) scale(.98);pointer-events:none;'}`,
+      results,
+      hasResults: open && results.length>0,
+      noResults: open && results.length===0,
+    };
+  }
+}
+</script>
+</body>
+</html>

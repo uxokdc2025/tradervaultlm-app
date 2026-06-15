@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="tokens.css">
+  <style>
+    :root { --profit-soft:rgba(21,128,61,.12); --loss-soft:rgba(220,38,38,.12); --warn:#D97706; --warn-soft:rgba(217,119,6,.14); --info:#2563EB; --info-soft:rgba(37,99,235,.10); --teal:#0D9488; --teal-soft:rgba(13,148,136,.12); --page:#F7F6F1; }
+    .tv-dark { --profit-soft:rgba(34,197,94,.16); --loss-soft:rgba(248,113,113,.16); --warn:#FBBF24; --warn-soft:rgba(251,191,36,.16); --info:#60A5FA; --info-soft:rgba(96,165,250,.14); --teal:#2DD4BF; --teal-soft:rgba(45,212,191,.14); --page:#0B131B; }
+  </style>
+</helmet>
+<dc-import name="_Shell"
+  active-page="settings"
+  page-title="Settings"
+  page-subtitle="Account preferences & configuration"
+  on-nav-overview="{{ goOverview }}"
+  on-nav-strategies="{{ goStrategies }}"
+  on-nav-analysis="{{ goAnalysis }}"
+  on-nav-chart="{{ goChart }}"
+  on-nav-audit="{{ goAudit }}"
+  on-nav-accounts="{{ goSoon }}"
+  on-nav-configure="{{ goSoon }}"
+  on-nav-signal="{{ goSoon }}"
+  hint-size="100%,100%">
+  {{ settingsEl }}
+</dc-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  state = { tab: 'profile', editName: false, name: 'David Cervantes', theme: 'system', risk: '1.0', conf: '50', notif: { sigFired: true, filled: true, rejected: true, skipped: false, degrade: true, summary: false, conn: true, kill: true }, sysExpand: {}, deleteOpen: false, toastMsg: null };
+
+  componentDidMount() { try { const h = (location.hash || '').replace('#', ''); if (h && this.tabKeys().includes(h)) this.setState({ tab: h }); } catch (e) {} }
+  componentWillUnmount() { if (this._t) clearTimeout(this._t); }
+  toast(m) { this.setState({ toastMsg: m }); if (this._t) clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toastMsg: null }), 2400); }
+  tabKeys() { return ['profile', 'subscription', 'appearance', 'trading', 'notifications', 'brokers', 'system']; }
+
+  e(t, p, ...k) { return React.createElement(t, p, ...k); }
+  d(style, ...k) { return React.createElement('div', { style }, ...k); }
+  sp(style, ...k) { return React.createElement('span', { style }, ...k); }
+  btn(p, ...k) { return React.createElement('button', { type: 'button', ...p }, ...k); }
+  ic(paths, color, size) { const h = React.createElement; return h('svg', { width: size || 16, height: size || 16, viewBox: '0 0 24 24', fill: 'none', stroke: color, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', style: { flexShrink: 0 } }, paths.map((d, i) => h('path', { key: i, d }))); }
+  setTab(t) { this.setState({ tab: t }); try { location.hash = t; } catch (e) {} }
+  card(extra, ...k) { return this.d({ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', ...(extra || {}) }, ...k); }
+  secHead(title, sub) { return this.d({ marginBottom: '4px' }, this.sp({ display: 'block', fontSize: '18px', fontWeight: 700, color: 'var(--head)' }, title), sub ? this.sp({ display: 'block', fontSize: '13px', color: 'var(--muted)', marginTop: '3px' }, sub) : null); }
+  linkBtn(label, onClick, color) { return this.btn({ onClick, style: { background: 'none', border: 'none', padding: 0, fontFamily: 'var(--sans)', fontSize: '14px', fontWeight: 600, color: color || '#7C3AED', cursor: 'pointer', flexShrink: 0 } }, label); }
+
+  // ── left tab nav ──
+  tabNav() {
+    const groups = [['Account', [['profile', 'Profile', ['M12 8a4 4 0 1 0 0-8 4 4 0 0 0 0 8z', 'M4 21a8 8 0 0 1 16 0']], ['subscription', 'Subscription', ['m2 9 10-6 10 6-10 6z', 'M2 9v6l10 6 10-6V9']]]], ['App', [['appearance', 'Appearance', ['M12 3a9 9 0 1 0 0 18c1 0 1.5-.8 1.5-1.5 0-1.3-1-1.6-1-2.5a1.5 1.5 0 0 1 1.5-1.5H17a4 4 0 0 0 4-4c0-4.4-4-8-9-8z', 'M7.5 11a1 1 0 1 0 0-2 1 1 0 0 0 0 2z']], ['trading', 'Trading', ['M3 3v18h18', 'M7 14h3v3H7z', 'M14 9h3v8h-3z']], ['notifications', 'Notifications', ['M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9', 'M10.3 21a1.94 1.94 0 0 0 3.4 0']], ['brokers', 'Brokers', ['M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1', 'M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1']]]], ['Advanced', [['system', 'System', ['m9 18 6-6-6-6']]]]];
+    return this.d({ flexShrink: 0, width: '180px', borderRight: '1px solid var(--border)', padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: '4px' }, ...groups.flatMap(([g, items]) => [
+      this.sp({ key: 'g' + g, display: 'block', fontSize: '10px', fontWeight: 700, letterSpacing: '0.07em', color: 'var(--muted)', textTransform: 'uppercase', padding: '12px 10px 6px' }, g),
+      ...items.map(([k, label, ic]) => {
+        const on = this.state.tab === k; const sys = k === 'system';
+        return this.btn({ key: k, onClick: () => this.setTab(k), style: { display: 'flex', alignItems: 'center', gap: '10px', width: '100%', textAlign: 'left', padding: '9px 10px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)', fontSize: '14px', fontWeight: on ? 600 : (sys ? 400 : 500), background: on ? 'var(--accent-soft)' : 'transparent', color: on ? '#7C3AED' : 'var(--body)', boxShadow: on ? 'inset 3px 0 0 0 #7C3AED' : 'none' } }, this.ic(ic, on ? '#7C3AED' : (sys ? 'var(--muted)' : 'var(--body)'), 17), label);
+      })
+    ]));
+  }
+
+  fieldRow(label, value, action, onAction, last) {
+    return this.d({ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 0', borderBottom: last ? 'none' : '1px solid var(--border)' },
+      this.sp({ flex: '0 0 130px', fontSize: '14px', color: 'var(--muted)' }, label),
+      this.d({ flex: 1, minWidth: 0, fontSize: '15px', color: 'var(--head)', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }, value),
+      action ? this.linkBtn(action, onAction) : null);
+  }
+  toggle(on, onClick, disabled) {
+    return this.btn({ onClick: disabled ? () => this.toast('This alert is always on') : onClick, style: { width: '44px', height: '26px', borderRadius: '999px', border: 'none', padding: '3px', cursor: disabled ? 'not-allowed' : 'pointer', background: on ? 'var(--accent)' : 'var(--input)', opacity: disabled ? 0.6 : 1, flexShrink: 0, display: 'flex', justifyContent: on ? 'flex-end' : 'flex-start', transition: 'background .15s' } }, this.d({ width: '20px', height: '20px', borderRadius: '50%', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,.2)' }));
+  }
+  toggleRow(label, desc, key, last, disabled) {
+    return this.d({ display: 'flex', alignItems: 'center', gap: '16px', padding: '14px 0', borderBottom: last ? 'none' : '1px solid var(--border)' },
+      this.d({ flex: 1, minWidth: 0 }, this.sp({ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--head)' }, label), this.sp({ display: 'block', fontSize: '12.5px', color: 'var(--muted)', marginTop: '2px' }, desc)),
+      this.toggle(this.state.notif[key], () => this.setState(s => ({ notif: { ...s.notif, [key]: !s.notif[key] } })), disabled));
+  }
+
+  // ── tabs ──
+  tabProfile() {
+    const st = this.state;
+    const nameVal = st.editName
+      ? this.d({ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' },
+          this.e('input', { value: st.name, autoFocus: true, onChange: (e) => this.setState({ name: e.target.value }), style: { flex: 1, height: '38px', padding: '0 12px', fontFamily: 'var(--sans)', fontSize: '15px', color: 'var(--head)', background: 'var(--card)', border: '1px solid var(--input)', borderRadius: '8px', outline: 'none' } }),
+          this.btn({ onClick: () => { this.setState({ editName: false }); this.toast('Name saved'); }, style: { height: '38px', padding: '0 14px', borderRadius: '8px', background: 'var(--accent)', color: 'var(--accent-on)', border: 'none', fontFamily: 'var(--sans)', fontSize: '13px', fontWeight: 700, cursor: 'pointer' } }, 'Save'),
+          this.btn({ onClick: () => this.setState({ editName: false }), style: { height: '38px', padding: '0 12px', borderRadius: '8px', background: 'var(--card)', color: 'var(--body)', border: '1px solid var(--border)', fontFamily: 'var(--sans)', fontSize: '13px', fontWeight: 600, cursor: 'pointer' } }, 'Cancel'))
+      : this.sp({ fontSize: '15px', color: 'var(--head)' }, st.name);
+    const emailVal = this.d({ display: 'flex', alignItems: 'center', gap: '8px' }, this.sp({ fontSize: '15px', color: 'var(--head)' }, 'uxokdc@gmail.com'), this.sp({ fontSize: '10px', fontWeight: 700, color: '#7C3AED', background: 'var(--accent-soft)', borderRadius: '4px', padding: '2px 7px' }, 'Primary'));
+    return this.d({ display: 'flex', flexDirection: 'column', gap: '22px' },
+      this.d({}, this.secHead('Profile', 'Your account information'),
+        this.card({ padding: '4px 18px', marginTop: '14px' },
+          this.fieldRow('Name', nameVal, st.editName ? null : 'Edit', () => this.setState({ editName: true })),
+          this.fieldRow('Email', emailVal, 'Manage', () => this.toast('Manage email addresses')),
+          this.fieldRow('Password', this.sp({ fontSize: '17px', color: 'var(--head)', letterSpacing: '2px' }, '••••••••••'), 'Update', () => this.toast('Update password')),
+          this.fieldRow('Active devices', this.sp({ fontSize: '15px', color: 'var(--head)' }, 'Macintosh · Chrome 148 · Tulsa, US'), 'Manage', () => this.toast('Manage active sessions'), true))),
+      this.d({}, this.sp({ display: 'block', fontSize: '15px', fontWeight: 700, color: 'var(--loss)', marginBottom: '10px' }, 'Danger zone'),
+        this.card({ borderColor: 'color-mix(in srgb,var(--loss) 25%,var(--border))', padding: '16px 18px', display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' },
+          this.d({ flex: 1, minWidth: '220px' }, this.sp({ display: 'block', fontSize: '14px', fontWeight: 700, color: 'var(--head)' }, 'Delete account'), this.sp({ display: 'block', fontSize: '13px', color: 'var(--muted)', marginTop: '2px' }, 'Permanently delete your account and all data. This cannot be undone.')),
+          this.btn({ onClick: () => this.setState({ deleteOpen: true }), style: { height: '42px', padding: '0 18px', borderRadius: '10px', background: 'var(--card)', color: 'var(--loss)', border: '1px solid color-mix(in srgb,var(--loss) 40%,transparent)', fontFamily: 'var(--sans)', fontSize: '14px', fontWeight: 700, cursor: 'pointer' } }, 'Delete account'))));
+  }
+
+  tabSubscription() {
+    const limits = [['Technicals', '10'], ['Strategies', '2'], ['Correlations', '3'], ['Timeframes', 'Entry + 3']];
+    const tiers = [['Starter', '3', '0', '0', '0'], ['Pro', '10', '2', '3', '3'], ['Advanced', '20', '5', '10', '5'], ['Institutional', '∞', '∞', '∞', '∞']];
+    const th = (t, al) => this.e('th', { style: { textAlign: al || 'center', padding: '9px 10px', fontSize: '11px', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.04em' } }, t);
+    return this.d({ display: 'flex', flexDirection: 'column', gap: '22px' },
+      this.d({}, this.secHead('Current plan'),
+        this.card({ padding: '18px', marginTop: '14px', display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' },
+          this.d({ flex: 1, minWidth: '220px' },
+            this.d({ display: 'flex', alignItems: 'center', gap: '9px' }, this.sp({ fontSize: '18px', fontWeight: 700, color: 'var(--head)' }, 'Pro'), this.sp({ fontSize: '10px', fontWeight: 700, color: '#7C3AED', background: 'var(--accent-soft)', borderRadius: '4px', padding: '2px 7px' }, 'CURRENT')),
+            this.sp({ display: 'block', fontSize: '13px', color: 'var(--muted)', marginTop: '4px' }, '$49 / month · renews Jul 14, 2026')),
+          this.btn({ onClick: () => this.toast('Opening billing portal (new tab)'), style: { height: '40px', padding: '0 16px', borderRadius: '10px', background: 'var(--card)', color: 'var(--head)', border: '1px solid var(--border)', fontFamily: 'var(--sans)', fontSize: '14px', fontWeight: 600, cursor: 'pointer' } }, 'Manage plan'))),
+      this.d({}, this.secHead('Context engine limits', 'What your current tier allows per backtest'),
+        this.d({ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '12px', marginTop: '14px' }, ...limits.map(([l, v]) => this.card({ padding: '16px', textAlign: 'center' }, this.sp({ display: 'block', fontSize: '24px', fontWeight: 800, color: 'var(--head)' }, v), this.sp({ display: 'block', fontSize: '12px', color: 'var(--muted)', marginTop: '6px' }, l))))),
+      this.card({ overflow: 'hidden' }, this.e('table', { style: { width: '100%', borderCollapse: 'collapse' } },
+        this.e('thead', {}, this.e('tr', { style: { borderBottom: '1px solid var(--border)', background: 'var(--subtle)' } }, th('Tier', 'left'), th('Technicals'), th('Strategies'), th('Correlations'), th('Extra TF'))),
+        this.e('tbody', {}, ...tiers.map((r, i) => this.e('tr', { key: i, style: { borderBottom: i < tiers.length - 1 ? '1px solid var(--border)' : 'none', background: r[0] === 'Pro' ? 'var(--accent-soft)' : 'transparent' } },
+          this.e('td', { style: { padding: '11px 12px', fontSize: '13px', fontWeight: 700, color: r[0] === 'Pro' ? '#7C3AED' : 'var(--head)' } }, r[0]),
+          ...r.slice(1).map((c, j) => this.e('td', { key: j, style: { padding: '11px', textAlign: 'center', fontSize: '13px', color: 'var(--body)', fontVariantNumeric: 'tabular-nums' } }, c))))))),
+      this.btn({ onClick: () => this.toast('Opening billing portal — upgrade to Advanced'), style: { alignSelf: 'flex-start', height: '44px', padding: '0 20px', borderRadius: '10px', background: 'var(--accent)', color: 'var(--accent-on)', border: 'none', fontFamily: 'var(--sans)', fontSize: '14px', fontWeight: 700, cursor: 'pointer' } }, 'Upgrade to Advanced'));
+  }
+
+  tabAppearance() {
+    const opts = [['system', 'System', ['M3 4h18v12H3z', 'M8 20h8', 'M12 16v4']], ['light', 'Light', ['M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z', 'M12 6v0', 'M12 18v0']], ['dark', 'Dark', ['M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z']]];
+    const pick = (v) => { this.setState({ theme: v }); try { if (v === 'dark') { localStorage.setItem('tv-theme', 'dark'); document.documentElement.classList.add('tv-dark'); } else if (v === 'light') { localStorage.setItem('tv-theme', 'light'); document.documentElement.classList.remove('tv-dark'); } else { localStorage.removeItem('tv-theme'); } } catch (e) {} this.toast('Theme applied'); };
+    return this.d({}, this.secHead('Theme', 'How the content area looks'),
+      this.d({ display: 'flex', gap: '12px', marginTop: '16px', flexWrap: 'wrap' }, ...opts.map(([v, label, ic]) => {
+        const on = this.state.theme === v;
+        return this.btn({ key: v, onClick: () => pick(v), style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', width: '128px', padding: '20px', borderRadius: '12px', cursor: 'pointer', fontFamily: 'var(--sans)', background: on ? 'var(--accent-soft)' : 'var(--card)', border: '1px solid ' + (on ? 'color-mix(in srgb,#7C3AED 40%,transparent)' : 'var(--border)') } }, this.ic(ic, on ? '#7C3AED' : 'var(--body)', 26), this.sp({ fontSize: '14px', fontWeight: 600, color: on ? '#7C3AED' : 'var(--head)' }, label));
+      })),
+      this.sp({ display: 'block', fontSize: '13px', color: 'var(--muted)', marginTop: '16px', lineHeight: '1.5' }, 'The sidebar is always dark regardless of theme — this is intentional.'));
+  }
+
+  tabTrading() {
+    const row = (label, desc, input) => this.d({ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 0', borderBottom: '1px solid var(--border)' },
+      this.d({ flex: 1, minWidth: 0 }, this.sp({ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--head)' }, label), desc ? this.sp({ display: 'block', fontSize: '12.5px', color: 'var(--muted)', marginTop: '2px' }, desc) : null),
+      input);
+    const numInput = (val, key, suffix) => this.d({ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 },
+      this.e('input', { type: 'text', value: this.state[key], onChange: (e) => this.setState({ [key]: e.target.value }), onBlur: () => this.toast('Saved'), style: { width: '72px', height: '40px', textAlign: 'right', padding: '0 10px', fontFamily: 'var(--mono)', fontSize: '15px', color: 'var(--head)', background: 'var(--card)', border: '1px solid var(--input)', borderRadius: '8px', outline: 'none' } }),
+      this.sp({ fontSize: '14px', color: 'var(--muted)' }, suffix));
+    return this.d({}, this.secHead('Default risk settings', 'Starting values for new backtest configs — overridable per instance'),
+      this.card({ padding: '4px 18px', marginTop: '14px' },
+        row('Default risk per trade', 'Used as the starting value in new backtest configs.', numInput(this.state.risk, 'risk', '%')),
+        row('Default confidence threshold', 'Only applies when the context engine is configured on an instance.', numInput(this.state.conf, 'conf', '%')),
+        this.d({ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 0' },
+          this.d({ flex: 1 }, this.sp({ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--head)' }, 'Default paper trading account'), this.sp({ display: 'block', fontSize: '12.5px', color: 'var(--muted)', marginTop: '2px' }, 'Where new paper instances deploy by default.')),
+          this.d({ position: 'relative', flexShrink: 0 }, this.e('select', { onChange: () => this.toast('Saved'), style: { height: '40px', padding: '0 34px 0 12px', fontFamily: 'var(--sans)', fontSize: '14px', fontWeight: 600, color: 'var(--head)', background: 'var(--card)', border: '1px solid var(--input)', borderRadius: '8px', outline: 'none', appearance: 'none', WebkitAppearance: 'none', cursor: 'pointer' } }, this.e('option', {}, 'Alpaca paper'), this.e('option', {}, 'Alpaca live')), this.d({ position: 'absolute', right: '11px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }, this.ic(['m6 9 6 6 6-6'], 'var(--muted)', 15))))));
+  }
+
+  tabNotifications() {
+    return this.d({ display: 'flex', flexDirection: 'column', gap: '22px' },
+      this.d({}, this.secHead('Signal alerts'),
+        this.card({ padding: '4px 18px', marginTop: '14px' },
+          this.toggleRow('Signal fired', 'When a strategy fires a signal', 'sigFired'),
+          this.toggleRow('Order filled', 'When the broker confirms a fill', 'filled'),
+          this.toggleRow('Order rejected', 'When the broker rejects an order', 'rejected'),
+          this.toggleRow('Signal skipped', 'When a signal is skipped (session, confidence, rules)', 'skipped', true))),
+      this.d({}, this.secHead('System alerts'),
+        this.card({ padding: '4px 18px', marginTop: '14px' },
+          this.toggleRow('Pattern degradation', 'When AI detects a pattern losing effectiveness', 'degrade'),
+          this.toggleRow('Daily summary', 'End-of-day recap of signals, fills, and P&L', 'summary'),
+          this.toggleRow('Broker connection lost', 'When the WS connection to your broker drops', 'conn'),
+          this.toggleRow('KILL switch activated', 'Always on — cannot be disabled', 'kill', true, true))),
+      this.sp({ fontSize: '12.5px', color: 'var(--muted)' }, 'Delivery is in-app only for now. Email and push notifications arrive in a later phase.'));
+  }
+
+  tabBrokers() {
+    const supported = [['Alpaca', 'US equities + futures', true], ['Interactive Brokers', 'Multi-asset', false], ['NinjaTrader', 'Futures', 'soon'], ['TradeStation', 'Multi-asset', 'soon'], ['OANDA', 'Forex', 'soon'], ['Binance Futures', 'Crypto', 'soon']];
+    return this.d({ display: 'flex', flexDirection: 'column', gap: '22px' },
+      this.d({}, this.secHead('Connected accounts'),
+        this.card({ padding: '16px 18px', marginTop: '14px', display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' },
+          this.d({ width: '40px', height: '40px', borderRadius: '10px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--teal-soft)', color: 'var(--teal)', fontSize: '15px', fontWeight: 800 }, 'A'),
+          this.d({ flex: 1, minWidth: '180px' }, this.d({ display: 'flex', alignItems: 'center', gap: '8px' }, this.sp({ fontSize: '15px', fontWeight: 700, color: 'var(--head)' }, 'Alpaca paper'), this.sp({ fontSize: '9px', fontWeight: 700, color: '#4338CA', background: 'var(--info-soft)', borderRadius: '4px', padding: '2px 7px' }, 'PAPER')), this.sp({ display: 'block', fontSize: '12.5px', color: 'var(--muted)', marginTop: '3px' }, '$99,858.87 · connected May 2, 2026')),
+          this.linkBtn('Manage', () => this.toast('Opening Alpaca (new tab)')),
+          this.linkBtn('Disconnect', () => this.toast('Disconnecting pauses all live instances on this account'), 'var(--loss)')),
+        this.btn({ onClick: () => this.toast('Connect a broker'), style: { marginTop: '12px', height: '44px', padding: '0 16px', borderRadius: '10px', background: 'transparent', border: '1.5px dashed var(--input)', color: 'var(--body)', fontFamily: 'var(--sans)', fontSize: '14px', fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' } }, this.ic(['M12 5v14', 'M5 12h14'], 'currentColor', 16), 'Connect broker')),
+      this.d({}, this.secHead('Supported brokers'),
+        this.d({ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '12px', marginTop: '14px' }, ...supported.map(([n, a, status]) => this.card({ padding: '15px 16px', display: 'flex', alignItems: 'center', gap: '12px' },
+          this.d({ width: '34px', height: '34px', borderRadius: '9px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--subtle)', color: 'var(--body)', fontSize: '14px', fontWeight: 800 }, n[0]),
+          this.d({ flex: 1, minWidth: 0 }, this.sp({ display: 'block', fontSize: '14px', fontWeight: 700, color: 'var(--head)' }, n), this.sp({ fontSize: '12px', color: 'var(--muted)' }, a)),
+          status === 'soon' ? this.sp({ fontSize: '10px', fontWeight: 700, color: 'var(--muted)', background: 'var(--subtle)', borderRadius: '5px', padding: '4px 9px' }, 'Coming soon') : status === true ? this.sp({ fontSize: '11px', fontWeight: 700, color: 'var(--profit)' }, 'Connected ✓') : this.linkBtn('Connect', () => this.toast('Connect ' + n)))))));
+  }
+
+  tabSystem() {
+    const providers = [['Anthropic (Claude)', 'Strategy authoring, AI Coach, pattern analysis', 'default'], ['Ollama Cloud', 'Alternative model provider — bring your own key', 'key'], ['OpenAI', 'Future providers', 'soon']];
+    return this.d({ display: 'flex', flexDirection: 'column', gap: '22px' },
+      this.d({ padding: '13px 15px', borderRadius: '10px', background: 'var(--subtle)', display: 'flex', gap: '10px', alignItems: 'flex-start' }, this.ic(['M12 16v-4', 'M12 8h.01', 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z'], 'var(--muted)', 16), this.sp({ fontSize: '13px', color: 'var(--body)', lineHeight: '1.5' }, "Most users don't need to configure anything here. AI works out of the box using the platform's shared keys.")),
+      this.d({}, this.secHead('AI providers'),
+        this.card({ padding: '4px 18px', marginTop: '14px' }, ...providers.map(([n, use, status], i) => this.d({ key: n, display: 'flex', alignItems: 'center', gap: '14px', padding: '15px 0', borderBottom: i < providers.length - 1 ? '1px solid var(--border)' : 'none' },
+          this.d({ flex: 1, minWidth: 0 }, this.sp({ display: 'block', fontSize: '14px', fontWeight: 700, color: 'var(--head)' }, n), this.sp({ display: 'block', fontSize: '12.5px', color: 'var(--muted)', marginTop: '2px' }, use)),
+          status === 'default' ? this.sp({ fontSize: '11px', fontWeight: 700, color: 'var(--profit)', background: 'var(--profit-soft)', borderRadius: '5px', padding: '4px 10px' }, 'Platform default') : status === 'key' ? this.linkBtn('Add key', () => this.toast('Add provider key — encrypted at rest')) : this.sp({ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', background: 'var(--subtle)', borderRadius: '5px', padding: '4px 10px' }, 'Coming soon'))))),
+      this.d({}, this.secHead('Developer'),
+        this.card({ padding: '16px 18px', marginTop: '14px', display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' },
+          this.d({ flex: 1, minWidth: '200px' }, this.sp({ display: 'block', fontSize: '14px', fontWeight: 700, color: 'var(--head)' }, 'Developer audit log'), this.sp({ display: 'block', fontSize: '12.5px', color: 'var(--muted)', marginTop: '2px' }, 'Raw system events and internal logs — no plain-English translation.')),
+          this.btn({ onClick: () => this.toast('Opening raw developer log'), style: { height: '40px', padding: '0 16px', borderRadius: '9px', background: 'var(--card)', color: 'var(--head)', border: '1px solid var(--border)', fontFamily: 'var(--sans)', fontSize: '14px', fontWeight: 600, cursor: 'pointer' } }, 'View log'))),
+      this.d({}, this.secHead('API access'),
+        this.card({ padding: '20px 18px', marginTop: '14px', textAlign: 'center' }, this.sp({ fontSize: '13px', color: 'var(--muted)' }, 'API keys, webhooks, and rate limits — coming soon.'))));
+  }
+
+  tabContent() {
+    switch (this.state.tab) {
+      case 'profile': return this.tabProfile();
+      case 'subscription': return this.tabSubscription();
+      case 'appearance': return this.tabAppearance();
+      case 'trading': return this.tabTrading();
+      case 'notifications': return this.tabNotifications();
+      case 'brokers': return this.tabBrokers();
+      case 'system': return this.tabSystem();
+      default: return null;
+    }
+  }
+
+  deleteDialog() {
+    if (!this.state.deleteOpen) return null;
+    const dialog = this.d({ width: 'min(480px,94vw)', background: 'var(--card)', borderRadius: '16px', boxShadow: '0 30px 70px -20px rgba(15,23,36,.5)', padding: '22px' },
+      this.sp({ display: 'block', fontSize: '18px', fontWeight: 800, color: 'var(--head)', marginBottom: '10px' }, 'Are you sure?'),
+      this.e('p', { style: { margin: '0 0 18px', fontSize: '14px', color: 'var(--body)', lineHeight: '1.55' } }, 'This permanently deletes your account, all strategies, all instances, and all data. This cannot be undone.'),
+      this.d({ display: 'flex', gap: '10px', justifyContent: 'flex-end' },
+        this.btn({ onClick: () => this.setState({ deleteOpen: false }), style: { height: '44px', padding: '0 18px', borderRadius: '10px', background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--body)', fontFamily: 'var(--sans)', fontSize: '14px', fontWeight: 600, cursor: 'pointer' } }, 'Keep my account'),
+        this.btn({ onClick: () => { this.setState({ deleteOpen: false }); this.toast('Account deletion is disabled in this demo'); }, style: { height: '44px', padding: '0 18px', borderRadius: '10px', background: 'var(--loss)', border: 'none', color: '#fff', fontFamily: 'var(--sans)', fontSize: '14px', fontWeight: 700, cursor: 'pointer' } }, 'Delete my account')));
+    return this.e('div', { onClick: () => this.setState({ deleteOpen: false }), style: { position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(15,23,36,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' } }, this.e('div', { onClick: (e) => e.stopPropagation() }, dialog));
+  }
+
+  settingsEl() {
+    const st = this.state;
+    const toastEl = st.toastMsg ? this.e('div', { style: { position: 'fixed', bottom: '20px', right: '20px', zIndex: 300, background: 'var(--head)', color: 'var(--bg)', padding: '11px 16px', borderRadius: '9px', fontSize: '13px', fontWeight: 500, boxShadow: '0 8px 24px rgba(15,23,36,.22)', maxWidth: '340px' } }, st.toastMsg) : null;
+    const header = this.d({ padding: '22px 26px', borderBottom: '1px solid var(--border)' }, this.sp({ display: 'block', fontSize: '26px', fontWeight: 800, color: 'var(--head)', letterSpacing: '-0.02em' }, 'Settings'), this.sp({ display: 'block', fontSize: '14px', color: 'var(--muted)', marginTop: '4px' }, 'Account preferences and configuration'));
+    const body = this.d({ flex: 1, minHeight: 0, display: 'flex' }, this.tabNav(), this.d({ flex: 1, minWidth: 0, overflowY: 'auto', padding: '24px 26px 48px' }, this.d({ maxWidth: '760px' }, this.tabContent())));
+    return this.d({ height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0, background: 'var(--bg)' }, header, body, this.deleteDialog(), toastEl);
+  }
+
+  renderVals() {
+    const goto = (f) => () => { try { window.location.href = f; } catch (e) {} };
+    return { settingsEl: this.settingsEl(), goOverview: goto('Overview.dc.html'), goStrategies: goto('Strategies.dc.html'), goAnalysis: goto('Analysis.dc.html'), goChart: goto('Chart.dc.html'), goAudit: goto('Audit.dc.html'), goSoon: () => this.toast('That page is coming soon') };
+  }
+}
+</script>
+</body>
+</html>

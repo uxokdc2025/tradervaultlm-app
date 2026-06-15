@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="tokens.css">
+  <style>
+    :root { --profit-soft:rgba(21,128,61,.12); --loss-soft:rgba(220,38,38,.12); --warn:#D97706; --warn-soft:rgba(217,119,6,.12); --info:#2563EB; --info-soft:rgba(37,99,235,.10); --page:#F7F6F1; }
+    .tv-dark { --profit-soft:rgba(34,197,94,.16); --loss-soft:rgba(248,113,113,.16); --warn:#FBBF24; --warn-soft:rgba(251,191,36,.16); --info:#60A5FA; --info-soft:rgba(96,165,250,.14); --page:#0B131B; }
+  </style>
+</helmet>
+<dc-import name="_Shell"
+  active-page="analysis"
+  page-title="Analysis"
+  page-subtitle="Momentum Breakout · Instance 1"
+  on-nav-overview="{{ goOverview }}"
+  on-nav-strategies="{{ goStrategies }}"
+  on-nav-analysis="{{ goAnalysis }}"
+  on-nav-chart="{{ goChart }}"
+  on-nav-journal="{{ goSoon }}"
+  on-nav-audit="{{ goAudit }}"
+  on-nav-accounts="{{ goSoon }}"
+  on-nav-configure="{{ goSoon }}"
+  on-nav-signal="{{ goSoon }}"
+  on-nav-settings="{{ goSoon }}"
+  hint-size="100%,100%">
+  {{ detailEl }}
+</dc-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  state = { tab: 'overview', openRow: null, dismissed: {}, toastMsg: null,
+    optimizeOpen: false, opt: null, optBase: null, ctxOpen: false, splitOpen: false, newStratOpen: false, newStratName: '' };
+
+  componentWillUnmount() { if (this._t) clearTimeout(this._t); }
+  toast(m) { this.setState({ toastMsg: m }); if (this._t) clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toastMsg: null }), 3000); }
+
+  e(t, p, ...k) { return React.createElement(t, p, ...k); }
+  d(style, ...k) { return React.createElement('div', { style }, ...k); }
+  sp(style, ...k) { return React.createElement('span', { style }, ...k); }
+  btn(p, ...k) { return React.createElement('button', { type: 'button', ...p }, ...k); }
+  ic(paths, color, size) { const h = React.createElement; return h('svg', { width: size || 16, height: size || 16, viewBox: '0 0 24 24', fill: 'none', stroke: color, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', style: { flexShrink: 0 } }, paths.map((d, i) => h('path', { key: i, d }))); }
+
+  card(extra, ...kids) { return this.d({ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', ...(extra || {}) }, ...kids); }
+
+  // ── horizontal % bar row (DNA / timing / day-of-week) ───────────────────
+  barRow(label, pct, color, opts) {
+    opts = opts || {};
+    return this.d({ display: 'flex', alignItems: 'center', gap: '14px', padding: '7px 0' },
+      this.sp({ flex: opts.labelFlex || '0 0 ' + (opts.labelW || '150px'), fontSize: '13px', color: 'var(--body)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }, label),
+      this.d({ flex: 1, height: '8px', borderRadius: '999px', background: 'var(--subtle)', overflow: 'hidden' }, this.d({ width: pct + '%', height: '100%', borderRadius: '999px', background: color })),
+      this.sp({ flex: '0 0 44px', textAlign: 'right', fontSize: '13px', fontWeight: 700, color: color, fontVariantNumeric: 'tabular-nums' }, pct + '%'));
+  }
+
+  // chip with source color
+  srcChip(label, kind, paths) {
+    const map = {
+      blue:   { bg: 'var(--info-soft)', c: 'var(--info)', b: 'color-mix(in srgb, var(--info) 35%, transparent)' },
+      purple: { bg: 'rgba(124,58,237,.10)', c: '#7C3AED', b: 'rgba(124,58,237,.30)' },
+      green:  { bg: 'var(--profit-soft)', c: 'var(--profit)', b: 'color-mix(in srgb, var(--profit) 35%, transparent)' },
+      amber:  { bg: 'var(--warn-soft)', c: 'var(--warn)', b: 'color-mix(in srgb, var(--warn) 38%, transparent)' },
+    }[kind] || { bg: 'var(--subtle)', c: 'var(--body)', b: 'var(--border)' };
+    return this.d({ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '5px 11px', borderRadius: '7px', background: map.bg, border: '1px solid ' + map.b, fontSize: '12px', fontWeight: 600, color: map.c, whiteSpace: 'nowrap' },
+      paths ? this.ic(paths, map.c, 13) : null, this.sp({}, label));
+  }
+
+  // ═══════════ HEADER ═══════════
+  headerEl() {
+    const dot = () => this.sp({ color: 'var(--border)', margin: '0 2px' }, '·');
+    const meta = this.d({ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', fontSize: '13px', color: 'var(--muted)', marginTop: '7px' },
+      this.sp({ color: 'var(--body)', fontWeight: 500 }, 'ES Futures'), dot(), this.sp({}, '5m'), dot(), this.sp({}, 'Intraday'), dot(), this.sp({}, 'Jan–Jun 2024'), dot(), this.sp({}, '312 trades'));
+    const selector = this.d({ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '14px' },
+      this.sp({ fontSize: '13px', color: 'var(--muted)', flexShrink: 0 }, 'Viewing instance'),
+      this.btn({ onClick: () => this.toast('Instance switching — logic coming soon'), style: { display: 'flex', alignItems: 'center', gap: '12px', height: '36px', padding: '0 16px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '10px', fontFamily: 'var(--sans)', fontSize: '15px', fontWeight: 600, color: 'var(--head)', cursor: 'pointer' } },
+        this.sp({}, 'Instance 1 — ES · 5m · Intraday'), this.ic(['m6 9 6 6 6-6'], 'var(--muted)', 18)));
+    const hbtn = (label, paths, kind, onClick) => {
+      const base = { display: 'flex', alignItems: 'center', gap: '8px', height: '34px', padding: '0 16px', borderRadius: '10px', fontFamily: 'var(--sans)', fontSize: '13px', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' };
+      const sty = kind === 'purple'
+        ? { ...base, background: '#7C3AED', color: '#fff', border: 'none' }
+        : kind === 'secondary'
+          ? { ...base, background: 'var(--card)', color: 'var(--head)', border: '1px solid var(--border)' }
+          : { ...base, background: 'transparent', color: 'var(--body)', border: '1px solid var(--border)' };
+      return this.btn({ onClick: onClick || (() => this.toast(label + ' — logic coming soon')), style: sty }, this.ic(paths, kind === 'purple' ? '#fff' : 'currentColor', 16), label);
+    };
+    return this.d({ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '20px', flexWrap: 'wrap' },
+      this.d({ minWidth: 0 },
+        this.d({ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' },
+          this.sp({ fontSize: '22px', fontWeight: 800, color: 'var(--head)', letterSpacing: '-0.02em' }, 'Momentum Breakout'),
+          this.sp({ fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em', color: '#7C3AED', background: 'rgba(124,58,237,.10)', border: '1px solid rgba(124,58,237,.28)', borderRadius: '6px', padding: '4px 9px' }, 'INSTANCE 1')),
+        meta, selector),
+      this.d({ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' },
+        hbtn('Export CSV', ['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'M7 10l5 5 5-5', 'M12 15V3'], 'ghost'),
+        hbtn('Run new instance', ['M21 12a9 9 0 1 1-6.2-8.5', 'M21 3v6h-6'], 'secondary'),
+        hbtn('Go Optimize', ['m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z'], 'purple', () => this.openOptimize())));
+  }
+
+  // ═══════════ AI COACH ═══════════
+  coachEl() {
+    const accent = '#7C3AED';
+    const txt = (s, hl) => this.sp({ color: hl ? accent : 'var(--body)', fontWeight: hl ? 600 : 400 }, s);
+    return this.d({ display: 'flex', gap: '15px', alignItems: 'flex-start', padding: '16px 18px', borderRadius: '14px', border: '1px solid var(--accent-ring)', background: 'linear-gradient(135deg, rgba(124,58,237,.06), rgba(45,212,191,.05))' },
+      this.d({ width: '34px', height: '34px', borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,#7C3AED,#2DD4BF)' }, this.ic(['m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z'], '#fff', 19)),
+      this.d({ flex: 1, minWidth: 0 },
+        this.sp({ display: 'block', fontSize: '12px', fontWeight: 700, letterSpacing: '0.08em', color: accent, marginBottom: '7px' }, 'AI COACH — INSTANCE 1'),
+        this.e('p', { style: { margin: 0, fontSize: '13px', lineHeight: '1.65' } },
+          txt('Strong performing instance', true), txt(' — 67.4% win rate, 1.87 Sharpe. Your context engine recorded 3 technicals, 1 strategy correlation (SQQQ MACD), and 2 asset correlations across 1m/5m/15m. '),
+          txt('Pattern discovered: SQQQ confirmation within 90s + ATR above avg + BOS bullish = 89% win rate across 187 trades.', true),
+          txt(' Friday afternoon trades are your biggest drag — 31% of losses, 38% win rate. Your take profit is also leaving money on the table — 62% of winners continued past TP.'))));
+  }
+
+  // ═══════════ SCORE + KPI ═══════════
+  kpiEl() {
+    const scoreCard = this.card({ flex: '0 0 168px', padding: '18px 16px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center' },
+      this.sp({ fontSize: '32px', fontWeight: 800, color: 'var(--profit)', lineHeight: '1' }, '74'),
+      this.sp({ fontSize: '11px', fontWeight: 600, letterSpacing: '0.07em', color: 'var(--muted)', textTransform: 'uppercase', marginTop: '6px' }, 'Score'),
+      this.sp({ marginTop: '10px', fontSize: '12px', fontWeight: 700, color: 'var(--profit)', background: 'var(--profit-soft)', border: '1px solid color-mix(in srgb, var(--profit) 30%, transparent)', borderRadius: '999px', padding: '3px 12px' }, 'Strong'));
+    const kpis = [
+      { v: '+34.2%', l: 'Total return', c: 'var(--profit)' },
+      { v: '1.87', l: 'Sharpe ratio', c: 'var(--head)' },
+      { v: '2.14', l: 'Profit factor', c: 'var(--head)' },
+      { v: '-8.3%', l: 'Max drawdown', c: 'var(--loss)' },
+      { v: '67.4%', l: 'Win rate', c: 'var(--profit)' },
+      { v: '$870', l: 'Avg win', c: 'var(--head)' },
+    ];
+    return this.d({ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'stretch' },
+      scoreCard,
+      ...kpis.map(k => this.card({ flex: '1 1 130px', minWidth: '120px', padding: '18px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' },
+        this.sp({ fontSize: '20px', fontWeight: 800, color: k.c, letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' }, k.v),
+        this.sp({ fontSize: '12px', fontWeight: 600, letterSpacing: '0.05em', color: 'var(--muted)', textTransform: 'uppercase', marginTop: '8px', lineHeight: '1.3' }, k.l))));
+  }
+
+  // ═══════════ TABS ═══════════
+  tabBar() {
+    const tabs = [['overview', 'Overview'], ['dna', 'Win / Loss DNA'], ['intel', 'Intelligence'], ['recs', 'AI Recommendations'], ['mgmt', 'Trade management'], ['log', 'Trade log']];
+    return this.d({ display: 'flex', gap: '4px', borderBottom: '1px solid var(--border)', flexWrap: 'wrap' },
+      ...tabs.map(([k, label]) => {
+        const on = this.state.tab === k;
+        return this.btn({ key: k, onClick: () => this.setState({ tab: k }), style: { padding: '12px 16px', background: 'none', border: 'none', borderBottom: on ? '2px solid #7C3AED' : '2px solid transparent', marginBottom: '-1px', fontFamily: 'var(--sans)', fontSize: '13px', fontWeight: on ? 700 : 500, color: on ? '#7C3AED' : 'var(--body)', cursor: 'pointer', whiteSpace: 'nowrap' } }, label);
+      }));
+  }
+
+  // ─── Overview tab ───
+  tabOverview() {
+    const equity = this.card({ padding: '16px 18px', marginBottom: '16px' },
+      this.sp({ display: 'block', fontSize: '12px', fontWeight: 700, letterSpacing: '0.07em', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '14px' }, 'Equity curve'),
+      this.e('svg', { viewBox: '0 0 1000 300', preserveAspectRatio: 'none', style: { width: '100%', height: '220px', display: 'block', borderRadius: '8px', background: 'var(--subtle)' } },
+        this.e('defs', {}, this.e('linearGradient', { id: 'eqf', x1: '0', y1: '0', x2: '0', y2: '1' }, this.e('stop', { offset: '0%', stopColor: 'var(--profit)', stopOpacity: '0.28' }), this.e('stop', { offset: '100%', stopColor: 'var(--profit)', stopOpacity: '0.02' }))),
+        this.e('path', { d: 'M0,262 C70,256 120,242 180,236 C250,229 280,214 340,206 C400,198 440,182 500,158 C560,134 590,150 640,128 C700,104 730,98 790,82 C850,66 890,60 950,46 L1000,40 L1000,300 L0,300 Z', fill: 'url(#eqf)' }),
+        this.e('path', { d: 'M0,262 C70,256 120,242 180,236 C250,229 280,214 340,206 C400,198 440,182 500,158 C560,134 590,150 640,128 C700,104 730,98 790,82 C850,66 890,60 950,46 L1000,40', fill: 'none', stroke: 'var(--profit)', strokeWidth: '3', vectorEffect: 'non-scaling-stroke' })));
+    const months = [['Jan', '+3.2%', true], ['Feb', '-1.1%', false], ['Mar', '+4.8%', true], ['Apr', '+2.1%', true], ['May', '-0.5%', false], ['Jun', '+6.3%', true]];
+    const heat = this.card({ padding: '16px 18px' },
+      this.sp({ display: 'block', fontSize: '12px', fontWeight: 700, letterSpacing: '0.07em', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '14px' }, 'Monthly returns · 2024'),
+      this.d({ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: '10px' },
+        ...months.map(([m, v, pos]) => this.d({},
+          this.d({ padding: '12px', borderRadius: '9px', textAlign: 'center', background: pos ? 'var(--profit-soft)' : 'var(--loss-soft)', border: '1px solid ' + (pos ? 'color-mix(in srgb,var(--profit) 22%,transparent)' : 'color-mix(in srgb,var(--loss) 22%,transparent)') },
+            this.sp({ fontSize: '15px', fontWeight: 700, color: pos ? 'var(--profit)' : 'var(--loss)', fontVariantNumeric: 'tabular-nums' }, v)),
+          this.sp({ display: 'block', textAlign: 'center', fontSize: '12px', color: 'var(--muted)', marginTop: '7px' }, m)))));
+    return this.d({}, equity, heat);
+  }
+
+  // ─── Win / Loss DNA tab ───
+  dnaColumn(isWin) {
+    const title = isWin ? 'Winning trades occur when…' : 'Losing trades occur when…';
+    const count = isWin ? '210 wins' : '102 losses';
+    const c = isWin ? 'var(--profit)' : 'var(--loss)';
+    const soft = isWin ? 'var(--profit-soft)' : 'var(--loss-soft)';
+    const rows = isWin ? [
+      ['NY session active', 91], ['ATR above 10-day avg', 84], ['BOS bullish on 5m', 78], ['Williams %R above -50', 74], ['DXY falling on day', 69], ['SQQQ MACD confirmed', 87],
+    ] : [
+      ['Friday afternoon (1–4pm)', 88], ['SQQQ did not confirm', 82], ['ATR below 10-day avg', 76], ['UVXY rising on day', 71], ['Williams %R below -70', 65], ['BOS neutral on 15m', 59],
+    ];
+    return this.card({ flex: '1 1 380px', minWidth: '320px', overflow: 'hidden' },
+      this.d({ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: soft, borderBottom: '1px solid var(--border)' },
+        this.d({ display: 'flex', alignItems: 'center', gap: '9px' }, this.ic(isWin ? ['M12 19V5', 'm5 12 7-7 7 7'] : ['M12 5v14', 'm5 12 7 7 7-7'], c, 17), this.sp({ fontSize: '13px', fontWeight: 700, color: c }, title)),
+        this.sp({ fontSize: '12px', fontWeight: 600, color: 'var(--muted)' }, count)),
+      this.d({ padding: '10px 18px 16px' }, ...rows.map(([l, p]) => this.barRow(l, p, c, { labelW: '170px' }))),
+      this.d({ margin: '0 18px 16px', padding: '8px 12px', borderRadius: '8px', background: soft, display: 'flex', alignItems: 'center', gap: '7px' }, this.ic(['M20 6 9 17l-5-5'], c, 14), this.sp({ fontSize: '12px', fontWeight: 600, color: c }, 'High confidence')));
+  }
+  patternCard(p) {
+    const rankBg = { 1: { bg: 'rgba(245,158,11,.14)', c: 'var(--warn)' }, 2: { bg: 'rgba(124,58,237,.12)', c: '#7C3AED' }, 3: { bg: 'var(--subtle)', c: 'var(--muted)' } }[p.rank];
+    const wr = p.loss ? 'var(--loss)' : 'var(--profit)';
+    const actions = p.loss
+      ? [['Add as trade block rule', 'red', ['M4.9 4.9a10 10 0 1 0 14.2 14.2', 'M4.9 4.9 19.1 19.1']], ['Test filtered — new instance', 'blue', ['M21 12a9 9 0 1 1-6.2-8.5', 'M21 3v6h-6']]]
+      : [['Build strategy from this pattern', 'purple', ['m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z']], ['Test as filter — new instance', 'blue', ['M21 12a9 9 0 1 1-6.2-8.5', 'M21 3v6h-6']]];
+    const abtn = ([label, kind, paths]) => {
+      const c = kind === 'red' ? 'var(--loss)' : kind === 'purple' ? '#7C3AED' : kind === 'blue' ? 'var(--info)' : 'var(--body)';
+      const filled = kind === 'red';
+      return this.btn({ key: label, onClick: () => this.toast(label + ' — logic coming soon'), style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', flex: '1 1 240px', height: '36px', padding: '0 16px', borderRadius: '10px', fontFamily: 'var(--sans)', fontSize: '13px', fontWeight: 600, cursor: 'pointer', background: filled ? c : 'var(--card)', color: filled ? '#fff' : c, border: filled ? 'none' : '1px solid color-mix(in srgb,' + c + ' 35%,transparent)' } }, this.ic(paths, filled ? '#fff' : c, 16), label);
+    };
+    return this.card({ marginBottom: '14px', overflow: 'hidden' },
+      this.d({ display: 'flex', alignItems: 'center', gap: '13px', padding: '15px 18px', background: 'var(--subtle)' },
+        this.d({ width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: rankBg.bg, color: rankBg.c, fontSize: '13px', fontWeight: 700, border: '1px solid color-mix(in srgb,' + rankBg.c + ' 30%,transparent)' }, String(p.rank)),
+        this.sp({ flex: 1, fontSize: '14px', fontWeight: 700, color: 'var(--head)' }, p.title),
+        this.sp({ fontSize: '16px', fontWeight: 800, color: wr, whiteSpace: 'nowrap' }, p.wr + ' win rate')),
+      this.d({ padding: '16px 18px', borderTop: '1px solid var(--border)' },
+        this.d({ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }, ...p.chips.map(ch => this.srcChip(ch[0], ch[1], ch[2]))),
+        this.e('p', { style: { margin: '0 0 14px', fontSize: '13px', color: 'var(--muted)', lineHeight: '1.5' } }, p.found),
+        this.d({ display: 'flex', gap: '10px', flexWrap: 'wrap' }, ...actions.map(abtn))));
+  }
+  tabDNA() {
+    const G = ['M22 12h-4l-3 9L9 3l-3 9H2']; // bolt-ish
+    const patterns = [
+      { rank: 1, title: 'Strongest winning pattern — 3 conditions combined', wr: '89%', loss: false,
+        chips: [['SQQQ confirmed <90s', 'purple', ['M12 2a4 4 0 0 0-4 4 4 4 0 0 0-4 4 4 4 0 0 0 0 4 4 4 0 0 0 4 4 4 4 0 0 0 8 0 4 4 0 0 0 4-4 4 4 0 0 0 0-4 4 4 0 0 0-4-4 4 4 0 0 0-4-4Z']], ['ATR above avg', 'blue', ['m4 17 6-6 4 4 6-6']], ['BOS bullish 5m', 'blue', ['M3 3v18h18', 'M7 14h3v3H7z', 'M14 9h3v8h-3z']]],
+        found: this.e('span', {}, 'Found in ', this.sp({ fontWeight: 700, color: 'var(--head)' }, '187 of 210 winning trades'), ' · Only 12 of 102 losing trades · High confidence across 1m, 5m, 15m') },
+      { rank: 2, title: 'Second pattern — macro alignment', wr: '84%', loss: false,
+        chips: [['DXY falling', 'green', ['m4 7 6 6 4-4 6 6']], ['UVXY falling', 'green', ['m4 7 6 6 4-4 6 6']], ['BOS bullish 5m + 15m', 'amber', ['M12 7v5l3 2', 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z']]],
+        found: this.e('span', {}, 'Found in ', this.sp({ fontWeight: 700, color: 'var(--head)' }, '164 of 210 winning trades'), ' · Macro risk-on environment strongly predicts your wins') },
+      { rank: 3, title: 'Strongest loss predictor — when to skip the trade', wr: '28%', loss: true,
+        chips: [['SQQQ did not confirm', 'purple', ['M12 2a4 4 0 0 0-4 4 4 4 0 0 0-4 4 4 4 0 0 0 0 4 4 4 0 0 0 4 4 4 4 0 0 0 8 0 4 4 0 0 0 4-4 4 4 0 0 0 0-4 4 4 0 0 0-4-4 4 4 0 0 0-4-4Z']], ['UVXY rising', 'green', ['m4 17 6-6 4 4 6-6']], ['ATR below avg', 'blue', ['m4 7 6 6 4-4 6 6']], ['Friday afternoon', 'amber', ['M12 7v5l3 2', 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z']]],
+        found: this.e('span', {}, 'Found in ', this.sp({ fontWeight: 700, color: 'var(--head)' }, '79 of 102 losing trades'), ' · When all 4 present — ', this.sp({ fontWeight: 700, color: 'var(--head)' }, 'skip this trade entirely')) },
+    ];
+    return this.d({},
+      this.d({ display: 'flex', gap: '16px', flexWrap: 'wrap', marginBottom: '20px' }, this.dnaColumn(true), this.dnaColumn(false)),
+      this.d({ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' },
+        this.sp({ fontSize: '12px', fontWeight: 700, letterSpacing: '0.06em', color: 'var(--muted)', textTransform: 'uppercase', whiteSpace: 'nowrap' }, 'AI — highest predictive combinations'),
+        this.d({ flex: 1, height: '1px', background: 'var(--border)' })),
+      ...patterns.map(p => this.patternCard(p)));
+  }
+
+  // ─── Intelligence tab ───
+  intelCell(v) {
+    const c = v >= 75 ? 'var(--profit)' : v >= 60 ? 'var(--warn)' : 'var(--loss)';
+    const bg = v >= 75 ? 'var(--profit-soft)' : v >= 60 ? 'var(--warn-soft)' : 'var(--loss-soft)';
+    return this.e('td', { style: { textAlign: 'center', padding: '10px 8px' } }, this.sp({ display: 'inline-block', minWidth: '46px', padding: '4px 8px', borderRadius: '6px', background: bg, color: c, fontSize: '13px', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }, v + '%'));
+  }
+  intelCard(titlePaths, titleColor, title, body, note) {
+    return this.card({ flex: '1 1 420px', minWidth: '340px', overflow: 'hidden' },
+      this.d({ display: 'flex', alignItems: 'center', gap: '9px', padding: '12px 16px', borderBottom: '1px solid var(--border)', background: 'var(--subtle)' }, this.ic(titlePaths, titleColor, 16), this.sp({ fontSize: '13px', fontWeight: 700, color: 'var(--head)' }, title)),
+      this.d({ padding: '16px 18px' }, body, note ? this.sp({ display: 'block', marginTop: '14px', fontSize: '12px', color: 'var(--muted)', lineHeight: '1.5' }, note) : null));
+  }
+  tabIntel() {
+    const th = (t, al) => this.e('th', { style: { textAlign: al || 'center', padding: '8px', fontSize: '10px', fontWeight: 700, letterSpacing: '0.05em', color: 'var(--muted)', textTransform: 'uppercase' } }, t);
+    const matrixRows = [['BOS direction', 58, 71, 84], ['ATR above avg', 62, 76, 88], ['Williams %R', 51, 64, 79], ['SQQQ confirmed', 63, 81, 91]];
+    const matrix = this.e('table', { style: { width: '100%', borderCollapse: 'collapse' } },
+      this.e('thead', {}, this.e('tr', { style: { borderBottom: '1px solid var(--border)' } }, th('Condition', 'left'), th('1M only'), th('1M+5M'), th('All 3'))),
+      this.e('tbody', {}, ...matrixRows.map((r, i) => this.e('tr', { key: i, style: { borderBottom: i < matrixRows.length - 1 ? '1px solid var(--border)' : 'none' } },
+        this.e('td', { style: { padding: '10px 8px', fontSize: '13px', fontWeight: 500, color: 'var(--head)' } }, r[0]), this.intelCell(r[1]), this.intelCell(r[2]), this.intelCell(r[3])))));
+
+    const timing = this.d({}, ...[['Within 30 seconds', 91, 'var(--profit)'], ['30–90 seconds', 87, 'var(--profit)'], ['90s–3 minutes', 64, 'var(--warn)'], ['No confirmation', 38, 'var(--loss)']].map(([l, p, c]) => this.barRow(l, p, c, { labelW: '140px' })));
+
+    const corr = [['DXY ↓', 22, true], ['UVXY ↓', 18, true], ['QQQ ↑', 13, true], ['DXY ↑', -16, false], ['UVXY ↑', -21, false]];
+    const corrEl = this.d({}, ...corr.map(([l, v, pos]) => this.d({ display: 'flex', alignItems: 'center', gap: '12px', padding: '7px 0' },
+      this.sp({ flex: '0 0 70px', fontSize: '13px', fontWeight: 600, color: 'var(--body)' }, l),
+      this.d({ flex: 1, position: 'relative', height: '22px', background: 'var(--subtle)', borderRadius: '6px' },
+        this.d({ position: 'absolute', left: '50%', top: 0, bottom: 0, width: '1px', background: 'var(--border)' }),
+        this.d({ position: 'absolute', top: '4px', bottom: '4px', borderRadius: '4px', background: pos ? 'var(--profit)' : 'var(--loss)', left: pos ? '50%' : (50 - Math.abs(v) * 1.4) + '%', width: (Math.abs(v) * 1.4) + '%' })),
+      this.sp({ flex: '0 0 48px', textAlign: 'right', fontSize: '13px', fontWeight: 700, color: pos ? 'var(--profit)' : 'var(--loss)', fontVariantNumeric: 'tabular-nums' }, (pos ? '+' : '') + v + '%'))));
+
+    const dow = [['Monday', 64, 'var(--profit)'], ['Tuesday', 78, 'var(--profit)'], ['Wednesday', 82, 'var(--profit)'], ['Thursday', 68, 'var(--profit)'], ['Friday', 42, 'var(--loss)']];
+    const dowEl = this.d({}, ...dow.map(([l, p, c]) => this.barRow(l, p, c, { labelW: '90px' })));
+
+    return this.d({ display: 'flex', gap: '16px', flexWrap: 'wrap' },
+      this.intelCard(['M12 7v5l3 2', 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z'], 'var(--body)', 'Timeframe alignment — win rate by TF agreement', matrix, 'All-3-TF agreement is your strongest filter. 15m alignment is the biggest differentiator.'),
+      this.intelCard(['M13 2 3 14h7v8l10-12h-7l0-8z'], 'var(--warn)', 'SQQQ confirmation timing', timing, this.e('span', {}, "If SQQQ doesn't confirm within ", this.sp({ fontWeight: 700, color: 'var(--head)' }, '90 seconds'), ' — win rate drops significantly. Consider a 90s confirmation window rule.')),
+      this.intelCard(['M3 3v18h18', 'm7 14 4-4 3 3 5-6'], 'var(--profit)', 'Correlation impact on win rate', corrEl, 'Values show win rate change vs your baseline 67.4%'),
+      this.intelCard(['M8 2v4', 'M16 2v4', 'M3 10h18', 'M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z'], 'var(--info)', 'Win rate by day of week', dowEl, 'Tuesday–Wednesday is your peak. Friday is a clear drag.'));
+  }
+
+  // ─── AI Recommendations tab ───
+  recCard(r) {
+    if (this.state.dismissed[r.id]) return null;
+    const badgeC = r.badgeKind === 'purple' ? '#7C3AED' : 'var(--info)';
+    return this.card({ marginBottom: '14px', overflow: 'hidden' },
+      this.d({ display: 'flex', alignItems: 'flex-start', gap: '14px', padding: '16px 18px', background: r.tint || 'var(--subtle)' },
+        this.d({ width: '34px', height: '34px', borderRadius: '10px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: r.iconBg, color: r.iconC }, this.ic(r.icon, r.iconC, 18)),
+        this.d({ flex: 1, minWidth: 0 },
+          this.sp({ display: 'block', fontSize: '14px', fontWeight: 700, color: 'var(--head)', marginBottom: '4px' }, r.title),
+          this.sp({ display: 'block', fontSize: '12.5px', color: 'var(--muted)', lineHeight: '1.5' }, r.desc)),
+        this.sp({ flexShrink: 0, fontSize: '10px', fontWeight: 700, letterSpacing: '0.05em', color: badgeC, background: 'color-mix(in srgb,' + badgeC + ' 10%, transparent)', border: '1px solid color-mix(in srgb,' + badgeC + ' 28%, transparent)', borderRadius: '6px', padding: '4px 9px', whiteSpace: 'nowrap' }, r.badge)),
+      this.d({ display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '12px 16px', borderTop: '1px solid var(--border)' }, ...r.chips.map(([t, up]) => this.d({ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 11px', borderRadius: '7px', background: 'var(--subtle)', fontSize: '12px', fontWeight: 600, color: 'var(--body)' }, this.ic(up ? ['m18 9-6-6-6 6', 'M12 3v12'] : ['m6 15 6 6 6-6', 'M12 3v18'], up ? 'var(--profit)' : 'var(--loss)', 13), t))),
+      this.d({ display: 'flex', gap: '12px', padding: '12px 16px', borderTop: '1px solid var(--border)' },
+        this.btn({ onClick: () => this.setState(s => ({ dismissed: { ...s.dismissed, [r.id]: true } })), style: { height: '36px', padding: '0 16px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '10px', fontFamily: 'var(--sans)', fontSize: '13px', fontWeight: 600, color: 'var(--muted)', cursor: 'pointer' } }, 'Dismiss'),
+        this.btn({ onClick: () => this.toast(r.cta + ' — logic coming soon'), style: { flex: 1, height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: 'var(--subtle)', border: '1px solid var(--border)', borderRadius: '10px', fontFamily: 'var(--sans)', fontSize: '13px', fontWeight: 700, color: 'var(--head)', cursor: 'pointer' } }, this.ic(r.ctaIcon, 'currentColor', 16), r.cta)));
+  }
+  tabRecs() {
+    const recs = [
+      { id: 'r1', title: 'Build strategy from Pattern #1 — SQQQ + ATR + BOS', desc: 'AI discovered this combination has 89% win rate across 187 trades. Adding these as entry filters creates a new, higher-precision strategy.', badge: 'PATTERN → NEW STRATEGY', badgeKind: 'purple', tint: 'linear-gradient(135deg, rgba(124,58,237,.06), rgba(45,212,191,.04))', iconBg: 'rgba(124,58,237,.12)', iconC: '#7C3AED', icon: ['m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z'], chips: [['Win rate 67% → ~84%', true], ['Fewer trades (−40%)', true], ['Higher precision entries', true]], cta: 'Build this strategy — opens builder pre-filled', ctaIcon: ['m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z'] },
+      { id: 'r2', title: 'Add 90-second SQQQ confirmation window', desc: "If SQQQ doesn't confirm within 90s of your NQ signal — skip the trade. Win rate on unconfirmed trades is 38%.", badge: 'TWEAK → NEW INSTANCE', badgeKind: 'blue', iconBg: 'var(--info-soft)', iconC: 'var(--info)', icon: ['M12 7v5l3 2', 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z'], chips: [['Win rate +8-12%', true], ['Trades −25%', false], ['Sharpe ratio +0.4', true]], cta: 'Apply — run new instance', ctaIcon: ['M21 12a9 9 0 1 1-6.2-8.5', 'M21 3v6h-6'] },
+      { id: 'r3', title: 'Block trades on Friday after 1pm', desc: '31% of losses occur in this window. 42% win rate Friday overall vs 67% average. Simple time block.', badge: 'TWEAK → NEW INSTANCE', badgeKind: 'blue', iconBg: 'var(--info-soft)', iconC: 'var(--info)', icon: ['M4.9 4.9a10 10 0 1 0 14.2 14.2', 'M4.9 4.9 19.1 19.1'], chips: [['Win rate +4–6%', true], ['Trades −18%', false], ['Lower drawdown', true]], cta: 'Apply — run new instance', ctaIcon: ['M21 12a9 9 0 1 1-6.2-8.5', 'M21 3v6h-6'] },
+    ];
+    const cards = recs.map(r => this.recCard(r)).filter(Boolean);
+    return cards.length ? this.d({}, ...cards) : this.card({ padding: '40px', textAlign: 'center' }, this.sp({ fontSize: '13px', color: 'var(--muted)' }, 'All recommendations dismissed.'));
+  }
+
+  // ─── Trade management tab ───
+  tabMgmt() {
+    const mk = (paths, title, body) => this.card({ flex: '1 1 300px', minWidth: '260px', padding: '20px' },
+      this.ic(paths, 'var(--body)', 22),
+      this.sp({ display: 'block', fontSize: '15px', fontWeight: 700, color: 'var(--head)', margin: '14px 0 10px' }, title),
+      this.e('p', { style: { margin: 0, fontSize: '13px', color: 'var(--body)', lineHeight: '1.6' } }, body));
+    return this.d({ display: 'flex', gap: '16px', flexWrap: 'wrap' },
+      mk(['M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'], 'Stop loss', this.e('span', {}, this.sp({ fontWeight: 700, color: 'var(--head)' }, 'Winning trades dipped 1.1× ATR below entry'), ' before moving in your favour. Your 1.5× ATR stop is giving them room. No change recommended.')),
+      mk(['M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z', 'M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10z', 'M12 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2z'], 'Take profit', this.e('span', {}, this.sp({ fontWeight: 700, color: 'var(--head)' }, '62% of winning trades ran past 2R'), ' before reversing. Test 3R or a trailing stop on the runner after partial exit at TP1.')),
+      mk(['M12 7v5l3 2', 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z'], 'Time in trade', this.e('span', {}, this.sp({ fontWeight: 700, color: 'var(--head)' }, 'Winners resolve within 12 bars'), '. Trades open longer than 20 bars drop to 38% win rate. Consider a time-based exit at 20 bars.')));
+  }
+
+  // ─── Trade log tab ───
+  tabLog() {
+    const rows = [
+      { id: 't1', dir: 'LONG', entry: '$4,218', exit: '$4,224', pnl: '+$590', pnlPos: true, r: '+1.9R', date: 'Jun 3', hold: '4h 20m', match: 'full' },
+      { id: 't2', dir: 'LONG', entry: '$4,247', exit: '$4,231', pnl: '-$314', pnlPos: false, r: '-1.0R', date: 'Jun 5', hold: '2h 10m', match: 'no' },
+      { id: 't3', dir: 'LONG', entry: '$4,222', exit: '$4,230', pnl: '+$870', pnlPos: true, r: '+2.8R', date: 'Jun 7', hold: '6h 45m', match: 'full' },
+      { id: 't4', dir: 'SHORT', entry: '$4,178', exit: '$4,171', pnl: '+$740', pnlPos: true, r: '+2.4R', date: 'Jun 8', hold: '1h 55m', match: 'partial' },
+    ];
+    const matchBadge = { full: { t: 'Full match ✓', c: 'var(--profit)', bg: 'var(--profit-soft)' }, no: { t: 'No match ✗', c: 'var(--loss)', bg: 'var(--loss-soft)' }, partial: { t: 'Partial ◑', c: 'var(--warn)', bg: 'var(--warn-soft)' } };
+    const cols = '70px 86px 1fr 1fr 1fr 1fr 84px 96px 132px 40px';
+    const th = (t, al) => this.sp({ fontSize: '10px', fontWeight: 700, letterSpacing: '0.05em', color: 'var(--muted)', textTransform: 'uppercase', textAlign: al || 'left' }, t);
+    const snapshot = (m) => {
+      const wit = m === 'no'
+        ? [['SQQQ confirmed', 'No (>90s)', false], ['ATR vs avg', 'Below avg', false], ['BOS 5m', 'Neutral', false], ['Session', 'Friday 2:40pm', false]]
+        : [['SQQQ confirmed', 'Yes (42s)', true], ['ATR vs avg', 'Above avg', true], ['BOS 5m', 'Bullish', true], ['Session', 'NY open', true]];
+      const note = m === 'no' ? 'Matched loss predictor pattern — 4 of 4 loss conditions present. This trade should have been skipped.' : m === 'partial' ? 'Partially matched winning profile — 3 of 4 conditions met.' : 'Matched Pattern #1 — highest confidence profile.';
+      return this.d({ padding: '12px 16px', background: 'var(--subtle)', borderTop: '1px solid var(--border)' },
+        this.sp({ display: 'block', fontSize: '10px', fontWeight: 700, letterSpacing: '0.06em', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '10px' }, 'Context snapshot at signal'),
+        this.d({ display: 'flex', flexWrap: 'wrap', gap: '8px' }, ...wit.map(([l, v, ok]) => this.d({ display: 'inline-flex', alignItems: 'center', gap: '7px', padding: '6px 11px', borderRadius: '8px', background: 'var(--card)', border: '1px solid var(--border)' },
+          this.d({ width: '16px', height: '16px', borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: ok ? 'var(--profit)' : 'var(--loss)' }, this.ic(ok ? ['M20 6 9 17l-5-5'] : ['M18 6 6 18', 'm6 6 12 12'], '#fff', 10)),
+          this.sp({ fontSize: '12px', color: 'var(--muted)' }, l + ': '), this.sp({ fontSize: '12px', fontWeight: 600, color: 'var(--head)' }, v)))),
+        this.d({ display: 'flex', gap: '8px', alignItems: 'flex-start', marginTop: '12px' }, this.ic(['m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z'], '#7C3AED', 14), this.sp({ fontSize: '12px', color: 'var(--body)', lineHeight: '1.5' }, note)));
+    };
+    const headerRow = this.d({ display: 'grid', gridTemplateColumns: cols, gap: '10px', alignItems: 'center', padding: '12px 16px', background: 'var(--subtle)', borderBottom: '1px solid var(--border)' },
+      th('Symbol'), th('Dir'), th('Entry'), th('Exit'), th('P&L'), th('R-mult'), th('Date'), th('Hold'), th('Context match'), this.sp({}, ''));
+    const rowEls = rows.map(r => {
+      const open = this.state.openRow === r.id;
+      const mb = matchBadge[r.match];
+      const top = this.d({ display: 'grid', gridTemplateColumns: cols, gap: '10px', alignItems: 'center', padding: '14px 16px', cursor: 'pointer', borderBottom: open ? 'none' : '1px solid var(--border)' },
+        this.sp({ fontSize: '13px', fontWeight: 700, color: 'var(--head)' }, 'ES'),
+        this.sp({ justifySelf: 'start', fontSize: '10px', fontWeight: 700, letterSpacing: '0.04em', padding: '3px 9px', borderRadius: '5px', background: r.dir === 'LONG' ? 'var(--profit-soft)' : 'var(--loss-soft)', color: r.dir === 'LONG' ? 'var(--profit)' : 'var(--loss)' }, r.dir),
+        this.sp({ fontSize: '12.5px', color: 'var(--body)', fontVariantNumeric: 'tabular-nums' }, r.entry),
+        this.sp({ fontSize: '12.5px', color: 'var(--body)', fontVariantNumeric: 'tabular-nums' }, r.exit),
+        this.sp({ fontSize: '12.5px', fontWeight: 700, color: r.pnlPos ? 'var(--profit)' : 'var(--loss)', fontVariantNumeric: 'tabular-nums' }, r.pnl),
+        this.sp({ fontSize: '12.5px', fontWeight: 700, color: r.pnlPos ? 'var(--profit)' : 'var(--loss)', fontVariantNumeric: 'tabular-nums' }, r.r),
+        this.sp({ fontSize: '12.5px', color: 'var(--muted)' }, r.date),
+        this.sp({ fontSize: '12.5px', color: 'var(--muted)' }, r.hold),
+        this.sp({ justifySelf: 'start', fontSize: '11px', fontWeight: 700, padding: '4px 10px', borderRadius: '6px', background: mb.bg, color: mb.c, whiteSpace: 'nowrap' }, mb.t),
+        this.ic(open ? ['m18 15-6-6-6 6'] : ['m6 9 6 6 6-6'], 'var(--muted)', 16));
+      return this.e('div', { key: r.id, onClick: () => this.setState(s => ({ openRow: s.openRow === r.id ? null : r.id })), style: { borderBottom: '1px solid var(--border)' } }, top, open ? snapshot(r.match) : null);
+    });
+    return this.card({ overflow: 'hidden' }, headerRow, ...rowEls,
+      this.d({ padding: '12px 16px', fontSize: '13px', color: 'var(--muted)' }, 'Showing 4 of 312 trades · Click any row to expand context snapshot'));
+  }
+
+  tabContent() {
+    switch (this.state.tab) {
+      case 'overview': return this.tabOverview();
+      case 'dna': return this.tabDNA();
+      case 'intel': return this.tabIntel();
+      case 'recs': return this.tabRecs();
+      case 'mgmt': return this.tabMgmt();
+      case 'log': return this.tabLog();
+      default: return null;
+    }
+  }
+
+  // ═══════════ OPTIMIZE FLOW (Brief 08) ═══════════
+  optDefaults() {
+    return { asset: 'ES Futures', timeframe: '5m', preset: 'Intraday', stop: 'ATR-based (1.5×)', tp: '2R multiple', risk: '1%', partial: '50% at TP1, run rest', be: 'Move to BE at 1R', trail: 'None', dateRange: '6M', indicators: ['MACD', 'RSI', 'Session filter'], buyLogic: 'all', sellLogic: 'first' };
+  }
+  openOptimize() {
+    const base = this.optDefaults();
+    this.setState({ optimizeOpen: true, splitOpen: false, newStratOpen: false, ctxOpen: false, opt: { ...base, indicators: [...base.indicators] }, optBase: { ...base, indicators: [...base.indicators] } });
+  }
+  closeOptimize() { this.setState({ optimizeOpen: false, splitOpen: false, newStratOpen: false }); }
+  setOpt(k, v) { this.setState(s => ({ opt: { ...s.opt, [k]: v } })); }
+  removeIndicator(name) { this.setState(s => ({ opt: { ...s.opt, indicators: s.opt.indicators.filter(x => x !== name) } })); }
+  addIndicator() { const pool = ['Volume filter', 'EMA(50)', 'VWAP', 'ADX', 'Bollinger Bands']; const cur = this.state.opt.indicators; const next = pool.find(p => !cur.includes(p)) || ('Indicator ' + (cur.length + 1)); this.setState(s => ({ opt: { ...s.opt, indicators: [...s.opt.indicators, next] } })); }
+  applySuggestion(k) { if (k === 'vol') this.setState(s => s.opt.indicators.includes('Volume filter') ? null : ({ opt: { ...s.opt, indicators: [...s.opt.indicators, 'Volume filter'] } })); }
+  detectChanges() {
+    const a = this.state.optBase, b = this.state.opt; const tweak = [], logic = [];
+    if (!a || !b) return { tweak, logic };
+    [['asset', 'Asset'], ['timeframe', 'Timeframe'], ['preset', 'Trading style'], ['stop', 'Stop loss'], ['tp', 'Take profit'], ['risk', 'Risk per trade'], ['partial', 'Partial exit'], ['be', 'Break even'], ['trail', 'Trailing stop'], ['dateRange', 'Date range']].forEach(([k, l]) => { if (a[k] !== b[k]) tweak.push(l + ': ' + a[k] + ' → ' + b[k]); });
+    b.indicators.filter(i => !a.indicators.includes(i)).forEach(i => logic.push('Added: ' + i));
+    a.indicators.filter(i => !b.indicators.includes(i)).forEach(i => logic.push('Removed: ' + i));
+    if (a.buyLogic !== b.buyLogic) logic.push('Buy logic changed');
+    if (a.sellLogic !== b.sellLogic) logic.push('Sell logic changed');
+    return { tweak, logic };
+  }
+  routeBacktest() { this.closeOptimize(); this.toast('→ Backtest Config (pre-filled) · new instance under Momentum Breakout'); }
+  openNewStrat() {
+    const added = this.state.opt.indicators.filter(i => !this.state.optBase.indicators.includes(i));
+    const suffix = added.length ? added[0] : 'v2';
+    this.setState({ newStratOpen: true, splitOpen: false, newStratName: 'Momentum Breakout — ' + suffix });
+  }
+  confirmNewStrat() { const n = this.state.newStratName.trim() || 'Untitled strategy'; this.setState({ newStratOpen: false, splitOpen: false, optimizeOpen: false }); this.toast('"' + n + '" created from Momentum Breakout. Your original is in Strategies → Strategy Builder opens pre-filled.'); }
+
+  optSelect(key, label, options) {
+    const changed = this.state.optBase && this.state.opt[key] !== this.state.optBase[key];
+    const ac = 'var(--info)';
+    return this.d({ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: 0 },
+      this.sp({ fontSize: '12px', fontWeight: 600, color: 'var(--body)' }, label),
+      this.d({ position: 'relative' },
+        this.e('select', { value: this.state.opt[key], onChange: (e) => this.setOpt(key, e.target.value), style: { width: '100%', height: '38px', padding: '0 30px 0 12px', fontFamily: 'var(--sans)', fontSize: '13px', color: 'var(--head)', background: 'var(--card)', border: '1px solid ' + (changed ? ac : 'var(--input)'), borderRadius: '8px', outline: 'none', appearance: 'none', WebkitAppearance: 'none', boxShadow: changed ? '0 0 0 3px color-mix(in srgb, var(--info) 14%, transparent)' : 'none' } }, ...options.map(o => this.e('option', { key: o, value: o }, o))),
+        this.d({ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }, this.ic(['m6 9 6 6 6-6'], 'var(--muted)', 15))));
+  }
+  optTiles(key, label, options) {
+    return this.d({ display: 'flex', flexDirection: 'column', gap: '6px' },
+      this.sp({ fontSize: '12px', fontWeight: 600, color: 'var(--body)' }, label),
+      this.d({ display: 'grid', gridTemplateColumns: 'repeat(' + options.length + ',1fr)', gap: '7px' }, ...options.map(o => {
+        const on = this.state.opt[key] === o;
+        return this.btn({ key: o, onClick: () => this.setOpt(key, o), style: { padding: '9px 4px', fontFamily: 'var(--sans)', fontSize: '12px', fontWeight: 600, borderRadius: '8px', cursor: 'pointer', background: on ? 'var(--info-soft)' : 'var(--card)', color: on ? 'var(--info)' : 'var(--body)', border: '1px solid ' + (on ? 'color-mix(in srgb, var(--info) 35%, transparent)' : 'var(--border)') } }, o);
+      })));
+  }
+  ctxPanel() {
+    const open = this.state.ctxOpen;
+    const head = this.btn({ onClick: () => this.setState(s => ({ ctxOpen: !s.ctxOpen })), style: { display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '11px 13px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '9px', cursor: 'pointer', fontFamily: 'var(--sans)' } },
+      this.d({ flex: 1, textAlign: 'left', minWidth: 0 }, this.sp({ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--head)' }, 'Context recording profile'), this.sp({ fontSize: '11px', color: 'var(--muted)' }, '3 technicals · 1 strategy · 2 correlations · 3 timeframes')),
+      this.ic([open ? 'm18 15-6-6-6 6' : 'm6 9 6 6 6-6'], 'var(--muted)', 15));
+    const detail = open ? this.d({ padding: '4px 2px', display: 'flex', flexWrap: 'wrap', gap: '6px' }, ...['Williams %R', 'ATR', 'BOS direction', 'MACD cross · SQQQ', 'DXY', 'UVXY', '1m', '5m', '15m'].map(w => this.e('span', { key: w, style: { fontSize: '11px', fontWeight: 600, padding: '4px 9px', borderRadius: '6px', background: 'var(--subtle)', color: 'var(--body)' } }, w))) : null;
+    return this.d({ display: 'flex', flexDirection: 'column', gap: '6px' }, this.sp({ fontSize: '12px', fontWeight: 600, color: 'var(--body)' }, 'Context recording'), head, detail);
+  }
+  optIndicatorCard(name, i) {
+    const purple = '#7C3AED';
+    const sm = (paths) => this.btn({ onClick: () => name && this.toast('Edit ' + name + ' — logic coming soon'), style: { width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '7px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--muted)', cursor: 'pointer' } }, this.ic(paths, 'currentColor', 13));
+    return this.e('div', { key: 'ind' + i, style: { display: 'flex', alignItems: 'center', gap: '11px', padding: '11px 13px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '9px' } },
+      this.d({ width: '30px', height: '30px', borderRadius: '8px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(124,58,237,.10)', color: purple }, this.ic(['m4 16 5-5 4 4 6-7'], purple, 16)),
+      this.d({ flex: 1, minWidth: 0 }, this.sp({ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--head)' }, name), this.sp({ fontSize: '11px', color: 'var(--muted)' }, 'Buy & sell conditions set')),
+      this.e('button', { type: 'button', onClick: () => this.toast('Edit ' + name + ' — logic coming soon'), style: { width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '7px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--muted)', cursor: 'pointer' } }, this.ic(['M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7', 'M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z'], 'currentColor', 13)),
+      this.e('button', { type: 'button', 'aria-label': 'Remove ' + name, onClick: () => this.removeIndicator(name), style: { width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '7px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--muted)', cursor: 'pointer' } }, this.ic(['M18 6 6 18', 'm6 6 12 12'], 'currentColor', 13)));
+  }
+  optLogicConditions() {
+    const b = this.state.opt;
+    const buyTxt = { all: 'All conditions must agree', any: 'Any one triggers entry' }[b.buyLogic];
+    const sellTxt = { first: 'First exit condition wins', all: 'All exit conditions must clear' }[b.sellLogic];
+    const line = (label, txt, onClick, color) => this.d({ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 13px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '9px' },
+      this.sp({ fontSize: '10px', fontWeight: 700, color: color, minWidth: '30px', letterSpacing: '0.04em' }, label),
+      this.sp({ flex: 1, fontSize: '12.5px', color: 'var(--head)' }, txt),
+      this.btn({ onClick: onClick, style: { height: '28px', padding: '0 11px', borderRadius: '7px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--muted)', fontFamily: 'var(--sans)', fontSize: '11px', fontWeight: 600, cursor: 'pointer' } }, 'Edit'));
+    return this.d({ display: 'flex', flexDirection: 'column', gap: '7px' },
+      this.sp({ fontSize: '12px', fontWeight: 600, color: 'var(--body)' }, 'Condition logic'),
+      line('BUY', buyTxt, () => this.setOpt('buyLogic', b.buyLogic === 'all' ? 'any' : 'all'), 'var(--profit)'),
+      line('SELL', sellTxt, () => this.setOpt('sellLogic', b.sellLogic === 'first' ? 'all' : 'first'), 'var(--loss)'));
+  }
+  optAIStrip() {
+    const sug = (text, fn) => this.d({ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' },
+      this.sp({ flex: '1 1 220px', fontSize: '12.5px', color: 'var(--body)', lineHeight: '1.45' }, text),
+      this.btn({ onClick: fn, style: { height: '30px', padding: '0 13px', borderRadius: '7px', border: '1px solid rgba(124,58,237,.30)', background: 'rgba(124,58,237,.08)', color: '#7C3AED', fontFamily: 'var(--sans)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' } }, 'Apply'));
+    return this.d({ padding: '14px 15px', borderRadius: '12px', border: '1px solid var(--accent-ring)', background: 'linear-gradient(135deg, rgba(124,58,237,.06), rgba(45,212,191,.05))', display: 'flex', flexDirection: 'column', gap: '12px' },
+      this.d({ display: 'flex', alignItems: 'center', gap: '10px' },
+        this.d({ width: '28px', height: '28px', borderRadius: '8px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,#7C3AED,#2DD4BF)' }, this.ic(['m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z'], '#fff', 15)),
+        this.sp({ fontSize: '13px', fontWeight: 700, color: '#7C3AED' }, 'Based on your Win/Loss DNA, I suggest:')),
+      sug('Add a Volume filter — your wins cluster on high-volume bars.', () => this.applySuggestion('vol')),
+      sug('Raise take profit 2R → 3R — 62% of winners ran past TP.', () => this.setOpt('tp', '3R')));
+  }
+  optSection(zone, title, sub, ...kids) {
+    const ac = zone === 'logic' ? '#7C3AED' : 'var(--info)';
+    return this.d({ borderLeft: '3px solid ' + ac, paddingLeft: '15px', display: 'flex', flexDirection: 'column', gap: '13px' },
+      this.d({}, this.sp({ display: 'block', fontSize: '14px', fontWeight: 700, color: 'var(--head)' }, title), this.sp({ display: 'block', fontSize: '11.5px', fontWeight: 500, color: ac, marginTop: '2px' }, sub)),
+      ...kids);
+  }
+  optSummaryStrip() {
+    const { tweak, logic } = this.detectChanges();
+    if (!tweak.length && !logic.length) return this.d({ flexShrink: 0, padding: '12px 16px', borderTop: '1px solid var(--border)', background: 'var(--subtle)' }, this.sp({ fontSize: '12.5px', color: 'var(--muted)' }, 'No changes yet — edit settings above to get started'));
+    const row = (label, items, ac, empty) => this.d({ display: 'flex', gap: '9px', alignItems: 'baseline' },
+      this.sp({ flexShrink: 0, fontSize: '10px', fontWeight: 700, color: ac, minWidth: '46px', letterSpacing: '0.04em', textTransform: 'uppercase' }, label),
+      this.sp({ fontSize: '12px', color: items.length ? 'var(--body)' : 'var(--muted)', lineHeight: '1.45' }, items.length ? items.join(' · ') : empty));
+    return this.d({ flexShrink: 0, padding: '11px 16px', borderTop: '1px solid var(--border)', background: 'var(--subtle)', display: 'flex', flexDirection: 'column', gap: '6px' },
+      row('Tweak', tweak, 'var(--info)', 'No configuration changes'), row('Logic', logic, '#7C3AED', 'No logic changes'));
+  }
+  optFooter() {
+    const { tweak, logic } = this.detectChanges();
+    const hasT = tweak.length > 0, hasL = logic.length > 0;
+    let label, kind, action, disabled = false;
+    if (!hasT && !hasL) { label = 'Make changes above'; kind = 'disabled'; disabled = true; action = () => {}; }
+    else if (hasT && !hasL) { label = 'Run new instance →'; kind = 'blue'; action = () => this.routeBacktest(); }
+    else if (!hasT && hasL) { label = 'Create new strategy →'; kind = 'purple'; action = () => this.openNewStrat(); }
+    else { label = 'Create new strategy →'; kind = 'purple'; action = () => this.setState({ splitOpen: true }); }
+    const sty = disabled ? { background: 'var(--subtle)', color: 'var(--muted)', border: '1px solid var(--border)', cursor: 'not-allowed' } : kind === 'blue' ? { background: 'var(--info)', color: '#fff', border: 'none', cursor: 'pointer' } : { background: '#7C3AED', color: '#fff', border: 'none', cursor: 'pointer' };
+    const primary = this.e('button', { type: 'button', disabled: disabled, onClick: action, style: { flex: 1, height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px', borderRadius: '10px', fontFamily: 'var(--sans)', fontSize: '14px', fontWeight: 700, ...sty } }, label);
+    const cancel = this.btn({ onClick: () => this.closeOptimize(), style: { height: '42px', padding: '0 18px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '10px', fontFamily: 'var(--sans)', fontSize: '14px', fontWeight: 600, color: 'var(--body)', cursor: 'pointer' } }, 'Cancel');
+    const ghost = (hasT && hasL) ? this.btn({ onClick: () => this.routeBacktest(), style: { marginTop: '9px', width: '100%', background: 'none', border: 'none', color: 'var(--info)', fontFamily: 'var(--sans)', fontSize: '12.5px', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' } }, 'Apply tweaks only as new instance') : null;
+    return this.d({ flexShrink: 0, borderTop: '1px solid var(--border)', padding: '14px 16px' }, this.d({ display: 'flex', gap: '10px' }, cancel, primary), ghost);
+  }
+  optimizeDrawerEl() {
+    if (!this.state.optimizeOpen) return null;
+    const header = this.d({ flexShrink: 0, height: '56px', padding: '0 14px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '12px' },
+      this.btn({ onClick: () => this.closeOptimize(), 'aria-label': 'Back', style: { width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--muted)', cursor: 'pointer' } }, this.ic(['m15 18-6-6 6-6'], 'currentColor', 16)),
+      this.d({ minWidth: 0 }, this.sp({ display: 'block', fontSize: '15px', fontWeight: 700, color: 'var(--head)' }, 'Optimize'), this.sp({ fontSize: '12px', color: 'var(--muted)' }, 'Momentum Breakout · Instance 1')));
+    const config = this.optSection('config', 'Configuration', 'Changes here create a new instance',
+      this.optSelect('asset', 'Asset', ['ES Futures', 'NQ Futures', 'CL Futures', 'EUR/USD', 'GBP/USD']),
+      this.optSelect('timeframe', 'Timeframe', ['1m', '5m', '15m', '30m', '1H', '4H', 'Daily']),
+      this.optTiles('preset', 'Trading style preset', ['Scalping', 'Intraday', 'Swing', 'Position']),
+      this.d({ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' },
+        this.optSelect('stop', 'Stop loss', ['ATR-based (1.5×)', 'ATR-based (2×)', 'Previous swing', 'Fixed ticks', 'Chandelier exit']),
+        this.optSelect('tp', 'Take profit', ['2R multiple', '1.5R', '3R', 'ATR target (3×)', 'Open-ended (trail only)']),
+        this.optSelect('risk', 'Risk per trade', ['0.5%', '1%', '1.5%', '2%']),
+        this.optSelect('partial', 'Partial exit', ['None', '50% at TP1, run rest', '33/33/33 ladder']),
+        this.optSelect('be', 'Break even', ['No BE', 'Move to BE at 1R', 'Move to BE at TP1']),
+        this.optSelect('trail', 'Trailing stop', ['None', 'ATR trail', 'Chandelier exit', 'MA trail'])),
+      this.optTiles('dateRange', 'Date range', ['1M', '3M', '6M', '1Y', '2Y']),
+      this.ctxPanel());
+    const logicSec = this.optSection('logic', 'Strategy logic', 'Changes here create a new strategy',
+      this.d({ display: 'flex', flexDirection: 'column', gap: '9px' }, ...this.state.opt.indicators.map((n, i) => this.optIndicatorCard(n, i))),
+      this.btn({ onClick: () => this.addIndicator(), style: { width: '100%', padding: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: '1.5px dashed var(--input)', borderRadius: '9px', background: 'transparent', color: 'var(--body)', fontFamily: 'var(--sans)', fontSize: '13px', fontWeight: 600, cursor: 'pointer' } }, this.ic(['M12 5v14', 'M5 12h14'], 'currentColor', 16), 'Add indicator'),
+      this.optLogicConditions());
+    const scrollBody = this.d({ flex: 1, minHeight: 0, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '22px' }, config, this.optAIStrip(), logicSec);
+    const drawer = this.e('aside', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Optimize', onClick: (e) => e.stopPropagation(), style: { position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 160, width: 'min(448px,94vw)', background: 'var(--card)', borderLeft: '1px solid var(--border)', boxShadow: '-24px 0 60px -20px rgba(15,23,36,.30)', display: 'flex', flexDirection: 'column' } }, header, scrollBody, this.optSummaryStrip(), this.optFooter());
+    const overlay = this.e('div', { onClick: () => this.closeOptimize(), style: { position: 'fixed', inset: 0, zIndex: 159, background: 'rgba(15,23,36,.42)' } });
+    return this.e(React.Fragment, {}, overlay, drawer);
+  }
+  splitDialogEl() {
+    if (!this.state.splitOpen) return null;
+    const { tweak, logic } = this.detectChanges();
+    const row = (zone, icon, label, items, tag) => { const ac = zone === 'tweak' ? 'var(--info)' : '#7C3AED'; const bg = zone === 'tweak' ? 'var(--info-soft)' : 'rgba(124,58,237,.07)';
+      return this.d({ padding: '14px 16px', borderRadius: '12px', background: bg },
+        this.d({ display: 'flex', alignItems: 'center', gap: '9px', marginBottom: '7px' }, this.ic(icon, ac, 17), this.sp({ fontSize: '14px', fontWeight: 700, color: ac }, label)),
+        this.sp({ display: 'block', fontSize: '13px', color: 'var(--body)', lineHeight: '1.5', marginBottom: '10px' }, items.length ? items.join(' · ') : '—'),
+        this.sp({ display: 'inline-block', fontSize: '11.5px', fontWeight: 700, color: ac, background: 'var(--card)', border: '1px solid color-mix(in srgb, ' + ac + ' 30%, transparent)', borderRadius: '999px', padding: '4px 12px' }, tag));
+    };
+    const dialog = this.d({ width: 'min(560px,94vw)', maxHeight: '88vh', overflowY: 'auto', background: 'var(--card)', borderRadius: '16px', boxShadow: '0 30px 70px -20px rgba(15,23,36,.5)', padding: '22px 22px 18px' },
+      this.sp({ display: 'block', fontSize: '19px', fontWeight: 800, color: 'var(--head)', marginBottom: '8px' }, 'Review your changes'),
+      this.e('p', { style: { margin: '0 0 18px', fontSize: '14px', color: 'var(--body)', lineHeight: '1.55' } }, "You've made both ", this.sp({ fontWeight: 700, color: 'var(--head)' }, 'tweaks'), ' (same strategy) and ', this.sp({ fontWeight: 700, color: 'var(--head)' }, 'logic changes'), ' (new strategy). Here\u2019s what will happen:'),
+      this.d({ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '18px' },
+        row('tweak', ['M6 3v12', 'M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6z', 'M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6z', 'M15 6a9 9 0 0 1-9 9'], 'Tweak — applied to new instance', tweak, 'New instance under original strategy'),
+        row('logic', ['m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z'], 'Logic change — creates new strategy', logic, 'New strategy — original untouched')),
+      this.e('p', { style: { margin: '0 0 18px', fontSize: '13.5px', color: 'var(--body)', lineHeight: '1.55' } }, 'Your original strategy ', this.sp({ fontWeight: 700, color: 'var(--head)' }, 'Momentum Breakout'), ' is untouched. A new strategy will be created with all your changes applied as its starting point.'),
+      this.d({ display: 'flex', gap: '10px', justifyContent: 'flex-end', flexWrap: 'wrap' },
+        this.btn({ onClick: () => this.setState({ splitOpen: false }), style: { height: '44px', padding: '0 18px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '10px', fontFamily: 'var(--sans)', fontSize: '14px', fontWeight: 600, color: 'var(--body)', cursor: 'pointer' } }, 'Cancel'),
+        this.btn({ onClick: () => this.routeBacktest(), style: { height: '44px', padding: '0 18px', background: 'var(--info-soft)', border: '1px solid color-mix(in srgb, var(--info) 35%, transparent)', borderRadius: '10px', fontFamily: 'var(--sans)', fontSize: '14px', fontWeight: 700, color: 'var(--info)', cursor: 'pointer' } }, 'Tweak only'),
+        this.btn({ onClick: () => this.openNewStrat(), style: { height: '44px', padding: '0 20px', display: 'flex', alignItems: 'center', gap: '8px', background: '#7C3AED', border: 'none', borderRadius: '10px', fontFamily: 'var(--sans)', fontSize: '14px', fontWeight: 700, color: '#fff', cursor: 'pointer' } }, this.ic(['m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z'], '#fff', 15), 'Create new strategy')));
+    return this.e('div', { onClick: () => this.setState({ splitOpen: false }), style: { position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(15,23,36,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' } }, this.e('div', { onClick: (e) => e.stopPropagation() }, dialog));
+  }
+  newStratDialogEl() {
+    if (!this.state.newStratOpen) return null;
+    const dialog = this.d({ width: 'min(520px,94vw)', background: 'var(--card)', borderRadius: '16px', boxShadow: '0 30px 70px -20px rgba(15,23,36,.5)', padding: '22px' },
+      this.d({ display: 'flex', alignItems: 'center', gap: '11px', marginBottom: '12px' },
+        this.d({ width: '38px', height: '38px', borderRadius: '10px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,#7C3AED,#2DD4BF)' }, this.ic(['m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z'], '#fff', 18)),
+        this.sp({ fontSize: '18px', fontWeight: 800, color: 'var(--head)' }, 'This creates a new strategy')),
+      this.e('p', { style: { margin: '0 0 16px', fontSize: '14px', color: 'var(--body)', lineHeight: '1.55' } }, 'You changed the logic — this is no longer Momentum Breakout. Your original strategy is untouched. The new strategy will be saved with this configuration as its first instance, ready to backtest.'),
+      this.d({ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '18px' },
+        this.sp({ fontSize: '12px', fontWeight: 600, color: 'var(--body)' }, 'New strategy name'),
+        this.e('input', { type: 'text', value: this.state.newStratName, onChange: (e) => this.setState({ newStratName: e.target.value }), style: { width: '100%', height: '44px', padding: '0 14px', fontFamily: 'var(--sans)', fontSize: '15px', fontWeight: 600, color: 'var(--head)', background: 'var(--card)', border: '1px solid var(--input)', borderRadius: '10px', outline: 'none' } })),
+      this.d({ display: 'flex', gap: '10px', justifyContent: 'flex-end' },
+        this.btn({ onClick: () => this.setState({ newStratOpen: false }), style: { height: '44px', padding: '0 18px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '10px', fontFamily: 'var(--sans)', fontSize: '14px', fontWeight: 600, color: 'var(--body)', cursor: 'pointer' } }, 'Cancel'),
+        this.btn({ onClick: () => this.confirmNewStrat(), style: { height: '44px', padding: '0 22px', display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--accent)', color: 'var(--accent-on)', border: 'none', borderRadius: '10px', fontFamily: 'var(--sans)', fontSize: '14px', fontWeight: 700, cursor: 'pointer' } }, this.ic(['M20 6 9 17l-5-5'], 'var(--accent-on)', 16), 'Create new strategy')));
+    return this.e('div', { onClick: () => this.setState({ newStratOpen: false }), style: { position: 'fixed', inset: 0, zIndex: 210, background: 'rgba(15,23,36,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' } }, this.e('div', { onClick: (e) => e.stopPropagation() }, dialog));
+  }
+
+  detailEl() {
+    const st = this.state;
+    const crumb = this.d({ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', fontSize: '13px' },
+      this.btn({ onClick: () => { try { window.location.href = 'Analysis.dc.html'; } catch (e) {} }, style: { display: 'inline-flex', alignItems: 'center', gap: '5px', background: 'none', border: 'none', padding: 0, fontFamily: 'var(--sans)', fontSize: '13px', color: '#7C3AED', cursor: 'pointer', fontWeight: 500 } }, this.ic(['m15 18-6-6 6-6'], 'currentColor', 14), 'Analysis'),
+      this.sp({ color: 'var(--border)' }, '/'), this.sp({ color: 'var(--muted)' }, 'Momentum Breakout'));
+    const toastEl = st.toastMsg ? this.e('div', { style: { position: 'fixed', bottom: '20px', right: '20px', zIndex: 300, background: 'var(--head)', color: 'var(--bg)', padding: '11px 16px', borderRadius: '9px', fontSize: '13px', fontWeight: 500, boxShadow: '0 8px 24px rgba(15,23,36,.22)', maxWidth: '360px' } }, st.toastMsg) : null;
+    return this.d({ height: '100%', overflowY: 'auto', background: 'var(--page)' },
+      this.d({ maxWidth: '1240px', margin: '0 auto', padding: '18px 22px 48px', display: 'flex', flexDirection: 'column', gap: '18px' },
+        crumb, this.headerEl(), this.coachEl(), this.kpiEl(),
+        this.d({ marginTop: '2px' }, this.tabBar(), this.d({ paddingTop: '20px' }, this.tabContent()))),
+      toastEl, this.optimizeDrawerEl(), this.splitDialogEl(), this.newStratDialogEl());
+  }
+
+  renderVals() {
+    const goto = (f) => () => { try { window.location.href = f; } catch (e) {} };
+    return {
+      detailEl: this.detailEl(),
+      goOverview: goto('Overview.dc.html'),
+      goStrategies: goto('Strategies.dc.html'),
+      goAnalysis: goto('Analysis.dc.html'),
+      goChart: goto('Chart.dc.html'),
+      goAudit: goto('Audit.dc.html'),
+      goSoon: () => this.toast('That page is coming soon'),
+    };
+  }
+}
+</script>
+</body>
+</html>
