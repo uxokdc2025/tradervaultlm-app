@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TraderVault — Analysis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFFFFF; --card:#F8FAFC; --subtle:#F1F5F9; --border:#E2E8F0; --input:#CBD5E1;
+  --muted:#64718A; --body:#475569; --head:#1E293B;
+  --lime:#C8FF00; --lime-dark:#B0E000; --navy:#101B25; --navy-mid:#0C1720; --navy-light:#18242F;
+  --accent:#7C3AED; --accent-on:#FFFFFF; --accent-soft:rgba(124,58,237,.12); --accent-ring:rgba(124,58,237,.24); --link:#7C3AED;
+  --profit:#15803D; --loss:#DC2626; --warn:#F59E0B; --info:#3B82F6;
+  --warn-soft:rgba(245,158,11,.16); --warn-ink:#B45309;
+  --sb-bg:#101B25; --sb-fg:#9DAAB6; --sb-muted:#7E8C99; --sb-hover:#1B2731; --sb-border:#2A3640;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --sans:'Inter',ui-sans-serif,system-ui,sans-serif;
+  --profit-soft:rgba(21,128,61,.12); --loss-soft:rgba(220,38,38,.12);
+}
+.tv-dark{
+  --bg:#0B131B; --card:#101B25; --subtle:#18242F; --border:#28333D; --input:#2F3C47;
+  --muted:#8492A0; --body:#AEB9C4; --head:#F1F4F7; --link:#A78BFA;
+  --navy:#18242F; --navy-mid:#101B25; --navy-light:#1C2832;
+  --accent:#C8FF00; --accent-on:#101B25; --accent-soft:rgba(200,255,0,.16); --accent-ring:rgba(200,255,0,.22);
+  --warn-soft:rgba(245,158,11,.20); --warn-ink:#FBBF24;
+  --profit:#22C55E; --loss:#F87171;
+  --profit-soft:rgba(34,197,94,.15); --loss-soft:rgba(248,113,113,.15);
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:var(--sans);color:var(--body);background:var(--bg);-webkit-font-smoothing:antialiased;}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px;border:2px solid var(--bg);}
+::-webkit-scrollbar-track{background:transparent;}
+@keyframes tvpulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+button{font-family:var(--sans);}
+a{text-decoration:none;}
+</style>
+</head>
+<body>
+<div id="tv-root" style="display:flex;height:100vh;width:100%;overflow:hidden;background:var(--bg);">
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar" style="width:234px;flex:none;background:var(--sb-bg);display:flex;flex-direction:column;overflow:hidden;transition:width .18s ease;">
+    <a id="logo-link" href="index.html" style="display:flex;align-items:center;padding:18px 16px 16px;text-decoration:none;cursor:pointer;">
+      <img id="logo-mark" src="assets/tv-mark.svg" alt="TV" style="height:30px;width:auto;flex:none;display:none;">
+      <img id="logo-wordmark" src="assets/tv-wordmark-dark.svg" alt="TraderVault" style="height:26px;width:auto;flex:none;display:block;">
+    </a>
+    <nav role="menu" aria-label="Primary navigation" style="flex:1;overflow-y:auto;overflow-x:hidden;padding:6px 10px;display:flex;flex-direction:column;gap:2px;">
+      <a role="menuitem" href="index.html" data-nav="overview" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;text-decoration:none;cursor:pointer;transition:background .12s;white-space:nowrap;overflow:hidden;color:var(--sb-fg);">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#CAFF33" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        <span class="nav-label">Overview</span>
+      </a>
+      <div class="nav-section" style="padding:14px 12px 5px;font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--sb-muted);">STRATEGIES</div>
+      <a role="menuitem" href="strategies.html" data-nav="strategies" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;text-decoration:none;cursor:pointer;transition:background .12s;white-space:nowrap;overflow:hidden;color:var(--sb-fg);">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#3DD5A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 6a9 9 0 0 1-9 9"/><path d="M18 9v-3h-3"/></svg>
+        <span class="nav-label">Strategies</span>
+      </a>
+      <a role="menuitem" href="analysis.html" data-nav="analysis" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;text-decoration:none;cursor:pointer;transition:background .12s;white-space:nowrap;overflow:hidden;color:var(--sb-fg);background:var(--sb-hover);">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#3DD5A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg>
+        <span class="nav-label" style="color:#fff;font-weight:600;">Analysis</span>
+      </a>
+      <div class="nav-section" style="padding:14px 12px 5px;font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--sb-muted);">TRADING</div>
+      <a role="menuitem" href="chart.html" data-nav="chart" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;text-decoration:none;cursor:pointer;transition:background .12s;white-space:nowrap;overflow:hidden;color:var(--sb-fg);">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FBB23A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="7"/><rect x="14" y="6" width="3" height="11"/></svg>
+        <span class="nav-label">Chart signals</span>
+      </a>
+      <a role="menuitem" href="audit.html" data-nav="audit" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;text-decoration:none;cursor:pointer;transition:background .12s;white-space:nowrap;overflow:hidden;color:var(--sb-fg);">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FBB23A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        <span class="nav-label">Audit log</span>
+      </a>
+      <div class="nav-section" style="padding:14px 12px 5px;font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--sb-muted);">MARKETPLACE</div>
+      <a role="menuitem" href="marketplace.html" data-nav="marketplace" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;text-decoration:none;cursor:pointer;transition:background .12s;white-space:nowrap;overflow:hidden;color:var(--sb-fg);">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M2 7h20"/><path d="M12 7v15"/></svg>
+        <span class="nav-label">Marketplace</span>
+      </a>
+      <a role="menuitem" href="mysignals.html" data-nav="mysignals" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;text-decoration:none;cursor:pointer;transition:background .12s;white-space:nowrap;overflow:hidden;color:var(--sb-fg);">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M4.9 19.1A10 10 0 0 1 4.9 5"/><path d="M7.8 16.2a6 6 0 0 1 0-8.4"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4"/><path d="M19.1 4.9a10 10 0 0 1 0 14.2"/></svg>
+        <span class="nav-label">My signals</span>
+      </a>
+    </nav>
+    <!-- Sidebar Footer -->
+    <div id="sb-footer">
+      <div style="position:relative;padding:10px 12px;border-top:1px solid var(--sb-border);">
+        <div id="acct-menu" style="position:absolute;left:10px;right:10px;bottom:calc(100% - 2px);background:var(--navy-light);border:1px solid var(--sb-border);border-radius:11px;box-shadow:0 -10px 32px -8px rgba(0,0,0,.45);overflow:hidden;z-index:40;transition:opacity .14s,transform .14s;transform-origin:bottom center;opacity:0;transform:translateY(8px) scale(.98);pointer-events:none;">
+          <div style="padding:9px 12px 7px;font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--sb-muted);">SWITCH ACCOUNT</div>
+          <div style="height:1px;background:var(--sb-border);"></div>
+          <div style="padding:6px;display:flex;flex-direction:column;gap:2px;">
+            <button id="pick-alpaca-paper" style="display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;background:var(--sb-hover);border:none;border-radius:7px;cursor:pointer;">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none;"></span>
+              <div style="min-width:0;text-align:left;flex:1;"><div style="font-size:13px;font-weight:600;color:#fff;">Alpaca paper</div><div style="font-size:11px;color:var(--sb-muted);">Paper trading · $99,858.87</div></div>
+            </button>
+            <button id="pick-alpaca-live" style="display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;background:none;border:none;border-radius:7px;cursor:pointer;">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--sb-muted);flex:none;"></span>
+              <div style="min-width:0;text-align:left;flex:1;"><div style="font-size:13px;font-weight:600;color:#fff;">Alpaca live</div><div style="font-size:11px;color:var(--sb-muted);">Live trading · $24,107.40</div></div>
+            </button>
+            <button id="pick-binance" style="display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;background:none;border:none;border-radius:7px;cursor:pointer;">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--sb-muted);flex:none;"></span>
+              <div style="min-width:0;text-align:left;flex:1;"><div style="font-size:13px;font-weight:600;color:#fff;">Binance Futures</div><div style="font-size:11px;color:var(--sb-muted);">Live trading · $12,540.18</div></div>
+            </button>
+          </div>
+          <div style="height:1px;background:var(--sb-border);"></div>
+          <button style="display:flex;align-items:center;gap:9px;width:100%;padding:10px 14px;background:none;border:none;color:var(--sb-fg);font-family:var(--sans);font-size:12px;font-weight:500;cursor:pointer;text-align:left;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Connect new account
+          </button>
+        </div>
+        <button id="acct-trigger" style="display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;background:none;border:1px solid transparent;border-radius:9px;cursor:pointer;">
+          <div style="min-width:0;flex:1;text-align:left;">
+            <div style="font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--sb-muted);margin-bottom:5px;">ACCOUNT</div>
+            <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:6px;">Alpaca paper</div>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+              <span style="font-size:9px;font-weight:600;letter-spacing:0.06em;padding:2px 6px;border-radius:4px;background:rgba(59,130,246,.18);color:#7DB1FF;">ALPACA</span>
+              <span style="font-size:9px;font-weight:600;letter-spacing:0.06em;padding:2px 6px;border-radius:4px;background:rgba(148,163,184,.18);color:#A7B4C2;">PAPER</span>
+              <span style="font-family:var(--mono);font-size:12px;color:#fff;margin-left:auto;font-variant-numeric:tabular-nums;">$99,858.87</span>
+            </div>
+          </div>
+          <svg id="acct-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--sb-muted);transition:transform .15s;"><path d="m18 15-6-6-6 6"/></svg>
+        </button>
+      </div>
+      <div style="padding:14px 12px;display:flex;flex-direction:column;gap:9px;border-top:1px solid var(--sb-border);">
+        <div id="clock-row" style="display:flex;align-items:center;gap:8px;">
+          <span style="width:6px;height:6px;border-radius:50%;background:var(--accent);flex:none;box-shadow:0 0 6px var(--accent);"></span>
+          <span id="clock-display" style="font-family:var(--mono);font-size:13px;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:0.04em;">00:00:00</span>
+          <span style="font-size:10px;font-weight:600;color:var(--sb-muted);letter-spacing:0.08em;">UTC</span>
+        </div>
+        <div style="height:1px;background:var(--sb-border);margin:1px 0;"></div>
+        <button id="kill-btn" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:10px 14px;border-radius:8px;border:1px solid rgba(239,68,68,.5);background:rgba(239,68,68,.14);color:#FF8A8A;font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:0.06em;cursor:pointer;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+          <span id="kill-label" class="nav-label">KILL</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;">
+    <!-- Topbar -->
+    <header style="height:56px;flex:none;display:flex;align-items:center;gap:16px;padding:0 20px;border-bottom:1px solid var(--border);background:var(--bg);">
+      <button id="collapse-btn" title="Collapse navigation" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;flex:none;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--body);cursor:pointer;padding:0;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </button>
+      <div style="display:flex;align-items:center;gap:7px;font-size:14px;min-width:0;">
+        <span style="color:var(--head);font-weight:600;">Analysis</span>
+        <span style="color:var(--muted);">·</span>
+        <span style="color:var(--muted);font-size:13px;" id="top-subtitle">3 strategies · 6 saved instances</span>
+      </div>
+      <div style="flex:1;"></div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--body);"><span style="width:7px;height:7px;border-radius:50%;background:var(--profit);animation:tvpulse 2s infinite;"></span>WS</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);"><span style="width:7px;height:7px;border-radius:50%;background:var(--muted);"></span>equity closed</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--body);"><span style="width:7px;height:7px;border-radius:50%;background:var(--profit);"></span>crypto 24/7</span>
+      </div>
+      <div style="width:1px;height:24px;background:var(--border);"></div>
+      <!-- Watch -->
+      <div style="position:relative;flex:none;">
+        <button id="watch-btn" style="display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--body);font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span>Watch</span>
+          <svg id="watch-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--muted);transition:transform .15s;"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div id="watch-menu" style="position:absolute;top:calc(100% + 8px);right:0;width:320px;background:var(--bg);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 32px -8px rgba(13,27,42,.22);z-index:50;overflow:hidden;transition:opacity .14s,transform .14s;transform-origin:top right;opacity:0;transform:translateY(-6px) scale(.97);pointer-events:none;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 11px;"><span style="font-size:15px;font-weight:600;color:var(--head);">Watchlist</span><span style="font-size:12px;color:var(--muted);">4 markets</span></div>
+          <div style="height:1px;background:var(--border);"></div>
+          <div style="padding:6px;display:flex;flex-direction:column;">
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;">
+              <span style="width:30px;height:30px;border-radius:7px;background:rgba(247,147,26,.14);color:#F7931A;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:none;">BTC</span>
+              <div style="min-width:0;flex:1;"><div style="font-size:13px;font-weight:600;color:var(--head);">BTC/USD</div><div style="font-size:11px;color:var(--muted);">Bitcoin</div></div>
+              <div style="text-align:right;"><div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--head);">61,258.89</div><div style="font-family:var(--mono);font-size:11px;color:var(--profit);">+0.09%</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;">
+              <span style="width:30px;height:30px;border-radius:7px;background:rgba(98,126,234,.14);color:#627EEA;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:none;">ETH</span>
+              <div style="min-width:0;flex:1;"><div style="font-size:13px;font-weight:600;color:var(--head);">ETH/USD</div><div style="font-size:11px;color:var(--muted);">Ethereum</div></div>
+              <div style="text-align:right;"><div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--head);">3,412.06</div><div style="font-family:var(--mono);font-size:11px;color:var(--profit);">+1.24%</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;">
+              <span style="width:30px;height:30px;border-radius:7px;background:rgba(30,41,59,.08);color:var(--head);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex:none;">EUR</span>
+              <div style="min-width:0;flex:1;"><div style="font-size:13px;font-weight:600;color:var(--head);">EUR/USD</div><div style="font-size:11px;color:var(--muted);">Euro</div></div>
+              <div style="text-align:right;"><div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--head);">1.0842</div><div style="font-family:var(--mono);font-size:11px;color:var(--profit);">+0.11%</div></div>
+            </div>
+          </div>
+          <div style="height:1px;background:var(--border);"></div>
+          <a style="display:block;text-align:center;padding:13px;font-size:14px;font-weight:600;color:var(--link);cursor:pointer;">Manage watchlist</a>
+        </div>
+      </div>
+      <div style="width:1px;height:24px;background:var(--border);"></div>
+      <!-- Notifications -->
+      <div style="position:relative;flex:none;">
+        <button id="notif-btn" style="position:relative;display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--body);cursor:pointer;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          <span style="position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:var(--loss);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;">3</span>
+        </button>
+        <div id="notif-menu" style="position:absolute;top:calc(100% + 8px);right:0;width:330px;background:var(--bg);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 32px -8px rgba(13,27,42,.22);z-index:50;overflow:hidden;transition:opacity .14s,transform .14s;transform-origin:top right;opacity:0;transform:translateY(-6px) scale(.97);pointer-events:none;">
+          <div style="padding:15px 18px 12px;font-size:15px;font-weight:600;color:var(--head);">Notifications</div>
+          <div style="height:1px;background:var(--border);"></div>
+          <div style="padding:6px;display:flex;flex-direction:column;">
+            <div style="display:flex;align-items:flex-start;gap:12px;padding:11px 12px;border-radius:8px;cursor:pointer;">
+              <span style="width:32px;height:32px;border-radius:50%;background:var(--profit);display:flex;align-items:center;justify-content:center;flex:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <div style="min-width:0;"><div style="font-size:14px;font-weight:600;color:var(--head);">NQ trade executed</div><div style="font-size:12px;color:var(--muted);margin-top:2px;">2 min ago</div></div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:12px;padding:11px 12px;border-radius:8px;cursor:pointer;">
+              <span style="width:32px;height:32px;border-radius:50%;background:var(--warn);display:flex;align-items:center;justify-content:center;flex:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+              <div style="min-width:0;"><div style="font-size:14px;font-weight:600;color:var(--head);">Pattern degradation detected</div><div style="font-size:12px;color:var(--muted);margin-top:2px;">1 hour ago</div></div>
+            </div>
+          </div>
+          <div style="height:1px;background:var(--border);"></div>
+          <a style="display:block;text-align:center;padding:13px;font-size:14px;font-weight:600;color:var(--link);cursor:pointer;">View all</a>
+        </div>
+      </div>
+      <!-- Theme toggle -->
+      <button id="theme-btn" title="Switch to dark mode" style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--body);cursor:pointer;flex:none;">
+        <span id="theme-moon" style="display:inline-flex;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
+        <span id="theme-sun" style="display:none;color:var(--accent);"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></span>
+      </button>
+      <!-- Profile -->
+      <div style="position:relative;flex:none;">
+        <button id="profile-btn" style="display:flex;align-items:center;gap:7px;padding:3px 7px 3px 3px;border-radius:999px;border:1px solid var(--border);background:var(--bg);cursor:pointer;">
+          <span style="width:30px;height:30px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;color:var(--lime);font-size:12px;font-weight:700;flex:none;">JD</span>
+          <svg id="profile-chevron" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted);transition:transform .15s;"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div id="profile-menu" style="position:absolute;top:calc(100% + 8px);right:0;width:230px;background:var(--bg);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 32px -8px rgba(13,27,42,.22);z-index:50;overflow:hidden;transition:opacity .14s,transform .14s;transform-origin:top right;opacity:0;transform:translateY(-6px) scale(.97);pointer-events:none;">
+          <div style="padding:14px 16px 12px;"><div style="font-size:15px;font-weight:600;color:var(--head);">John Doe</div><div style="font-size:12px;color:var(--muted);margin-top:3px;">Pro Trader</div></div>
+          <div style="height:1px;background:var(--border);"></div>
+          <div style="padding:6px;display:flex;flex-direction:column;">
+            <a style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:7px;font-size:14px;color:var(--body);cursor:pointer;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;opacity:.65;"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg> My Profile
+            </a>
+            <a style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:7px;font-size:14px;color:var(--body);cursor:pointer;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;opacity:.65;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9z"/></svg> Settings
+            </a>
+          </div>
+          <div style="height:1px;background:var(--border);margin:0 6px;"></div>
+          <div style="padding:6px;">
+            <a style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:7px;font-size:14px;color:var(--body);cursor:pointer;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;opacity:.65;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Logout
+            </a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page content -->
+    <main id="page-content" style="flex:1;overflow-y:auto;background:var(--bg);">
+      <div style="padding:20px;" id="analysis-root"></div>
+    </main>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" style="position:fixed;bottom:20px;right:20px;z-index:300;background:var(--head);color:var(--bg);padding:11px 16px;border-radius:9px;font-size:13px;font-weight:500;box-shadow:0 8px 24px rgba(15,23,36,.22);display:flex;align-items:center;gap:9px;max-width:360px;opacity:0;transform:translateY(8px);transition:opacity .2s,transform .2s;pointer-events:none;"></div>
+
+<script>
+// ── State ──
+const state = {
+  collapsed: false,
+  dark: false,
+  acctOpen: false,
+  killArmed: false,
+  watchOpen: false,
+  notifOpen: false,
+  profileOpen: false,
+  anaCollapsed: [],
+  aiInsightsOpen: false,
+};
+
+// ── Sidebar collapse ──
+function applySidebar() {
+  const sb = document.getElementById('sidebar');
+  const c = state.collapsed;
+  sb.style.width = c ? '58px' : '234px';
+  document.querySelectorAll('.nav-label').forEach(el => el.style.display = c ? 'none' : '');
+  document.querySelectorAll('.nav-section').forEach(el => el.style.display = c ? 'none' : '');
+  document.getElementById('logo-mark').style.display = c ? 'block' : 'none';
+  document.getElementById('logo-wordmark').style.display = c ? 'none' : 'block';
+  document.getElementById('sb-footer').style.display = c ? 'none' : 'block';
+}
+
+// ── Clock ──
+function fmtClock(d) {
+  return [d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds()].map(n => String(n).padStart(2,'0')).join(':');
+}
+function tickClock() {
+  const el = document.getElementById('clock-display');
+  if (el) el.textContent = fmtClock(new Date());
+}
+tickClock();
+setInterval(tickClock, 1000);
+
+// ── Theme ──
+function applyTheme() {
+  document.documentElement.classList.toggle('tv-dark', state.dark);
+  document.body.classList.toggle('tv-dark', state.dark);
+  document.getElementById('theme-moon').style.display = state.dark ? 'none' : 'inline-flex';
+  document.getElementById('theme-sun').style.display = state.dark ? 'inline-flex' : 'none';
+}
+
+// ── Kill ──
+function applyKill() {
+  const btn = document.getElementById('kill-btn');
+  const label = document.getElementById('kill-label');
+  if (state.killArmed) {
+    btn.style.background = 'rgba(239,68,68,.9)'; btn.style.color = '#fff';
+    btn.style.borderColor = '#EF4444'; label.textContent = 'KILL — ARMED';
+  } else {
+    btn.style.background = 'rgba(239,68,68,.14)'; btn.style.color = '#FF8A8A';
+    btn.style.borderColor = 'rgba(239,68,68,.5)'; label.textContent = 'KILL';
+  }
+}
+
+// ── Dropdown helpers ──
+function showDropdown(id, open) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.opacity = open ? '1' : '0';
+  el.style.transform = open ? (id === 'acct-menu' ? 'translateY(0) scale(1)' : 'translateY(0) scale(1)') : (id === 'acct-menu' ? 'translateY(8px) scale(.98)' : 'translateY(-6px) scale(.97)');
+  el.style.pointerEvents = open ? 'auto' : 'none';
+}
+
+function renderDropdowns() {
+  showDropdown('acct-menu', state.acctOpen);
+  showDropdown('watch-menu', state.watchOpen);
+  showDropdown('notif-menu', state.notifOpen);
+  showDropdown('profile-menu', state.profileOpen);
+  document.getElementById('acct-chevron').style.transform = state.acctOpen ? 'rotate(180deg)' : '';
+  document.getElementById('acct-trigger').style.borderColor = state.acctOpen ? 'var(--sb-border)' : 'transparent';
+  const wc = document.getElementById('watch-chevron');
+  if (wc) wc.style.transform = state.watchOpen ? 'rotate(180deg)' : '';
+  const pc = document.getElementById('profile-chevron');
+  if (pc) pc.style.transform = state.profileOpen ? 'rotate(180deg)' : '';
+}
+
+// ── Toast ──
+let toastTimer;
+function showToast(msg, kind) {
+  const el = document.getElementById('toast');
+  const icon = kind === 'warning'
+    ? `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>`
+    : `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--profit)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M20 6 9 17l-5-5"/></svg>`;
+  el.innerHTML = icon + `<span style="line-height:1.4">${msg}</span>`;
+  el.style.opacity = '1'; el.style.transform = 'translateY(0)'; el.style.pointerEvents = 'auto';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateY(8px)'; el.style.pointerEvents = 'none'; }, 3200);
+}
+
+// ── Analysis Data ──
+function analysisGroups() {
+  return [
+    {id:'g1',name:'Momentum Breakout',logic:'MACD · RSI · Session filter',tileBg:'linear-gradient(135deg,#6366F1,#2DD4BF)',insight:{b:'Best on ES 5m',t:' (score 74). The 5m timeframe consistently outperforms 15m for this logic — faster signal, same win rate. Instance 1 is your strongest candidate to deploy.'},instances:[
+      {n:1,asset:'ES Futures',tf:'5m',preset:'Intraday',cfg:'1.5× ATR stop · 2R TP · 1% risk · 3M data · Jun 11',ret:'+34.2%',retPos:true,wr:'67.4%',dd:'-8.3%',score:74,status:'live'},
+      {n:2,asset:'ES Futures',tf:'15m',preset:'Swing',cfg:'2× ATR stop · 3R TP · 1% risk · 6M data · Jun 10',ret:'+18.7%',retPos:true,wr:'58.1%',dd:'-5.1%',score:61,status:'paper'},
+      {n:3,asset:'NQ Futures',tf:'5m',preset:'Intraday',cfg:'1.5× ATR stop · 2R TP · 0.5% risk · 3M data · Jun 8',ret:'+28.6%',retPos:true,wr:'63.1%',dd:'-9.7%',score:58,status:'draft'},
+    ]},
+    {id:'g2',name:'VWAP Scalper',logic:'VWAP · EMA · Volume filter',tileBg:'linear-gradient(135deg,#0D9488,#2DD4BF)',insight:{b:'EUR/USD works, GBP/USD does not.',t:' Same logic, very different results. The spread on GBP/USD is likely eating your edge on a scalping timeframe. Consider removing the GBP/USD instance.'},instances:[
+      {n:1,asset:'EUR/USD',tf:'1H',preset:'Swing',cfg:'ATR stop · 2R TP · 1% risk · 6M data · Jun 9',ret:'+22.3%',retPos:true,wr:'61.2%',dd:'-7.1%',score:71,status:'paper'},
+      {n:2,asset:'GBP/USD',tf:'1H',preset:'Swing',cfg:'ATR stop · 2R TP · 1% risk · 3M data · Jun 8',ret:'-4.8%',retPos:false,wr:'41.2%',dd:'-12.4%',score:44,status:'draft'},
+    ]},
+    {id:'g3',name:'Mean Reversion RSI',logic:'RSI · Bollinger Bands · Session filter',tileBg:'linear-gradient(135deg,#D97706,#F59E0B)',insight:{b:'Only 1 instance —',t:' not enough data for cross-instance comparison. Run 2–3 more configurations (different timeframes or assets) to see if this logic generalises.'},instances:[
+      {n:1,asset:'NQ Futures',tf:'5m',preset:'Intraday',cfg:'ATR stop · 2R TP · 1% risk · 6M data · Jun 10',ret:'+18.7%',retPos:true,wr:'58.1%',dd:'-5.1%',score:61,status:'paper'},
+    ]},
+  ];
+}
+
+const groupIcons = {
+  g1: `<circle cx="12" cy="12" r="3"/><path d="M12 2a4 4 0 0 0-4 4 4 4 0 0 0-4 4 4 4 0 0 0 0 4 4 4 0 0 0 4 4 4 4 0 0 0 8 0 4 4 0 0 0 4-4 4 4 0 0 0 0-4 4 4 0 0 0-4-4 4 4 0 0 0-4-4Z"/>`,
+  g2: `<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>`,
+  g3: `<path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/>`
+};
+
+function scoreColor(s) { return s>=70?'var(--profit)':s>=60?'var(--accent)':s>=50?'var(--warn)':'var(--loss)'; }
+function ringColor(z) { return z==='live'?'var(--profit)':z==='paper'?'#6366F1':'var(--muted)'; }
+const stBadge = {live:{bg:'var(--profit-soft)',c:'var(--profit)',t:'LIVE'},paper:{bg:'#EEF2FF',c:'#4338CA',t:'PAPER'},draft:{bg:'var(--subtle)',c:'var(--muted)',t:'DRAFT'}};
+function getAction(inst) { return inst.status==='live'?'View':inst.status==='paper'?(inst.score>=70?'Deploy':'Tweak'):(inst.score>=55?'Deploy':'Needs work'); }
+
+function mkSvg(paths, col, size) {
+  return `<svg width="${size||18}" height="${size||18}" viewBox="0 0 24 24" fill="none" stroke="${col||'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">${paths}</svg>`;
+}
+
+const sparkPaths = `<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/>`;
+
+function instRowHTML(g, inst) {
+  const ss = stBadge[inst.status];
+  const act = getAction(inst);
+  const rc = ringColor(inst.status);
+  const sc = scoreColor(inst.score);
+  return `<div class="inst-row" data-gid="${g.id}" data-n="${inst.n}" data-act="${act}" style="display:flex;align-items:center;gap:16px;padding:12px 16px;border-top:1px solid var(--border);cursor:pointer;">
+    <div style="width:26px;height:26px;border-radius:50%;border:2px solid ${rc};display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="font-size:11px;font-weight:700;color:${rc}">${inst.n}</span></div>
+    <div style="flex:1;min-width:0;">
+      <span style="font-size:13px;font-weight:700;color:var(--head);display:block;margin-bottom:3px;">${inst.asset} · ${inst.tf} · ${inst.preset}</span>
+      <span style="font-size:12px;color:var(--muted);line-height:1.4;">${inst.cfg}</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;flex-shrink:0;">
+      <div style="display:flex;flex-direction:column;align-items:flex-start;min-width:62px;">
+        <span style="font-size:13px;font-weight:700;color:${inst.retPos?'var(--profit)':'var(--loss)'};font-variant-numeric:tabular-nums;">${inst.ret}</span>
+        <span style="font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-top:2px;">Return</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-start;min-width:62px;">
+        <span style="font-size:13px;font-weight:700;color:var(--profit);font-variant-numeric:tabular-nums;">${inst.wr}</span>
+        <span style="font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-top:2px;">Win rate</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-start;min-width:62px;">
+        <span style="font-size:13px;font-weight:700;color:var(--loss);font-variant-numeric:tabular-nums;">${inst.dd}</span>
+        <span style="font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-top:2px;">Max DD</span>
+      </div>
+    </div>
+    <span style="font-size:20px;font-weight:800;color:${sc};font-variant-numeric:tabular-nums;flex-shrink:0;min-width:28px;text-align:center;">${inst.score}</span>
+    <span style="font-size:9px;font-weight:700;padding:3px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:0.05em;background:${ss.bg};color:${ss.c};flex-shrink:0;white-space:nowrap;">${ss.t}</span>
+    <button class="act-btn" data-gname="${g.name}" data-gid="${g.id}" data-n="${inst.n}" data-act="${act}" data-asset="${inst.asset}" data-tf="${inst.tf}" style="display:flex;align-items:center;gap:7px;height:34px;padding:0 16px;background:var(--bg);border:1px solid var(--border);border-radius:10px;font-family:var(--sans);font-size:13px;font-weight:700;color:var(--head);cursor:pointer;white-space:nowrap;flex-shrink:0;">
+      ${act} ${mkSvg('<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>','currentColor',15)}
+    </button>
+  </div>`;
+}
+
+function groupHTML(g) {
+  const collapsed = state.anaCollapsed.includes(g.id);
+  const icon = groupIcons[g.id] || '';
+  const chevron = collapsed ? 'm6 9 6 6 6-6' : 'm18 15-6-6-6 6';
+  let body = '';
+  if (!collapsed) {
+    const insts = g.instances.map(inst => instRowHTML(g, inst)).join('');
+    body = `<div style="display:flex;gap:11px;align-items:flex-start;padding:13px 18px;background:linear-gradient(135deg,var(--accent-soft),rgba(45,212,191,0.12));border-top:1px solid var(--accent-ring);">
+      <div style="width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent),#2DD4BF)">${mkSvg(sparkPaths,'#fff',14)}</div>
+      <span style="font-size:13px;color:var(--body);line-height:1.5;"><span style="font-weight:700;color:var(--accent)">${g.insight.b}</span>${g.insight.t}</span>
+    </div>${insts}`;
+  }
+  return `<div class="ana-group" style="border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:16px;background:var(--bg);">
+    <div class="group-toggle" data-gid="${g.id}" style="display:flex;align-items:center;gap:13px;padding:14px 16px;cursor:pointer;">
+      <div style="width:36px;height:36px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:${g.tileBg}">${mkSvg(icon,'#fff',20)}</div>
+      <div style="flex:1;min-width:0;">
+        <span style="font-size:14px;font-weight:700;color:var(--head);display:block;margin-bottom:2px;">${g.name}</span>
+        <span style="font-size:13px;color:var(--muted);">${g.logic}</span>
+      </div>
+      <span style="font-size:11px;font-weight:600;padding:4px 11px;border-radius:999px;background:var(--subtle);color:var(--body);border:1px solid var(--border);flex-shrink:0;white-space:nowrap;">${g.instances.length} ${g.instances.length===1?'instance':'instances'}</span>
+      ${mkSvg(`<path d="${chevron}"/>`,'var(--muted)',18)}
+    </div>
+    ${body}
+  </div>`;
+}
+
+const aiInsights = [
+  {color:'var(--profit)',soft:'var(--profit-soft)',paths:`<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>`,b:'Tuesday and Wednesday NY open (9:30–11am) is your strongest window.',t:' Momentum Breakout and VWAP Scalper both peak during this window across ES and EUR/USD instances.',conf:'High',pct:90},
+  {color:'var(--warn)',soft:'var(--warn-soft)',paths:`<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><path d="M12 17h.01"/>`,b:'VWAP Scalper on GBP/USD is underperforming.',t:' Score 44 with -12.4% max drawdown. The same logic works on EUR/USD (score 71).',conf:'Medium',pct:62},
+  {color:'#6366F1',soft:'rgba(99,102,241,.12)',paths:`<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>`,b:'Not enough data for Monday and Friday patterns.',t:' Your instances have less than 60 days of Monday/Friday data each.',conf:'Low — more data needed',pct:30},
+];
+
+function insightCardHTML(ins) {
+  return `<div style="background:${ins.soft};border:1px solid ${ins.color}33;border-radius:12px;padding:13px 15px;margin-bottom:10px;">
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;">
+      ${mkSvg(ins.paths, ins.color, 18)}
+      <span style="font-size:13px;color:${ins.color};line-height:1.55;"><span style="font-weight:700">${ins.b}</span><span style="opacity:.82">${ins.t}</span></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span style="font-size:12px;font-weight:600;color:${ins.color};">Confidence</span>
+      <div style="flex:1;height:7px;border-radius:999px;background:var(--subtle);overflow:hidden;"><div style="width:${ins.pct}%;height:100%;border-radius:999px;background:${ins.color};"></div></div>
+      <span style="font-size:12px;font-weight:700;color:${ins.color};white-space:nowrap;">${ins.conf}</span>
+    </div>
+  </div>`;
+}
+
+function renderAnalysis() {
+  const groups = analysisGroups();
+  const total = groups.reduce((a,g)=>a+g.instances.length,0);
+  document.getElementById('top-subtitle').textContent = `${groups.length} strategies · ${total} saved instances`;
+
+  const aiChevron = state.aiInsightsOpen ? 'm18 15-6-6-6 6' : 'm6 9 6 6 6-6';
+  let aiBody = '';
+  if (state.aiInsightsOpen) {
+    aiBody = `<div style="padding:14px 18px 18px;border-top:1px solid var(--border);">
+      ${aiInsights.map(insightCardHTML).join('')}
+      <div style="display:flex;gap:10px;align-items:flex-start;margin-top:4px;">
+        ${mkSvg(`<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/>`,'var(--muted)',15)}
+        <span style="font-size:12px;color:var(--muted);line-height:1.5;">AI is reading backtest data only — live data not yet connected.</span>
+      </div>
+    </div>`;
+  }
+
+  const aiBar = `<div style="border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:18px;background:var(--bg);">
+    <div id="ai-toggle" style="display:flex;align-items:center;gap:13px;padding:14px 16px;cursor:pointer;">
+      <div style="width:36px;height:36px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent),#2DD4BF)">${mkSvg(sparkPaths,'#fff',20)}</div>
+      <div style="flex:1;min-width:0;">
+        <span style="font-size:14px;font-weight:700;color:var(--head);display:block;margin-bottom:2px;">AI insights — across all strategies</span>
+        <span style="font-size:13px;color:var(--muted);">Based on 6 instances · 8 months of data · updated 2 hours ago</span>
+      </div>
+      ${mkSvg(`<path d="${aiChevron}"/>`,'var(--muted)',18)}
+    </div>
+    ${aiBody}
+  </div>`;
+
+  const header = `<div style="margin-bottom:18px;">
+    <span style="font-size:20px;font-weight:700;color:var(--head);display:block;margin-bottom:4px;">Analysis</span>
+    <span style="font-size:13px;color:var(--muted);">${groups.length} strategies · ${total} saved instances</span>
+  </div>`;
+
+  const root = document.getElementById('analysis-root');
+  root.innerHTML = header + aiBar + groups.map(g => groupHTML(g)).join('');
+
+  // Events
+  document.getElementById('ai-toggle').addEventListener('click', () => {
+    state.aiInsightsOpen = !state.aiInsightsOpen;
+    renderAnalysis();
+  });
+
+  document.querySelectorAll('.group-toggle').forEach(el => {
+    el.addEventListener('click', () => {
+      const gid = el.dataset.gid;
+      if (state.anaCollapsed.includes(gid)) state.anaCollapsed = state.anaCollapsed.filter(x => x !== gid);
+      else state.anaCollapsed.push(gid);
+      renderAnalysis();
+    });
+  });
+
+  document.querySelectorAll('.inst-row').forEach(el => {
+    el.addEventListener('click', (e) => {
+      if (e.target.closest('.act-btn')) return;
+      showToast('Opening instance detail…', 'success');
+    });
+  });
+
+  document.querySelectorAll('.act-btn').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const act = el.dataset.act;
+      const gname = el.dataset.gname;
+      const asset = el.dataset.asset;
+      const tf = el.dataset.tf;
+      if (act === 'View') showToast('Opening detail view', 'success');
+      else if (act === 'Tweak') showToast(`Tweak ${gname} — opens the strategy builder`, 'success');
+      else if (act === 'Deploy') showToast(`Deploy ${asset} · ${tf} to paper?`, 'warning');
+      else showToast(`Optimize ${gname} — needs more data before deploy`, 'warning');
+    });
+  });
+}
+
+// ── Wire up global controls ──
+document.getElementById('collapse-btn').addEventListener('click', () => { state.collapsed = !state.collapsed; applySidebar(); });
+document.getElementById('theme-btn').addEventListener('click', () => { state.dark = !state.dark; applyTheme(); renderAnalysis(); });
+document.getElementById('kill-btn').addEventListener('click', () => { state.killArmed = !state.killArmed; applyKill(); });
+document.getElementById('acct-trigger').addEventListener('click', () => { state.acctOpen = !state.acctOpen; renderDropdowns(); });
+document.getElementById('watch-btn').addEventListener('click', (e) => { e.stopPropagation(); state.watchOpen = !state.watchOpen; state.notifOpen = false; state.profileOpen = false; renderDropdowns(); });
+document.getElementById('notif-btn').addEventListener('click', (e) => { e.stopPropagation(); state.notifOpen = !state.notifOpen; state.watchOpen = false; state.profileOpen = false; renderDropdowns(); });
+document.getElementById('profile-btn').addEventListener('click', (e) => { e.stopPropagation(); state.profileOpen = !state.profileOpen; state.watchOpen = false; state.notifOpen = false; renderDropdowns(); });
+
+document.addEventListener('click', (e) => {
+  let changed = false;
+  if (state.watchOpen && !e.target.closest('#watch-btn') && !e.target.closest('#watch-menu')) { state.watchOpen = false; changed = true; }
+  if (state.notifOpen && !e.target.closest('#notif-btn') && !e.target.closest('#notif-menu')) { state.notifOpen = false; changed = true; }
+  if (state.profileOpen && !e.target.closest('#profile-btn') && !e.target.closest('#profile-menu')) { state.profileOpen = false; changed = true; }
+  if (state.acctOpen && !e.target.closest('#acct-trigger') && !e.target.closest('#acct-menu')) { state.acctOpen = false; changed = true; }
+  if (changed) renderDropdowns();
+});
+
+// ── Init ──
+applySidebar();
+applyTheme();
+applyKill();
+renderAnalysis();
+</script>
+</body>
+</html>

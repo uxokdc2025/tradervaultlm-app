@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TraderVault — Marketplace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFFFFF;--card:#F8FAFC;--subtle:#F1F5F9;--border:#E2E8F0;--input:#CBD5E1;
+  --muted:#64718A;--body:#475569;--head:#1E293B;
+  --lime:#C8FF00;--navy:#101B25;--navy-light:#18242F;
+  --accent:#7C3AED;--accent-on:#FFFFFF;--accent-soft:rgba(124,58,237,.12);--link:#7C3AED;
+  --profit:#15803D;--loss:#DC2626;--warn:#D97706;
+  --profit-soft:rgba(21,128,61,.12);--loss-soft:rgba(220,38,38,.12);--warn-soft:rgba(217,119,6,.14);
+  --sb-bg:#101B25;--sb-fg:#9DAAB6;--sb-muted:#7E8C99;--sb-hover:#1B2731;--sb-border:#2A3640;
+  --mono:'JetBrains Mono',ui-monospace,monospace;--sans:'Inter',ui-sans-serif,system-ui,sans-serif;
+  --page:#F7F6F1;--mkt-purple:#7C3AED;--mkt-purple-soft:rgba(124,58,237,.10);--mkt-green:#16A34A;--stripe:#635BFF;
+}
+.tv-dark{
+  --bg:#0B131B;--card:#101B25;--subtle:#18242F;--border:#28333D;--input:#2F3C47;
+  --muted:#8492A0;--body:#AEB9C4;--head:#F1F4F7;--link:#A78BFA;
+  --navy:#18242F;--navy-light:#1C2832;
+  --accent:#C8FF00;--accent-on:#101B25;--accent-soft:rgba(200,255,0,.16);
+  --profit:#22C55E;--loss:#F87171;--warn:#FBBF24;
+  --profit-soft:rgba(34,197,94,.16);--loss-soft:rgba(248,113,113,.16);--warn-soft:rgba(251,191,36,.16);
+  --page:#0B131B;--mkt-purple:#A78BFA;--mkt-purple-soft:rgba(167,139,250,.14);--mkt-green:#22C55E;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:var(--sans);color:var(--body);background:var(--bg);-webkit-font-smoothing:antialiased;}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px;border:2px solid var(--bg);}
+button{font-family:var(--sans);}a{text-decoration:none;}
+@keyframes tvpulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+@keyframes mkt-pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.45;transform:scale(.8);}}
+@keyframes mkt-fade{from{opacity:0;}to{opacity:1;}}
+@keyframes mkt-pop{from{opacity:0;transform:translateY(8px) scale(.98);}to{opacity:1;transform:translateY(0) scale(1);}}
+.mkt-scroll::-webkit-scrollbar{width:10px;}
+.mkt-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px;}
+</style>
+</head>
+<body>
+<div id="tv-root" style="display:flex;height:100vh;width:100%;overflow:hidden;background:var(--bg);">
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar" style="width:234px;flex:none;background:var(--sb-bg);display:flex;flex-direction:column;overflow:hidden;transition:width .18s ease;">
+    <a href="index.html" style="display:flex;align-items:center;padding:18px 16px 16px;">
+      <img id="logo-mark" src="assets/tv-mark.svg" alt="TV" style="height:30px;width:auto;flex:none;display:none;">
+      <img id="logo-wordmark" src="assets/tv-wordmark-dark.svg" alt="TraderVault" style="height:26px;width:auto;flex:none;display:block;">
+    </a>
+    <nav style="flex:1;overflow-y:auto;overflow-x:hidden;padding:6px 10px;display:flex;flex-direction:column;gap:2px;">
+      <a href="index.html" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;color:var(--sb-fg);text-decoration:none;cursor:pointer;white-space:nowrap;overflow:hidden;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#CAFF33" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        <span class="nav-label">Overview</span></a>
+      <div class="nav-section" style="padding:14px 12px 5px;font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--sb-muted);">STRATEGIES</div>
+      <a href="strategies.html" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;color:var(--sb-fg);text-decoration:none;cursor:pointer;white-space:nowrap;overflow:hidden;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#3DD5A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 6a9 9 0 0 1-9 9"/><path d="M18 9v-3h-3"/></svg>
+        <span class="nav-label">Strategies</span></a>
+      <a href="analysis.html" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;color:var(--sb-fg);text-decoration:none;cursor:pointer;white-space:nowrap;overflow:hidden;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#3DD5A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg>
+        <span class="nav-label">Analysis</span></a>
+      <div class="nav-section" style="padding:14px 12px 5px;font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--sb-muted);">TRADING</div>
+      <a href="chart.html" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;color:var(--sb-fg);text-decoration:none;cursor:pointer;white-space:nowrap;overflow:hidden;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FBB23A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="7"/><rect x="14" y="6" width="3" height="11"/></svg>
+        <span class="nav-label">Chart signals</span></a>
+      <a href="audit.html" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;color:var(--sb-fg);text-decoration:none;cursor:pointer;white-space:nowrap;overflow:hidden;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FBB23A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        <span class="nav-label">Audit log</span></a>
+      <div class="nav-section" style="padding:14px 12px 5px;font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--sb-muted);">MARKETPLACE</div>
+      <a href="marketplace.html" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;color:var(--sb-fg);text-decoration:none;cursor:pointer;white-space:nowrap;overflow:hidden;background:var(--sb-hover);">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M2 7h20"/><path d="M12 7v15"/></svg>
+        <span class="nav-label" style="color:#fff;font-weight:600;">Marketplace</span></a>
+      <a href="mysignals.html" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;color:var(--sb-fg);text-decoration:none;cursor:pointer;white-space:nowrap;overflow:hidden;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M4.9 19.1A10 10 0 0 1 4.9 5"/><path d="M7.8 16.2a6 6 0 0 1 0-8.4"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4"/><path d="M19.1 4.9a10 10 0 0 1 0 14.2"/></svg>
+        <span class="nav-label">My signals</span></a>
+    </nav>
+    <div id="sb-footer">
+      <div style="position:relative;padding:10px 12px;border-top:1px solid var(--sb-border);">
+        <div id="acct-menu" style="position:absolute;left:10px;right:10px;bottom:calc(100% - 2px);background:var(--navy-light);border:1px solid var(--sb-border);border-radius:11px;box-shadow:0 -10px 32px -8px rgba(0,0,0,.45);overflow:hidden;z-index:40;transition:opacity .14s,transform .14s;transform-origin:bottom center;opacity:0;transform:translateY(8px) scale(.98);pointer-events:none;">
+          <div style="padding:9px 12px 7px;font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--sb-muted);">SWITCH ACCOUNT</div>
+          <div style="height:1px;background:var(--sb-border);"></div>
+          <div style="padding:6px;display:flex;flex-direction:column;gap:2px;">
+            <button style="display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;background:var(--sb-hover);border:none;border-radius:7px;cursor:pointer;"><span style="width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none;"></span><div style="min-width:0;text-align:left;flex:1;"><div style="font-size:13px;font-weight:600;color:#fff;">Alpaca paper</div><div style="font-size:11px;color:var(--sb-muted);">Paper trading · $99,858.87</div></div></button>
+            <button style="display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;background:none;border:none;border-radius:7px;cursor:pointer;"><span style="width:8px;height:8px;border-radius:50%;background:var(--sb-muted);flex:none;"></span><div style="min-width:0;text-align:left;flex:1;"><div style="font-size:13px;font-weight:600;color:#fff;">Alpaca live</div><div style="font-size:11px;color:var(--sb-muted);">Live trading · $24,107.40</div></div></button>
+          </div>
+        </div>
+        <button id="acct-trigger" style="display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;background:none;border:1px solid transparent;border-radius:9px;cursor:pointer;">
+          <div style="min-width:0;flex:1;text-align:left;">
+            <div style="font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--sb-muted);margin-bottom:5px;">ACCOUNT</div>
+            <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:6px;">Alpaca paper</div>
+            <div style="display:flex;align-items:center;gap:6px;"><span style="font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;background:rgba(59,130,246,.18);color:#7DB1FF;">ALPACA</span><span style="font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;background:rgba(148,163,184,.18);color:#A7B4C2;">PAPER</span><span style="font-family:var(--mono);font-size:12px;color:#fff;margin-left:auto;">$99,858.87</span></div>
+          </div>
+          <svg id="acct-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--sb-muted);transition:transform .15s;"><path d="m18 15-6-6-6 6"/></svg>
+        </button>
+      </div>
+      <div style="padding:14px 12px;display:flex;flex-direction:column;gap:9px;border-top:1px solid var(--sb-border);">
+        <div style="display:flex;align-items:center;gap:8px;"><span style="width:6px;height:6px;border-radius:50%;background:var(--accent);flex:none;box-shadow:0 0 6px var(--accent);"></span><span id="clock-display" style="font-family:var(--mono);font-size:13px;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:0.04em;">00:00:00</span><span style="font-size:10px;font-weight:600;color:var(--sb-muted);letter-spacing:0.08em;">UTC</span></div>
+        <div style="height:1px;background:var(--sb-border);margin:1px 0;"></div>
+        <button id="kill-btn" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:10px 14px;border-radius:8px;border:1px solid rgba(239,68,68,.5);background:rgba(239,68,68,.14);color:#FF8A8A;font-size:12px;font-weight:700;letter-spacing:0.06em;cursor:pointer;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+          <span id="kill-label" class="nav-label">KILL</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;">
+    <header style="height:56px;flex:none;display:flex;align-items:center;gap:16px;padding:0 20px;border-bottom:1px solid var(--border);background:var(--bg);">
+      <button id="collapse-btn" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;flex:none;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--body);cursor:pointer;padding:0;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </button>
+      <div style="display:flex;align-items:center;gap:7px;font-size:14px;">
+        <span style="color:var(--head);font-weight:600;">Marketplace</span>
+        <span style="color:var(--muted);">·</span>
+        <span style="color:var(--muted);font-size:13px;">Subscribe to proven strategies</span>
+      </div>
+      <div style="flex:1;"></div>
+      <button id="theme-btn" style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--body);cursor:pointer;flex:none;">
+        <span id="theme-moon" style="display:inline-flex;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
+        <span id="theme-sun" style="display:none;color:var(--accent);"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></span>
+      </button>
+      <div style="position:relative;flex:none;">
+        <button id="profile-btn" style="display:flex;align-items:center;gap:7px;padding:3px 7px 3px 3px;border-radius:999px;border:1px solid var(--border);background:var(--bg);cursor:pointer;">
+          <span style="width:30px;height:30px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;color:var(--lime);font-size:12px;font-weight:700;flex:none;">JD</span>
+          <svg id="profile-chevron" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted);transition:transform .15s;"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div id="profile-menu" style="position:absolute;top:calc(100% + 8px);right:0;width:200px;background:var(--bg);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 32px -8px rgba(13,27,42,.22);z-index:50;overflow:hidden;transition:opacity .14s,transform .14s;transform-origin:top right;opacity:0;transform:translateY(-6px) scale(.97);pointer-events:none;">
+          <div style="padding:14px 16px 12px;"><div style="font-size:15px;font-weight:600;color:var(--head);">John Doe</div><div style="font-size:12px;color:var(--muted);margin-top:3px;">Pro Trader</div></div>
+          <div style="height:1px;background:var(--border);"></div>
+          <div style="padding:6px;"><a style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:7px;font-size:14px;color:var(--body);cursor:pointer;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;opacity:.65;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Logout</a></div>
+        </div>
+      </div>
+    </header>
+    <main style="flex:1;overflow-y:auto;background:var(--page);" class="mkt-scroll">
+      <div id="mkt-root" style="max-width:1240px;margin:0 auto;padding:28px 32px 64px;display:flex;flex-direction:column;gap:28px;"></div>
+    </main>
+  </div>
+</div>
+
+<!-- Detail Drawer -->
+<div id="detail-backdrop" style="position:fixed;inset:0;z-index:400;background:rgba(15,23,36,.5);opacity:0;pointer-events:none;transition:opacity .22s;"></div>
+<div id="detail-panel" style="position:fixed;top:0;right:0;height:100vh;width:580px;max-width:94vw;z-index:401;background:var(--page);border-left:1px solid var(--border);box-shadow:-16px 0 48px -12px rgba(15,23,36,.28);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s cubic-bezier(.32,.72,0,1);"></div>
+
+<!-- Manage Drawer -->
+<div id="manage-backdrop" style="position:fixed;inset:0;z-index:410;background:rgba(15,23,36,.5);opacity:0;pointer-events:none;transition:opacity .22s;"></div>
+<div id="manage-panel" style="position:fixed;top:0;right:0;height:100vh;width:480px;max-width:94vw;z-index:411;background:var(--page);border-left:1px solid var(--border);box-shadow:-16px 0 48px -12px rgba(15,23,36,.28);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s cubic-bezier(.32,.72,0,1);"></div>
+
+<!-- Flow Overlay -->
+<div id="flow-overlay" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(15,23,36,.55);align-items:flex-start;justify-content:center;overflow-y:auto;padding:48px 20px;animation:mkt-fade .2s ease;">
+  <div id="flow-card" style="max-width:100%;animation:mkt-pop .26s cubic-bezier(.34,1.4,.64,1);"></div>
+</div>
+
+<div id="toast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:600;background:var(--head);color:var(--bg);padding:12px 20px;border-radius:10px;font-size:14px;font-weight:500;box-shadow:0 10px 30px rgba(15,23,36,.28);opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;"></div>
+
+<script>
+// ── State ──
+const state = {
+  collapsed:false, dark:false, acctOpen:false, killArmed:false, profileOpen:false,
+  search:'', asset:'all', sort:'top', pill:'All',
+  subs:{'nq-momentum':true,'vwap-eu':true},
+  subMeta:{'nq-momentum':{since:'Jun 1',account:'Alpaca paper'},'vwap-eu':{since:'May 20',account:'Alpaca live'}},
+  paused:{},
+  detailId:null, manageOpen:false,
+  flow:null, confirmCancel:null,
+};
+
+// ── Sidebar ──
+function applySidebar(){
+  const sb=document.getElementById('sidebar'),c=state.collapsed;
+  sb.style.width=c?'58px':'234px';
+  document.querySelectorAll('.nav-label').forEach(el=>el.style.display=c?'none':'');
+  document.querySelectorAll('.nav-section').forEach(el=>el.style.display=c?'none':'');
+  document.getElementById('logo-mark').style.display=c?'block':'none';
+  document.getElementById('logo-wordmark').style.display=c?'none':'block';
+  document.getElementById('sb-footer').style.display=c?'none':'block';
+}
+function fmtClock(d){return[d.getUTCHours(),d.getUTCMinutes(),d.getUTCSeconds()].map(n=>String(n).padStart(2,'0')).join(':');}
+function tickClock(){const el=document.getElementById('clock-display');if(el)el.textContent=fmtClock(new Date());}
+tickClock();setInterval(tickClock,1000);
+function applyTheme(){
+  document.body.classList.toggle('tv-dark',state.dark);
+  document.getElementById('theme-moon').style.display=state.dark?'none':'inline-flex';
+  document.getElementById('theme-sun').style.display=state.dark?'inline-flex':'none';
+}
+function applyKill(){
+  const btn=document.getElementById('kill-btn'),label=document.getElementById('kill-label');
+  if(state.killArmed){btn.style.background='rgba(239,68,68,.9)';btn.style.color='#fff';btn.style.borderColor='#EF4444';label.textContent='KILL — ARMED';}
+  else{btn.style.background='rgba(239,68,68,.14)';btn.style.color='#FF8A8A';btn.style.borderColor='rgba(239,68,68,.5)';label.textContent='KILL';}
+}
+function showDD(id,open){
+  const el=document.getElementById(id);if(!el)return;
+  el.style.opacity=open?'1':'0';
+  el.style.transform=open?(id==='acct-menu'?'translateY(0) scale(1)':'translateY(0) scale(1)'):(id==='acct-menu'?'translateY(8px) scale(.98)':'translateY(-6px) scale(.97)');
+  el.style.pointerEvents=open?'auto':'none';
+}
+function renderDropdowns(){
+  showDD('acct-menu',state.acctOpen);showDD('profile-menu',state.profileOpen);
+  document.getElementById('acct-chevron').style.transform=state.acctOpen?'rotate(180deg)':'';
+  document.getElementById('acct-trigger').style.borderColor=state.acctOpen?'var(--sb-border)':'transparent';
+  document.getElementById('profile-chevron').style.transform=state.profileOpen?'rotate(180deg)':'';
+}
+let toastTimer;
+function showToast(msg){
+  const el=document.getElementById('toast');el.textContent=msg;el.style.opacity='1';el.style.pointerEvents='auto';
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>{el.style.opacity='0';el.style.pointerEvents='none';},2800);
+}
+
+// ── Data ──
+const strategies=[
+  {id:'nq-momentum',name:'NQ Momentum Pro',seller:'James R.',ini:'JR',grad:['#7C5CFF','#3DD5A8'],subs:847,score:87,ret:31.4,win:74,dd:-7.2,sharpe:1.92,asset:'NQ Futures',tf:'5m',style:'Intraday',ind:['MACD','VWAP'],live:6,price:49,cls:'Futures',top:true,isNew:false},
+  {id:'vwap-eu',name:'VWAP Scalper EU',seller:'Maria K.',ini:'MK',grad:['#2DD4BF','#15A88B'],subs:412,score:71,ret:18.2,win:68,dd:-5.8,sharpe:1.54,asset:'EUR/USD',tf:'1H',style:'Scalp',ind:['VWAP','EMA'],live:4,price:29,cls:'Forex',top:false,isNew:false},
+  {id:'btc-mean',name:'BTC Mean Reversion',seller:'Alex S.',ini:'AS',grad:['#F59E0B','#D97706'],subs:203,score:76,ret:42.1,win:71,dd:-11.4,sharpe:1.71,asset:'BTC/USDT',tf:'4H',style:'Swing',ind:['RSI','BB'],live:2,price:39,cls:'Crypto',top:false,isNew:true},
+  {id:'es-scalp',name:'ES Scalp Machine',seller:'Tom W.',ini:'TW',grad:['#3B82F6','#2563EB'],subs:1204,score:82,ret:28.7,win:77,dd:-6.1,sharpe:2.14,asset:'ES Futures',tf:'1m',style:'Scalp',ind:['VWAP','Delta'],live:12,price:79,cls:'Futures',top:false,isNew:false},
+  {id:'gbp-swing',name:'GBP Swing Basic',seller:'Pedro L.',ini:'PL',grad:['#A855F7','#D946A6'],subs:89,score:58,ret:11.3,win:58,dd:-9.2,sharpe:0.98,asset:'GBP/USD',tf:'4H',style:'Swing',ind:['EMA','RSI'],live:1,price:0,cls:'Forex',top:false,isNew:true},
+  {id:'spy-trend',name:'SPY Trend Rider',seller:'Sarah R.',ini:'SR',grad:['#2DD4BF','#15A88B'],subs:317,score:79,ret:24.6,win:72,dd:-8.4,sharpe:1.63,asset:'SPY',tf:'1H',style:'Position',ind:['ADX','EMA'],live:3,price:19,cls:'Equities',top:false,isNew:false},
+];
+const accounts=[
+  {id:'alpaca-paper',name:'Alpaca paper',ini:'A',bal:'$99,843.78',mode:'Paper'},
+  {id:'alpaca-live',name:'Alpaca live',ini:'A',bal:'$24,200.00',mode:'Live'},
+  {id:'ib',name:'Interactive Brokers',ini:'IB',bal:'$51,400.00',mode:'Live'},
+];
+function byId(id){return strategies.find(s=>s.id===id);}
+function isSub(id){return!!state.subs[id];}
+function money(p){return p===0?'Free':'$'+p+'/mo';}
+function scoreColor(s){if(s>=90)return'var(--warn)';if(s>=70)return'var(--mkt-green)';if(s>=55)return'var(--mkt-purple)';if(s>=40)return'var(--warn)';return'var(--loss)';}
+
+function mkSvg(paths,col,size,sw){return`<svg width="${size||16}" height="${size||16}" viewBox="0 0 24 24" fill="none" stroke="${col||'currentColor'}" stroke-width="${sw||2}" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">${paths}</svg>`;}
+function avatar(ini,grad,size,fs,round){
+  const br=round||(size>=40?'11px':'50%');
+  return`<div style="width:${size}px;height:${size}px;border-radius:${br};flex-shrink:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,${grad[0]},${grad[1]});color:#fff;font-weight:700;font-size:${fs||13}px;">${ini}</div>`;
+}
+function chip(text,kind){
+  const m={gray:{bg:'var(--subtle)',c:'var(--body)',b:'var(--border)'},green:{bg:'var(--profit-soft)',c:'var(--profit)',b:'color-mix(in srgb,var(--profit) 26%,transparent)'},blue:{bg:'rgba(59,130,246,.10)',c:'#2563EB',b:'rgba(59,130,246,.30)'},purple:{bg:'var(--mkt-purple-soft)',c:'var(--mkt-purple)',b:'color-mix(in srgb,var(--mkt-purple) 30%,transparent)'},red:{bg:'var(--loss-soft)',c:'var(--loss)',b:'color-mix(in srgb,var(--loss) 26%,transparent)'}}[kind]||{bg:'var(--subtle)',c:'var(--body)',b:'var(--border)'};
+  return`<span style="font-size:11px;font-weight:600;padding:4px 9px;border-radius:6px;background:${m.bg};color:${m.c};white-space:nowrap;border:1px solid ${m.b}">${text}</span>`;
+}
+function liveDot(color){return`<div style="width:8px;height:8px;border-radius:50%;background:${color||'var(--mkt-green)'};flex-shrink:0;animation:mkt-pulse 1.8s ease-in-out infinite;"></div>`;}
+
+function curveSvg(seed,w,h,stroke){
+  const n=28,pts=[];
+  let acc=7;for(let i=0;i<seed.length;i++)acc=(acc*33+seed.charCodeAt(i))%99991;
+  const rnd=(i)=>{const x=Math.sin((acc+1)*(i+1)*0.7321)*9973.13;return x-Math.floor(x);};
+  for(let i=0;i<n;i++){const base=0.14+(i/(n-1))*0.66,noise=(rnd(i)-0.5)*0.14;pts.push(Math.max(0.06,Math.min(0.95,base+noise)));}
+  const X=i=>(i/(n-1))*w,Y=v=>(h-v*h);
+  let line='M '+X(0).toFixed(1)+' '+Y(pts[0]).toFixed(1);
+  for(let i=1;i<n;i++)line+=' L '+X(i).toFixed(1)+' '+Y(pts[i]).toFixed(1);
+  const area=line+' L '+w+' '+h+' L 0 '+h+' Z';
+  const gid='mktg'+Math.abs(acc)+Math.round(w);
+  return`<svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="display:block"><defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${stroke}" stop-opacity="0.20"/><stop offset="100%" stop-color="${stroke}" stop-opacity="0"/></linearGradient></defs><path d="${area}" fill="url(#${gid})"/><path d="${line}" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+}
+
+function metricCell(label,value,color,last){
+  return`<div style="flex:1;padding:9px 11px;border-right:${last?'none':'1px solid var(--border)'}"><span style="display:block;font-size:14px;font-weight:700;color:${color||'var(--head)'};font-variant-numeric:tabular-nums;line-height:1.1">${value}</span><span style="display:block;font-size:9px;font-weight:700;letter-spacing:0.06em;color:var(--muted);text-transform:uppercase;margin-top:4px">${label}</span></div>`;
+}
+
+// ── Filter ──
+function filtered(){
+  let list=strategies.slice();
+  if(state.asset!=='all')list=list.filter(s=>s.cls===state.asset);
+  if(state.pill==='Top rated')list=list.filter(s=>s.top||s.score>=80);
+  else if(state.pill==='New')list=list.filter(s=>s.isNew||s.live<=2);
+  else if(state.pill==='Free')list=list.filter(s=>s.price===0);
+  const q=state.search.trim().toLowerCase();
+  if(q)list=list.filter(s=>(s.name+' '+s.seller+' '+s.asset+' '+s.ind.join(' ')).toLowerCase().includes(q));
+  const sorters={top:(a,b)=>b.score-a.score,new:(a,b)=>a.live-b.live,return:(a,b)=>b.ret-a.ret,win:(a,b)=>b.win-a.win,plow:(a,b)=>a.price-b.price,phigh:(a,b)=>b.price-a.price};
+  list.sort(sorters[state.sort]||sorters.top);
+  return list;
+}
+
+// ── Strategy Card HTML ──
+function strategyCardHTML(s){
+  const subbed=isSub(s.id);
+  const tags=[s.asset,s.tf,s.style,...s.ind,s.live+'M live'];
+  return`<button class="strat-card" data-id="${s.id}" style="display:flex;flex-direction:column;text-align:left;background:var(--card);border:${s.top?'1.5px solid var(--mkt-purple)':'1px solid var(--border)'};border-radius:16px;overflow:hidden;cursor:pointer;font-family:var(--sans);">
+    <div style="padding:16px 18px 0;display:flex;gap:13px;">
+      ${avatar(s.ini,s.grad,46,15)}
+      <div style="flex:1;min-width:0;">
+        ${s.top?`<span style="display:inline-block;font-size:10px;font-weight:800;letter-spacing:0.07em;color:var(--mkt-purple);background:var(--mkt-purple-soft);padding:3px 8px;border-radius:5px;margin-bottom:5px;">TOP RATED</span>`:''}
+        <span style="display:block;font-size:17px;font-weight:700;color:var(--head);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.name}</span>
+        <span style="display:block;font-size:13px;color:var(--muted);margin-top:2px;">${s.seller} · ${s.subs.toLocaleString()} subscribers</span>
+      </div>
+      <span style="font-size:28px;font-weight:800;color:${scoreColor(s.score)};font-variant-numeric:tabular-nums;line-height:1;">${s.score}</span>
+    </div>
+    <div style="padding:12px 18px 4px;height:52px;">${curveSvg(s.id,320,44,'var(--mkt-green)')}</div>
+    <div style="margin:6px 18px 0;display:flex;border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+      ${metricCell('Return','+'+s.ret+'%','var(--profit)')}${metricCell('Win',s.win+'%','var(--profit)')}${metricCell('Max DD',s.dd+'%','var(--loss)')}${metricCell('Sharpe',''+s.sharpe,'var(--head)',true)}
+    </div>
+    <div style="padding:14px 18px 16px;display:flex;flex-wrap:wrap;gap:7px;flex:1;align-content:flex-start;">${tags.map(t=>chip(t,t.indexOf('live')>=0?'green':'gray')).join('')}</div>
+    <div style="margin-top:auto;padding:14px 18px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <div>
+        <span style="display:block;font-size:18px;font-weight:800;color:var(--head);">${money(s.price)}</span>
+        <span style="font-size:12px;color:var(--muted);">${s.subs.toLocaleString()} subscribers</span>
+      </div>
+      <button class="sub-btn" data-id="${s.id}" style="height:46px;padding:0 22px;min-width:150px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:${subbed?'var(--mkt-green)':'var(--mkt-purple)'};color:#fff;">
+        ${subbed?mkSvg('<path d="M20 6 9 17l-5-5"/>','#fff',16,2.6):''}${subbed?'Subscribed':'Subscribe'}
+      </button>
+    </div>
+  </button>`;
+}
+
+// ── Mini Card (subscriptions row) ──
+function miniCardHTML(s){
+  const meta=state.subMeta[s.id]||{since:'—'};
+  const paused=!!state.paused[s.id];
+  return`<button class="mini-card" data-id="${s.id}" style="flex-shrink:0;width:300px;text-align:left;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;cursor:pointer;font-family:var(--sans);display:flex;flex-direction:column;gap:12px;">
+    <div style="display:flex;align-items:center;gap:11px;">
+      ${avatar(s.ini,s.grad,34,12)}
+      <span style="flex:1;font-size:15px;font-weight:700;color:var(--head);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.name}</span>
+      ${paused?liveDot('var(--warn)'):liveDot()}
+    </div>
+    <div style="display:flex;align-items:flex-end;gap:18px;">
+      <div><span style="display:block;font-size:15px;font-weight:700;color:var(--profit);font-variant-numeric:tabular-nums;">+${s.ret}%</span><span style="font-size:9px;font-weight:700;letter-spacing:0.06em;color:var(--muted);">RETURN</span></div>
+      <div><span style="display:block;font-size:15px;font-weight:700;color:var(--head);">${s.win}%</span><span style="font-size:9px;font-weight:700;letter-spacing:0.06em;color:var(--muted);">WIN</span></div>
+      <div><span style="display:block;font-size:15px;font-weight:700;color:${scoreColor(s.score)};">${s.score}</span><span style="font-size:9px;font-weight:700;letter-spacing:0.06em;color:var(--muted);">SCORE</span></div>
+    </div>
+    <span style="font-size:12px;color:var(--muted);">Since ${meta.since} · ${money(s.price)}</span>
+  </button>`;
+}
+
+// ── Main Render ──
+function renderMarketplace(){
+  const root=document.getElementById('mkt-root');
+  const pills=['All','Top rated','New','Free'];
+  const pillBar=pills.map(p=>{const on=state.pill===p;return`<button class="pill-btn" data-p="${p}" style="height:44px;padding:0 20px;border-radius:999px;font-size:15px;font-weight:600;cursor:pointer;background:${on?'var(--mkt-purple)':'var(--card)'};color:${on?'#fff':'var(--body)'};border:1px solid ${on?'var(--mkt-purple)':'var(--border)'};">${p}</button>`;}).join('');
+  const filterBar=`<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+    <div style="position:relative;flex-shrink:0;">
+      ${mkSvg('<path d="M11 11m-8 0a8 8 0 1 0 16 0 8 8 0 0 0-16 0"/><path d="m21 21-4.3-4.3"/>','var(--muted)',18).replace('style="flex-shrink:0"','style="position:absolute;left:16px;top:50%;transform:translateY(-50%);pointer-events:none"')}
+      <input id="mkt-search" type="text" value="${state.search}" placeholder="Search…" style="width:200px;height:50px;padding:0 12px 0 44px;font-family:var(--sans);font-size:15px;color:var(--head);background:var(--card);border:1px solid var(--border);border-radius:12px;outline:none;">
+    </div>
+    <div style="position:relative;width:300px;flex-shrink:0;">
+      <select id="asset-sel" style="width:100%;height:50px;padding:0 40px 0 18px;font-family:var(--sans);font-size:16px;font-weight:600;color:var(--head);background:var(--card);border:1px solid var(--border);border-radius:12px;outline:none;appearance:none;cursor:pointer;">
+        <option value="all"${state.asset==='all'?' selected':''}>All assets</option>
+        <option value="Futures"${state.asset==='Futures'?' selected':''}>Futures</option>
+        <option value="Forex"${state.asset==='Forex'?' selected':''}>Forex</option>
+        <option value="Crypto"${state.asset==='Crypto'?' selected':''}>Crypto</option>
+        <option value="Equities"${state.asset==='Equities'?' selected':''}>Equities</option>
+      </select>
+      <div style="position:absolute;right:16px;top:50%;transform:translateY(-50%);pointer-events:none">${mkSvg('<path d="m6 9 6 6 6-6"/>','var(--muted)',18)}</div>
+    </div>
+    <div style="flex:1;min-width:8px;"></div>
+    <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">${pillBar}</div>
+  </div>`;
+
+  const subbed=strategies.filter(s=>isSub(s.id));
+  const addCard=`<button id="add-card" style="flex-shrink:0;min-width:320px;flex:1;display:flex;align-items:center;justify-content:center;gap:10px;background:transparent;border:1.5px dashed var(--border);border-radius:14px;padding:16px;cursor:pointer;font-family:var(--sans);color:var(--muted);">${mkSvg('<path d="M12 5v14"/><path d="M5 12h14"/>','currentColor',18)}<span style="font-size:15px;font-weight:600;">Browse below to add more</span></button>`;
+  const subsRow=`<div>
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;">
+      <span style="font-size:19px;font-weight:700;color:var(--head);letter-spacing:-0.01em;">Your subscriptions</span>
+      <button id="manage-btn" style="display:inline-flex;align-items:center;gap:6px;background:none;border:none;color:var(--mkt-purple);font-size:15px;font-weight:600;cursor:pointer;font-family:var(--sans);">Manage ${mkSvg('<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>','currentColor',16)}</button>
+    </div>
+    <div style="display:flex;gap:16px;overflow-x:auto;padding-bottom:4px;">${subbed.map(s=>miniCardHTML(s)).join('')}${addCard}</div>
+  </div>`;
+
+  const list=filtered();
+  const sortOpts=[['top','Sort: Top rated'],['new','Sort: Newest'],['return','Sort: Return'],['win','Sort: Win rate'],['plow','Sort: Price low→high'],['phigh','Sort: Price high→low']];
+  const discoverGrid=`<div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:baseline;gap:10px;">
+        <span style="font-size:19px;font-weight:700;color:var(--head);letter-spacing:-0.01em;">Discover strategies</span>
+        <span style="font-size:14px;color:var(--muted);">· ${list.length} strategies</span>
+      </div>
+      <div style="position:relative;width:230px;">
+        <select id="sort-sel" style="width:100%;height:46px;padding:0 38px 0 16px;font-family:var(--sans);font-size:15px;font-weight:600;color:var(--head);background:var(--card);border:1px solid var(--border);border-radius:12px;outline:none;appearance:none;cursor:pointer;">
+          ${sortOpts.map(o=>`<option value="${o[0]}"${o[0]===state.sort?' selected':''}>${o[1]}</option>`).join('')}
+        </select>
+        <div style="position:absolute;right:14px;top:50%;transform:translateY(-50%);pointer-events:none">${mkSvg('<path d="m6 9 6 6 6-6"/>','var(--muted)',17)}</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;">${list.length?list.map(s=>strategyCardHTML(s)).join(''):'<div style="padding:60px;text-align:center;background:var(--card);border:1px solid var(--border);border-radius:16px;color:var(--muted);font-size:15px;grid-column:1/-1">No strategies match these filters</div>'}</div>
+  </div>`;
+
+  root.innerHTML=`<div style="margin-bottom:4px;"><span style="display:block;font-size:30px;font-weight:800;color:var(--head);letter-spacing:-0.02em;">Marketplace</span><span style="display:block;font-size:16px;color:var(--muted);margin-top:6px;">Subscribe to proven strategies — signals delivered directly to your broker</span></div>${filterBar}${subsRow}<div id="mkt-discover">${discoverGrid}</div>`;
+
+  // Wire events
+  document.getElementById('mkt-search').addEventListener('input',e=>{state.search=e.target.value;renderMarketplace();});
+  document.getElementById('asset-sel').addEventListener('change',e=>{state.asset=e.target.value;renderMarketplace();});
+  document.getElementById('sort-sel').addEventListener('change',e=>{state.sort=e.target.value;renderMarketplace();});
+  document.querySelectorAll('.pill-btn').forEach(el=>el.addEventListener('click',()=>{state.pill=el.dataset.p;renderMarketplace();}));
+  document.getElementById('manage-btn').addEventListener('click',()=>{state.manageOpen=true;renderManageDrawer();});
+  document.getElementById('add-card').addEventListener('click',()=>showToast('Browse the strategies below'));
+  document.querySelectorAll('.strat-card').forEach(el=>el.addEventListener('click',e=>{if(e.target.closest('.sub-btn'))return;state.detailId=el.dataset.id;renderDetailDrawer();}));
+  document.querySelectorAll('.mini-card').forEach(el=>el.addEventListener('click',()=>{state.detailId=el.dataset.id;renderDetailDrawer();}));
+  document.querySelectorAll('.sub-btn').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();subscribeClick(el.dataset.id);}));
+}
+
+function subscribeClick(id){
+  if(isSub(id)){showToast('Already subscribed — manage from Your subscriptions');return;}
+  state.flow={id,step:1,account:'alpaca-paper'};renderFlowOverlay();
+}
+
+// ── Detail Drawer ──
+function monthlyHeat(seed){
+  const months=['Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun'];
+  let acc=3;for(let i=0;i<seed.length;i++)acc=(acc*29+seed.charCodeAt(i))%97;
+  return`<div style="display:flex;gap:5px;">${months.map((m,i)=>{const r=Math.sin((acc+1)*(i+3)*1.37)*100,v=((r-Math.floor(r))*14-4),pos=v>=0;return`<div style="flex:1;min-width:0;"><div style="height:40px;border-radius:7px;display:flex;align-items:center;justify-content:center;background:${pos?'var(--profit-soft)':'var(--loss-soft)'};border:1px solid ${pos?'color-mix(in srgb,var(--profit) 22%,transparent)':'color-mix(in srgb,var(--loss) 22%,transparent)'};"><span style="font-size:11px;font-weight:700;color:${pos?'var(--profit)':'var(--loss)'};">${pos?'+':''}${v.toFixed(1)}</span></div><span style="display:block;text-align:center;font-size:9px;color:var(--muted);margin-top:4px;">${m}</span></div>`;}).join('')}</div>`;
+}
+function dnaRows(){
+  const conds=[['SQQQ confirmation',88],['ATR > 20d avg',81],['Break of structure',74],['DXY divergence',63],['Volume spike',57]];
+  return`<div style="display:flex;flex-direction:column;gap:10px;">${conds.map(([label,pct])=>`<div style="display:flex;align-items:center;gap:12px;"><span style="width:150px;flex-shrink:0;font-size:13px;color:var(--body);font-weight:500;">${label}</span><div style="flex:1;height:8px;border-radius:4px;background:var(--subtle);overflow:hidden;"><div style="width:${pct}%;height:100%;border-radius:4px;background:var(--mkt-green);"></div></div><span style="width:38px;text-align:right;font-size:13px;font-weight:700;color:var(--head);">${pct}%</span></div>`).join('')}</div>`;
+}
+function recentSignals(s){
+  let acc=11;for(let i=0;i<s.id.length;i++)acc=(acc*31+s.id.charCodeAt(i))%9973;
+  const rows=[];
+  for(let i=0;i<8;i++){
+    const r=(k)=>{const x=Math.sin((acc+1)*(i+1)*(k+1.3)*0.91)*1000;return x-Math.floor(x);};
+    const long=r(1)>0.42,win=r(2)>0.32,pnl=(win?1:-1)*(0.4+r(3)*2.4),conf=Math.round(55+r(4)*40);
+    rows.push({date:'Jun '+(14-i),dir:long?'Long':'Short',entry:(s.cls==='Crypto'?64000+Math.round(r(5)*4000):19000+Math.round(r(5)*1200)).toLocaleString(),pnl:(pnl>=0?'+':'')+(pnl*(s.cls==='Crypto'?220:130)).toFixed(0),pnlPos:pnl>=0,conf});
+  }
+  return`<div>
+    <div style="display:flex;padding:0 4px 8px;border-bottom:1px solid var(--border);">
+      ${['Date','Dir','Entry','P&L','Conf'].map((h,i)=>`<span style="flex:${i===0?'0 0 70px':i===2?'0 0 90px':'1'};text-align:${i>=2?'right':'left'};font-size:10px;font-weight:700;letter-spacing:0.05em;color:var(--muted);text-transform:uppercase;">${h}</span>`).join('')}
+    </div>
+    ${rows.map(r=>`<div style="display:flex;align-items:center;padding:9px 4px;border-bottom:1px solid var(--border);">
+      <span style="flex:0 0 70px;font-size:13px;color:var(--body);font-variant-numeric:tabular-nums;">${r.date}</span>
+      <div style="flex:1;"><span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px;background:${r.dir==='Long'?'var(--profit-soft)':'var(--loss-soft)'};color:${r.dir==='Long'?'var(--profit)':'var(--loss)'};">${r.dir}</span></div>
+      <span style="flex:0 0 90px;text-align:right;font-size:13px;color:var(--head);font-variant-numeric:tabular-nums;">${r.entry}</span>
+      <span style="flex:1;text-align:right;font-size:13px;font-weight:700;color:${r.pnlPos?'var(--profit)':'var(--loss)'};font-variant-numeric:tabular-nums;">$${r.pnl}</span>
+      <div style="flex:1;display:flex;justify-content:flex-end;"><span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px;background:var(--mkt-purple-soft);color:var(--mkt-purple);">${r.conf}%</span></div>
+    </div>`).join('')}
+  </div>`;
+}
+function renderDetailDrawer(){
+  const id=state.detailId,s=id?byId(id):null,open=!!s;
+  const backdrop=document.getElementById('detail-backdrop'),panel=document.getElementById('detail-panel');
+  backdrop.style.opacity=open?'1':'0';backdrop.style.pointerEvents=open?'auto':'none';
+  panel.style.transform=open?'translateX(0)':'translateX(100%)';
+  if(!s){panel.innerHTML='';return;}
+  const subbed=isSub(s.id);
+  panel.innerHTML=`
+    <div style="display:flex;align-items:flex-start;gap:14px;padding:22px 24px;border-bottom:1px solid var(--border);flex-shrink:0;">
+      ${avatar(s.ini,s.grad,44,15)}
+      <div style="flex:1;min-width:0;"><span style="display:block;font-size:18px;font-weight:700;color:var(--head);letter-spacing:-0.01em;">${s.name}</span><span style="display:block;font-size:13px;color:var(--muted);margin-top:3px;">by ${s.seller} · ${s.subs.toLocaleString()} subscribers</span></div>
+      <span style="font-size:24px;font-weight:800;color:${scoreColor(s.score)};font-variant-numeric:tabular-nums;">${s.score}</span>
+      <button id="detail-close" style="width:34px;height:34px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:9px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;">${mkSvg('<path d="M18 6 6 18"/><path d="m6 6 12 12"/>','currentColor',17)}</button>
+    </div>
+    <div style="flex:1;min-height:0;overflow-y:auto;padding:22px 24px;display:flex;flex-direction:column;gap:26px;">
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">${chip('Live '+s.live+' months','green')}${chip(s.subs.toLocaleString()+' subscribers','blue')}${chip(s.asset+' · '+s.tf+' · '+s.style,'gray')}${chip('Full audit trail','green')}</div>
+      <div style="display:flex;gap:12px;">
+        <div style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;"><span style="display:block;font-size:22px;font-weight:800;color:var(--profit);font-variant-numeric:tabular-nums;">+${s.ret}%</span><span style="display:block;font-size:11px;font-weight:600;color:var(--muted);margin-top:5px;">Total return</span></div>
+        <div style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;"><span style="display:block;font-size:22px;font-weight:800;color:var(--head);">${s.win}%</span><span style="display:block;font-size:11px;font-weight:600;color:var(--muted);margin-top:5px;">Win rate</span></div>
+        <div style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;"><span style="display:block;font-size:22px;font-weight:800;color:var(--loss);">${s.dd}%</span><span style="display:block;font-size:11px;font-weight:600;color:var(--muted);margin-top:5px;">Max drawdown</span></div>
+        <div style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;"><span style="display:block;font-size:22px;font-weight:800;color:var(--head);">${s.sharpe}</span><span style="display:block;font-size:11px;font-weight:600;color:var(--muted);margin-top:5px;">Sharpe ratio</span></div>
+      </div>
+      <div><span style="display:block;font-size:12px;font-weight:700;letter-spacing:0.04em;color:var(--muted);text-transform:uppercase;margin-bottom:12px;">Live equity curve</span><div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;height:150px;">${curveSvg(s.id+'big',520,118,'var(--mkt-green)')}</div></div>
+      <div><span style="display:block;font-size:12px;font-weight:700;letter-spacing:0.04em;color:var(--muted);text-transform:uppercase;margin-bottom:12px;">Monthly returns</span>${monthlyHeat(s.id)}</div>
+      <div><span style="display:block;font-size:12px;font-weight:700;letter-spacing:0.04em;color:var(--muted);text-transform:uppercase;margin-bottom:12px;">Win/Loss DNA — what predicts wins</span>${dnaRows()}</div>
+      <div><span style="display:block;font-size:12px;font-weight:700;letter-spacing:0.04em;color:var(--muted);text-transform:uppercase;margin-bottom:12px;">Recent signals (last 8)</span>${recentSignals(s)}</div>
+    </div>
+    <div style="flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 24px;border-top:1px solid var(--border);background:var(--card);">
+      <div><span style="display:block;font-size:20px;font-weight:800;color:var(--head);">${s.price===0?'Free':'$'+s.price+' / month'}</span><span style="font-size:12px;color:var(--muted);">${subbed?'Currently subscribed':'Cancel anytime'}</span></div>
+      <div style="display:flex;gap:10px;">
+        <button id="detail-audit-btn" style="height:46px;padding:0 18px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--body);font-size:14px;font-weight:600;cursor:pointer;font-family:var(--sans);">View audit log</button>
+        <button id="detail-sub-btn" style="height:46px;padding:0 26px;border-radius:10px;border:none;background:${subbed?'var(--mkt-green)':'var(--mkt-purple)'};color:#fff;font-size:15px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-family:var(--sans);">${subbed?mkSvg('<path d="M20 6 9 17l-5-5"/>','#fff',16,2.6):''}${subbed?'Subscribed':'Subscribe'}</button>
+      </div>
+    </div>`;
+  document.getElementById('detail-close').addEventListener('click',()=>{state.detailId=null;renderDetailDrawer();});
+  document.getElementById('detail-audit-btn').addEventListener('click',()=>showToast('Opening public audit log…'));
+  document.getElementById('detail-sub-btn').addEventListener('click',()=>subscribeClick(s.id));
+}
+document.getElementById('detail-backdrop').addEventListener('click',()=>{state.detailId=null;renderDetailDrawer();});
+
+// ── Manage Drawer ──
+function renderManageDrawer(){
+  const open=state.manageOpen;
+  const backdrop=document.getElementById('manage-backdrop'),panel=document.getElementById('manage-panel');
+  backdrop.style.opacity=open?'1':'0';backdrop.style.pointerEvents=open?'auto':'none';
+  panel.style.transform=open?'translateX(0)':'translateX(100%)';
+  if(!open){panel.innerHTML='';return;}
+  const subbed=strategies.filter(s=>isSub(s.id));
+  const total=subbed.reduce((a,s)=>a+(state.paused[s.id]?0:s.price),0);
+  const rows=subbed.map(s=>{
+    const paused=!!state.paused[s.id],meta=state.subMeta[s.id]||{},confirming=state.confirmCancel===s.id;
+    const actions=confirming?`<div style="margin-top:12px;padding:12px 14px;background:var(--loss-soft);border:1px solid color-mix(in srgb,var(--loss) 26%,transparent);border-radius:10px;"><span style="display:block;font-size:13px;color:var(--head);margin-bottom:10px;">Cancel ${s.name}? Signals stop immediately.</span><div style="display:flex;gap:8px;"><button class="keep-sub" data-id="${s.id}" style="height:36px;padding:0 14px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--body);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans);">Keep subscription</button><button class="do-cancel" data-id="${s.id}" style="height:36px;padding:0 14px;border-radius:8px;border:none;background:var(--loss);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--sans);">Yes, cancel</button></div></div>`
+    :`<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="pause-resume" data-id="${s.id}" style="height:36px;padding:0 14px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--body);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans);">${paused?'Resume signals':'Pause signals'}</button><button class="change-acct" data-id="${s.id}" style="height:36px;padding:0 14px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--body);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans);">Change account</button><button class="cancel-sub" data-id="${s.id}" style="height:36px;padding:0 14px;border-radius:8px;border:1px solid #FECACA;background:transparent;color:var(--loss);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans);">Cancel</button></div>`;
+    return`<div style="padding:18px 0;border-bottom:1px solid var(--border);">
+      <div style="display:flex;gap:13px;">${avatar(s.ini,s.grad,40,14)}
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">${paused?liveDot('var(--warn)'):liveDot()}<span style="font-size:13px;font-weight:600;color:${paused?'var(--warn)':'var(--profit)'};">${paused?'Paused — signals stopped':'Active — signals routing'}</span></div>
+        <span style="display:block;font-size:15px;font-weight:700;color:var(--head);">${s.name}</span>
+        <span style="display:block;font-size:12.5px;color:var(--muted);margin-top:2px;">by ${s.seller} · Score ${s.score} · ${s.asset} · ${s.tf}</span>
+        <div style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:4px 10px;border-radius:7px;background:var(--subtle);border:1px solid var(--border);">${mkSvg('<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>','var(--muted)',13)}<span style="font-size:12px;font-weight:600;color:var(--body);">Routing to: ${meta.account||'Alpaca paper'}</span></div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;"><span style="display:block;font-size:15px;font-weight:700;color:var(--head);">${money(s.price)}</span><span style="font-size:12px;color:var(--muted);">Next: Jul 14</span></div></div>
+      ${actions}
+    </div>`;
+  }).join('');
+  panel.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <span style="font-size:18px;font-weight:700;color:var(--head);">Your subscriptions</span>
+      <button id="manage-close" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:9px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;">${mkSvg('<path d="M18 6 6 18"/><path d="m6 6 12 12"/>','currentColor',17)}</button>
+    </div>
+    <div style="flex:1;min-height:0;overflow-y:auto;padding:4px 24px;">${subbed.length?rows:'<div style="padding:48px 0;text-align:center;color:var(--muted);font-size:14px;">No active subscriptions</div>'}</div>
+    <div style="flex-shrink:0;padding:16px 24px;border-top:1px solid var(--border);background:var(--card);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:13px;color:var(--muted);">Total monthly spend</span>
+      <span style="font-size:18px;font-weight:800;color:var(--head);">$${total} / month</span>
+    </div>`;
+  document.getElementById('manage-close').addEventListener('click',()=>{state.manageOpen=false;state.confirmCancel=null;renderManageDrawer();});
+  panel.querySelectorAll('.pause-resume').forEach(el=>el.addEventListener('click',()=>{state.paused[el.dataset.id]=!state.paused[el.dataset.id];renderManageDrawer();renderMarketplace();}));
+  panel.querySelectorAll('.cancel-sub').forEach(el=>el.addEventListener('click',()=>{state.confirmCancel=el.dataset.id;renderManageDrawer();}));
+  panel.querySelectorAll('.keep-sub').forEach(el=>el.addEventListener('click',()=>{state.confirmCancel=null;renderManageDrawer();}));
+  panel.querySelectorAll('.do-cancel').forEach(el=>el.addEventListener('click',()=>{delete state.subs[el.dataset.id];state.confirmCancel=null;showToast('Subscription cancelled');renderManageDrawer();renderMarketplace();}));
+  panel.querySelectorAll('.change-acct').forEach(el=>el.addEventListener('click',()=>{state.manageOpen=false;state.flow={id:el.dataset.id,step:1,account:'alpaca-paper'};renderManageDrawer();renderFlowOverlay();}));
+}
+document.getElementById('manage-backdrop').addEventListener('click',()=>{state.manageOpen=false;state.confirmCancel=null;renderManageDrawer();});
+
+// ── Flow Overlay ──
+function renderFlowOverlay(){
+  const f=state.flow;
+  const overlay=document.getElementById('flow-overlay'),card=document.getElementById('flow-card');
+  if(!f){overlay.style.display='none';return;}
+  overlay.style.display='flex';
+  const s=byId(f.id);
+  if(f.step===1)renderFlowStep1(s,f,card);
+  else if(f.step===2)renderFlowStep2(s,f,card);
+  else renderFlowStep3(s,f,card);
+}
+function renderFlowStep1(s,f,card){
+  card.style.width='560px';
+  const rows=accounts.map(a=>{const on=f.account===a.id;return`<button class="acct-row" data-id="${a.id}" style="display:flex;align-items:center;gap:13px;width:100%;text-align:left;padding:14px 16px;border-radius:12px;cursor:pointer;font-family:var(--sans);background:${on?'var(--mkt-purple-soft)':'var(--card)'};border:1.5px solid ${on?'var(--mkt-purple)':'var(--border)'};">
+    <div style="width:20px;height:20px;border-radius:50%;flex-shrink:0;border:2px solid ${on?'var(--mkt-purple)':'var(--border)'};display:flex;align-items:center;justify-content:center;">${on?'<div style="width:10px;height:10px;border-radius:50%;background:var(--mkt-purple);"></div>':''}</div>
+    <div style="width:34px;height:34px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--subtle);border:1px solid var(--border);font-size:12px;font-weight:700;color:var(--body);">${a.ini}</div>
+    <div style="flex:1;min-width:0;"><span style="display:block;font-size:15px;font-weight:600;color:var(--head);">${a.name}</span><span style="font-size:12.5px;color:var(--muted);">${a.bal} · ${a.mode} trading</span></div>
+    <span style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;background:${a.mode==='Live'?'var(--profit-soft)':'rgba(99,102,241,.10)'};color:${a.mode==='Live'?'var(--profit)':'#4338CA'};border:1px solid ${a.mode==='Live'?'color-mix(in srgb,var(--profit) 26%,transparent)':'rgba(99,102,241,.25)'};">${a.mode}</span>
+  </button>`;}).join('');
+  card.innerHTML=`<div style="background:var(--page);border-radius:16px;overflow:hidden;box-shadow:0 24px 64px -16px rgba(15,23,36,.4);">
+    <div style="display:flex;align-items:center;gap:12px;padding:18px 24px;background:var(--subtle);border-bottom:1px solid var(--border);">
+      <div style="width:28px;height:28px;border-radius:50%;background:var(--mkt-purple);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;">1</div>
+      <span style="flex:1;font-size:17px;font-weight:700;color:var(--head);">Choose your trading account</span>
+      <span style="font-size:12px;font-weight:600;color:var(--muted);">Step 1 of 2</span>
+      <button id="flow-close" style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:8px;border:none;background:transparent;color:var(--muted);cursor:pointer;">${mkSvg('<path d="M18 6 6 18"/><path d="m6 6 12 12"/>','currentColor',17)}</button>
+    </div>
+    <div style="padding:22px 24px;display:flex;flex-direction:column;gap:18px;background:var(--card);">
+      <span style="font-size:13.5px;color:var(--body);">Signals from this strategy will be routed to your selected account.</span>
+      <div style="display:flex;align-items:center;gap:13px;padding:14px 16px;background:var(--subtle);border:1px solid var(--border);border-radius:12px;">
+        ${avatar(s.ini,s.grad,42,14)}<div style="flex:1;min-width:0;"><span style="display:block;font-size:15px;font-weight:700;color:var(--head);">${s.name}</span><span style="display:block;font-size:12.5px;color:var(--muted);margin-top:2px;">by ${s.seller} · ${s.asset} · ${s.tf} · Score ${s.score}</span></div>
+        <span style="font-size:17px;font-weight:800;color:var(--mkt-purple);">${money(s.price)}</span>
+      </div>
+      <div><span style="display:block;font-size:12px;font-weight:700;letter-spacing:0.04em;color:var(--muted);text-transform:uppercase;margin-bottom:10px;">Connected accounts</span>
+        <div style="display:flex;flex-direction:column;gap:10px;">${rows}</div>
+      </div>
+      <button id="flow-continue" style="height:50px;width:100%;border:none;border-radius:11px;background:var(--mkt-purple);color:#fff;font-size:16px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:var(--sans);">Continue to payment ${mkSvg('<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>','#fff',17)}</button>
+    </div>
+  </div>`;
+  document.getElementById('flow-close').addEventListener('click',()=>{state.flow=null;renderFlowOverlay();});
+  document.getElementById('flow-continue').addEventListener('click',()=>{state.flow={...f,step:2};renderFlowOverlay();});
+  card.querySelectorAll('.acct-row').forEach(el=>el.addEventListener('click',()=>{state.flow={...f,account:el.dataset.id};renderFlowOverlay();}));
+}
+function renderFlowStep2(s,f,card){
+  card.style.width='760px';
+  const acct=accounts.find(a=>a.id===f.account);
+  card.innerHTML=`<div style="background:var(--card);border-radius:16px;overflow:hidden;box-shadow:0 24px 64px -16px rgba(15,23,36,.4);">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border);">
+      <div style="display:flex;align-items:center;gap:10px;"><div style="width:26px;height:26px;border-radius:7px;background:var(--stripe);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;">S</div><span style="font-size:15px;font-weight:700;color:var(--head);">Secured by Stripe</span></div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="display:flex;align-items:center;gap:6px;">${mkSvg('<path d="M5 11V8a7 7 0 0 1 14 0v3"/><path d="M5 11a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2z"/>','var(--muted)',15)}<span style="font-size:12.5px;font-weight:600;color:var(--muted);">SSL encrypted</span></div>
+        <button id="flow-back" style="background:none;border:none;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans);">← Back</button>
+      </div>
+    </div>
+    <div style="display:flex;align-items:stretch;">
+      <div style="flex:0 0 300px;padding:24px;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:16px;">
+        <span style="font-size:12px;font-weight:700;letter-spacing:0.04em;color:var(--muted);text-transform:uppercase;">Order summary</span>
+        <div style="display:flex;gap:12px;align-items:flex-start;">${avatar(s.ini,s.grad,44,14)}<div style="flex:1;"><span style="display:block;font-size:15px;font-weight:700;color:var(--head);">${s.name}</span><span style="font-size:12.5px;color:var(--muted);">by ${s.seller} · Monthly subscription</span></div><span style="font-size:16px;font-weight:700;color:var(--head);">$${s.price}</span></div>
+        <div style="height:1px;background:var(--border);"></div>
+        ${[['Subtotal','$'+s.price+'.00'],['TraderVault fee','$0.00'],['Tax','$0.00']].map(([k,v])=>`<div style="display:flex;justify-content:space-between;font-size:13.5px;color:var(--body);"><span>${k}</span><span style="font-weight:600;color:var(--head);">${v}</span></div>`).join('')}
+        <div style="height:1px;background:var(--border);"></div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:15px;font-weight:700;color:var(--head);">Due today</span><span style="font-size:20px;font-weight:800;color:var(--head);">$${s.price}.00</span></div>
+        <div style="display:flex;gap:9px;padding:12px 13px;background:var(--subtle);border:1px solid var(--border);border-radius:10px;">${mkSvg('<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>','var(--muted)',15)}<span style="font-size:12.5px;color:var(--body);line-height:1.5;">Signals will route to <strong style="color:var(--head)">${acct.name}</strong> immediately after payment.</span></div>
+      </div>
+      <div style="flex:1;padding:24px;display:flex;flex-direction:column;gap:15px;">
+        <span style="font-size:12px;font-weight:700;letter-spacing:0.04em;color:var(--muted);text-transform:uppercase;">Payment details</span>
+        <div><label style="display:block;font-size:13px;font-weight:600;color:var(--head);margin-bottom:7px;">Email</label><input type="text" value="designer@uxokdc.com" style="width:100%;height:46px;padding:0 14px;font-family:var(--sans);font-size:15px;color:var(--head);background:var(--card);border:1px solid var(--border);border-radius:9px;outline:none;"></div>
+        <div><label style="display:block;font-size:13px;font-weight:600;color:var(--head);margin-bottom:7px;">Card number</label><input type="text" placeholder="1234 1234 1234 1234" style="width:100%;height:46px;padding:0 14px;font-family:var(--sans);font-size:15px;color:var(--head);background:var(--card);border:1px solid var(--border);border-radius:9px;outline:none;"><div style="display:flex;gap:6px;margin-top:8px;">${['VISA','MC','AMEX'].map(t=>`<span style="font-size:10px;font-weight:800;color:#1A1F71;background:#fff;border:1px solid var(--border);border-radius:5px;padding:3px 7px;">${t}</span>`).join('')}</div></div>
+        <div style="display:flex;gap:12px;"><div style="flex:1;"><label style="display:block;font-size:13px;font-weight:600;color:var(--head);margin-bottom:7px;">Expiry</label><input type="text" placeholder="MM / YY" style="width:100%;height:46px;padding:0 14px;font-family:var(--sans);font-size:15px;color:var(--head);background:var(--card);border:1px solid var(--border);border-radius:9px;outline:none;"></div><div style="flex:1;"><label style="display:block;font-size:13px;font-weight:600;color:var(--head);margin-bottom:7px;">CVC</label><input type="text" placeholder="CVC" style="width:100%;height:46px;padding:0 14px;font-family:var(--sans);font-size:15px;color:var(--head);background:var(--card);border:1px solid var(--border);border-radius:9px;outline:none;"></div></div>
+        <div><label style="display:block;font-size:13px;font-weight:600;color:var(--head);margin-bottom:7px;">Name on card</label><input type="text" placeholder="David Cervantes" style="width:100%;height:46px;padding:0 14px;font-family:var(--sans);font-size:15px;color:var(--head);background:var(--card);border:1px solid var(--border);border-radius:9px;outline:none;"></div>
+        <button id="flow-pay" style="height:52px;width:100%;border:none;border-radius:10px;background:var(--stripe);color:#fff;font-size:16px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:9px;margin-top:2px;font-family:var(--sans);">${mkSvg('<path d="M5 11V8a7 7 0 0 1 14 0v3"/><path d="M5 11a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2z"/>','#fff',17)} Subscribe — $${s.price}/month</button>
+        <span style="font-size:11.5px;color:var(--muted);text-align:center;line-height:1.55;">By subscribing you agree to Terms. Cancel anytime.</span>
+      </div>
+    </div>
+  </div>`;
+  document.getElementById('flow-back').addEventListener('click',()=>{state.flow={...f,step:1};renderFlowOverlay();});
+  document.getElementById('flow-pay').addEventListener('click',()=>{
+    const acct=accounts.find(a=>a.id===f.account);
+    state.subs[f.id]=true;state.subMeta[f.id]={since:'Jun 14',account:acct.name};
+    state.flow={...f,step:3};renderFlowOverlay();
+  });
+}
+function renderFlowStep3(s,f,card){
+  card.style.width='560px';
+  const acct=accounts.find(a=>a.id===f.account);
+  const rows=[['Strategy',s.name,'<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>'],['Routing to',acct.name,'<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>'],['Billing','$'+s.price+'/mo · next Jul 14','<path d="M5 11V8a7 7 0 0 1 14 0v3"/><path d="M5 11a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2z"/>'],['Notifications','Signal alerts on','<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>']];
+  card.innerHTML=`<div style="background:var(--card);border-radius:16px;overflow:hidden;box-shadow:0 24px 64px -16px rgba(15,23,36,.4);">
+    <div style="padding:40px 36px 32px;text-align:center;border-bottom:1px solid var(--border);">
+      <div style="width:72px;height:72px;border-radius:50%;margin:0 auto 20px;background:var(--profit-soft);border:1px solid color-mix(in srgb,var(--profit) 26%,transparent);display:flex;align-items:center;justify-content:center;">${mkSvg('<path d="M20 6 9 17l-5-5"/>','var(--profit)',34,2.4)}</div>
+      <span style="display:block;font-size:24px;font-weight:800;color:var(--head);letter-spacing:-0.01em;">You're subscribed</span>
+      <span style="display:block;font-size:15px;color:var(--body);margin-top:10px;line-height:1.6;max-width:420px;margin-left:auto;margin-right:auto;">Signals from <strong style="color:var(--head)">${s.name}</strong> are now routing to your <strong style="color:var(--head)">${acct.name}</strong> account.</span>
+    </div>
+    <div style="padding:20px 36px;">
+      ${rows.map(([k,v,icon],i)=>`<div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:${i<rows.length-1?'1px solid var(--border)':'none'};">${mkSvg(icon,'var(--muted)',17)}<span style="flex:1;font-size:14px;color:var(--muted);">${k}</span><span style="font-size:14px;font-weight:700;color:var(--head);">${v}</span></div>`).join('')}
+    </div>
+    <div style="padding:20px 36px 28px;display:flex;flex-direction:column;gap:11px;">
+      <button onclick="window.location.href='chart.html'" style="height:50px;width:100%;border:none;border-radius:11px;background:var(--mkt-purple);color:#fff;font-size:15px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:var(--sans);">View live signals ${mkSvg('<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>','#fff',17)}</button>
+      <button id="flow-close-3" style="height:50px;width:100%;border-radius:11px;border:1px solid var(--border);background:var(--card);color:var(--body);font-size:15px;font-weight:600;cursor:pointer;font-family:var(--sans);">Back to Marketplace</button>
+    </div>
+  </div>`;
+  document.getElementById('flow-close-3').addEventListener('click',()=>{state.flow=null;renderFlowOverlay();renderMarketplace();});
+}
+document.getElementById('flow-overlay').addEventListener('click',e=>{if(e.target===document.getElementById('flow-overlay')&&state.flow&&state.flow.step!==3){state.flow=null;renderFlowOverlay();}});
+
+// ── Controls ──
+document.getElementById('collapse-btn').addEventListener('click',()=>{state.collapsed=!state.collapsed;applySidebar();});
+document.getElementById('theme-btn').addEventListener('click',()=>{state.dark=!state.dark;applyTheme();renderMarketplace();renderDetailDrawer();renderManageDrawer();});
+document.getElementById('kill-btn').addEventListener('click',()=>{state.killArmed=!state.killArmed;applyKill();});
+document.getElementById('acct-trigger').addEventListener('click',()=>{state.acctOpen=!state.acctOpen;renderDropdowns();});
+document.getElementById('profile-btn').addEventListener('click',e=>{e.stopPropagation();state.profileOpen=!state.profileOpen;renderDropdowns();});
+document.addEventListener('click',e=>{
+  let ch=false;
+  if(state.profileOpen&&!e.target.closest('#profile-btn')&&!e.target.closest('#profile-menu')){state.profileOpen=false;ch=true;}
+  if(state.acctOpen&&!e.target.closest('#acct-trigger')&&!e.target.closest('#acct-menu')){state.acctOpen=false;ch=true;}
+  if(ch)renderDropdowns();
+});
+
+applySidebar();applyTheme();applyKill();renderMarketplace();
+</script>
+</body>
+</html>

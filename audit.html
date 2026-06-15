@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TraderVault — Audit log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFFFFF; --card:#F8FAFC; --subtle:#F1F5F9; --border:#E2E8F0; --input:#CBD5E1;
+  --muted:#64718A; --body:#475569; --head:#1E293B;
+  --lime:#C8FF00; --navy:#101B25; --navy-light:#18242F;
+  --accent:#7C3AED; --accent-on:#FFFFFF; --accent-soft:rgba(124,58,237,.12); --link:#7C3AED;
+  --profit:#15803D; --loss:#DC2626; --warn:#D97706; --info:#3B82F6;
+  --warn-soft:rgba(217,119,6,.14); --profit-soft:rgba(21,128,61,.12); --loss-soft:rgba(220,38,38,.12);
+  --sb-bg:#101B25; --sb-fg:#9DAAB6; --sb-muted:#7E8C99; --sb-hover:#1B2731; --sb-border:#2A3640;
+  --mono:'JetBrains Mono',ui-monospace,monospace; --sans:'Inter',ui-sans-serif,system-ui,sans-serif;
+  --page:#F7F6F1;
+}
+.tv-dark{
+  --bg:#0B131B; --card:#101B25; --subtle:#18242F; --border:#28333D; --input:#2F3C47;
+  --muted:#8492A0; --body:#AEB9C4; --head:#F1F4F7; --link:#A78BFA;
+  --navy:#18242F; --navy-light:#1C2832;
+  --accent:#C8FF00; --accent-on:#101B25; --accent-soft:rgba(200,255,0,.16);
+  --profit:#22C55E; --loss:#F87171; --warn:#FBBF24;
+  --profit-soft:rgba(34,197,94,.16); --loss-soft:rgba(248,113,113,.16); --warn-soft:rgba(251,191,36,.16);
+  --page:#0B131B;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:var(--sans);color:var(--body);background:var(--bg);-webkit-font-smoothing:antialiased;}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px;border:2px solid var(--bg);}
+button{font-family:var(--sans);}
+a{text-decoration:none;}
+@keyframes tvpulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+select{font-family:var(--sans);}
+textarea{font-family:var(--sans);}
+</style>
+</head>
+<body>
+<div id="tv-root" style="display:flex;height:100vh;width:100%;overflow:hidden;background:var(--bg);">
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar" style="width:234px;flex:none;background:var(--sb-bg);display:flex;flex-direction:column;overflow:hidden;transition:width .18s ease;">
+    <a id="logo-link" href="index.html" style="display:flex;align-items:center;padding:18px 16px 16px;text-decoration:none;">
+      <img id="logo-mark" src="assets/tv-mark.svg" alt="TV" style="height:30px;width:auto;flex:none;display:none;">
+      <img id="logo-wordmark" src="assets/tv-wordmark-dark.svg" alt="TraderVault" style="height:26px;width:auto;flex:none;display:block;">
+    </a>
+    <nav style="flex:1;overflow-y:auto;overflow-x:hidden;padding:6px 10px;display:flex;flex-direction:column;gap:2px;">
+      <a href="index.html" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;text-decoration:none;cursor:pointer;white-space:nowrap;overflow:hidden;color:var(--sb-fg);">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#CAFF33" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        <span class="nav-label">Overview</span>
+      </a>
+      <div class="nav-section" style="padding:14px 12px 5px;font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--sb-muted);">STRATEGIES</div>
+      <a href="strategies.html" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;text-decoration:none;cursor:pointer;white-space:nowrap;overflow:hidden;color:var(--sb-fg);">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#3DD5A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 6a9 9 0 0 1-9 9"/><path d="M18 9v-3h-3"/></svg>
+        <span class="nav-label">Strategies</span>
+      </a>
+      <a href="analysis.html" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;text-decoration:none;cursor:pointer;white-space:nowrap;overflow:hidden;color:var(--sb-fg);">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#3DD5A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg>
+        <span class="nav-label">Analysis</span>
+      </a>
+      <div class="nav-section" style="padding:14px 12px 5px;font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--sb-muted);">TRADING</div>
+      <a href="chart.html" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;text-decoration:none;cursor:pointer;white-space:nowrap;overflow:hidden;color:var(--sb-fg);">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FBB23A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="7"/><rect x="14" y="6" width="3" height="11"/></svg>
+        <span class="nav-label">Chart signals</span>
+      </a>
+      <a href="audit.html" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;text-decoration:none;cursor:pointer;white-space:nowrap;overflow:hidden;color:var(--sb-fg);background:var(--sb-hover);">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FBB23A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        <span class="nav-label" style="color:#fff;font-weight:600;">Audit log</span>
+      </a>
+      <div class="nav-section" style="padding:14px 12px 5px;font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--sb-muted);">MARKETPLACE</div>
+      <a href="marketplace.html" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;text-decoration:none;cursor:pointer;white-space:nowrap;overflow:hidden;color:var(--sb-fg);">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M2 7h20"/><path d="M12 7v15"/></svg>
+        <span class="nav-label">Marketplace</span>
+      </a>
+      <a href="mysignals.html" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;font-size:14px;text-decoration:none;cursor:pointer;white-space:nowrap;overflow:hidden;color:var(--sb-fg);">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M4.9 19.1A10 10 0 0 1 4.9 5"/><path d="M7.8 16.2a6 6 0 0 1 0-8.4"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4"/><path d="M19.1 4.9a10 10 0 0 1 0 14.2"/></svg>
+        <span class="nav-label">My signals</span>
+      </a>
+    </nav>
+    <div id="sb-footer">
+      <div style="position:relative;padding:10px 12px;border-top:1px solid var(--sb-border);">
+        <div id="acct-menu" style="position:absolute;left:10px;right:10px;bottom:calc(100% - 2px);background:var(--navy-light);border:1px solid var(--sb-border);border-radius:11px;box-shadow:0 -10px 32px -8px rgba(0,0,0,.45);overflow:hidden;z-index:40;transition:opacity .14s,transform .14s;transform-origin:bottom center;opacity:0;transform:translateY(8px) scale(.98);pointer-events:none;">
+          <div style="padding:9px 12px 7px;font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--sb-muted);">SWITCH ACCOUNT</div>
+          <div style="height:1px;background:var(--sb-border);"></div>
+          <div style="padding:6px;display:flex;flex-direction:column;gap:2px;">
+            <button style="display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;background:var(--sb-hover);border:none;border-radius:7px;cursor:pointer;">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none;"></span>
+              <div style="min-width:0;text-align:left;flex:1;"><div style="font-size:13px;font-weight:600;color:#fff;">Alpaca paper</div><div style="font-size:11px;color:var(--sb-muted);">Paper trading · $99,858.87</div></div>
+            </button>
+            <button style="display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;background:none;border:none;border-radius:7px;cursor:pointer;">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--sb-muted);flex:none;"></span>
+              <div style="min-width:0;text-align:left;flex:1;"><div style="font-size:13px;font-weight:600;color:#fff;">Alpaca live</div><div style="font-size:11px;color:var(--sb-muted);">Live trading · $24,107.40</div></div>
+            </button>
+          </div>
+          <div style="height:1px;background:var(--sb-border);"></div>
+          <button style="display:flex;align-items:center;gap:9px;width:100%;padding:10px 14px;background:none;border:none;color:var(--sb-fg);font-size:12px;font-weight:500;cursor:pointer;text-align:left;font-family:var(--sans);">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Connect new account
+          </button>
+        </div>
+        <button id="acct-trigger" style="display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;background:none;border:1px solid transparent;border-radius:9px;cursor:pointer;">
+          <div style="min-width:0;flex:1;text-align:left;">
+            <div style="font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--sb-muted);margin-bottom:5px;">ACCOUNT</div>
+            <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:6px;">Alpaca paper</div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;background:rgba(59,130,246,.18);color:#7DB1FF;">ALPACA</span>
+              <span style="font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;background:rgba(148,163,184,.18);color:#A7B4C2;">PAPER</span>
+              <span style="font-family:var(--mono);font-size:12px;color:#fff;margin-left:auto;">$99,858.87</span>
+            </div>
+          </div>
+          <svg id="acct-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--sb-muted);transition:transform .15s;"><path d="m18 15-6-6-6 6"/></svg>
+        </button>
+      </div>
+      <div style="padding:14px 12px;display:flex;flex-direction:column;gap:9px;border-top:1px solid var(--sb-border);">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="width:6px;height:6px;border-radius:50%;background:var(--accent);flex:none;box-shadow:0 0 6px var(--accent);"></span>
+          <span id="clock-display" style="font-family:var(--mono);font-size:13px;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:0.04em;">00:00:00</span>
+          <span style="font-size:10px;font-weight:600;color:var(--sb-muted);letter-spacing:0.08em;">UTC</span>
+        </div>
+        <div style="height:1px;background:var(--sb-border);margin:1px 0;"></div>
+        <button id="kill-btn" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:10px 14px;border-radius:8px;border:1px solid rgba(239,68,68,.5);background:rgba(239,68,68,.14);color:#FF8A8A;font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:0.06em;cursor:pointer;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+          <span id="kill-label" class="nav-label">KILL</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;">
+    <header style="height:56px;flex:none;display:flex;align-items:center;gap:16px;padding:0 20px;border-bottom:1px solid var(--border);background:var(--bg);">
+      <button id="collapse-btn" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;flex:none;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--body);cursor:pointer;padding:0;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </button>
+      <div style="display:flex;align-items:center;gap:7px;font-size:14px;">
+        <span style="color:var(--head);font-weight:600;">Audit log</span>
+        <span style="color:var(--muted);">·</span>
+        <span style="color:var(--muted);font-size:13px;">Every signal, fill, skip &amp; system event</span>
+      </div>
+      <div style="flex:1;"></div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--body);"><span style="width:7px;height:7px;border-radius:50%;background:var(--profit);animation:tvpulse 2s infinite;"></span>WS</span>
+      </div>
+      <div style="width:1px;height:24px;background:var(--border);"></div>
+      <div style="position:relative;flex:none;">
+        <button id="notif-btn" style="position:relative;display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--body);cursor:pointer;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          <span style="position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:var(--loss);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;">3</span>
+        </button>
+        <div id="notif-menu" style="position:absolute;top:calc(100% + 8px);right:0;width:330px;background:var(--bg);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 32px -8px rgba(13,27,42,.22);z-index:50;overflow:hidden;transition:opacity .14s,transform .14s;transform-origin:top right;opacity:0;transform:translateY(-6px) scale(.97);pointer-events:none;">
+          <div style="padding:15px 18px 12px;font-size:15px;font-weight:600;color:var(--head);">Notifications</div>
+          <div style="height:1px;background:var(--border);"></div>
+          <div style="padding:8px 6px;font-size:13px;color:var(--muted);text-align:center;">No new notifications</div>
+        </div>
+      </div>
+      <button id="theme-btn" style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--body);cursor:pointer;flex:none;">
+        <span id="theme-moon" style="display:inline-flex;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
+        <span id="theme-sun" style="display:none;color:var(--accent);"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></span>
+      </button>
+      <div style="position:relative;flex:none;">
+        <button id="profile-btn" style="display:flex;align-items:center;gap:7px;padding:3px 7px 3px 3px;border-radius:999px;border:1px solid var(--border);background:var(--bg);cursor:pointer;">
+          <span style="width:30px;height:30px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;color:var(--lime);font-size:12px;font-weight:700;flex:none;">JD</span>
+          <svg id="profile-chevron" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted);transition:transform .15s;"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div id="profile-menu" style="position:absolute;top:calc(100% + 8px);right:0;width:230px;background:var(--bg);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 32px -8px rgba(13,27,42,.22);z-index:50;overflow:hidden;transition:opacity .14s,transform .14s;transform-origin:top right;opacity:0;transform:translateY(-6px) scale(.97);pointer-events:none;">
+          <div style="padding:14px 16px 12px;"><div style="font-size:15px;font-weight:600;color:var(--head);">John Doe</div><div style="font-size:12px;color:var(--muted);margin-top:3px;">Pro Trader</div></div>
+          <div style="height:1px;background:var(--border);"></div>
+          <div style="padding:6px;">
+            <a style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:7px;font-size:14px;color:var(--body);cursor:pointer;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;opacity:.65;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Logout
+            </a>
+          </div>
+        </div>
+      </div>
+    </header>
+    <main style="flex:1;overflow-y:auto;background:var(--page);">
+      <div id="audit-root" style="max-width:1180px;margin:0 auto;padding:20px 24px 56px;display:flex;flex-direction:column;gap:18px;"></div>
+    </main>
+  </div>
+</div>
+<div id="toast" style="position:fixed;bottom:20px;right:20px;z-index:300;background:var(--head);color:var(--bg);padding:11px 16px;border-radius:9px;font-size:13px;font-weight:500;box-shadow:0 8px 24px rgba(15,23,36,.22);max-width:340px;opacity:0;transition:opacity .2s;pointer-events:none;"></div>
+
+<script>
+// ── State ──
+const state = {
+  collapsed:false, dark:false, acctOpen:false, killArmed:false,
+  notifOpen:false, profileOpen:false,
+  filter:'All', strat:'mb1', range:'Today', search:'',
+  openRow:null, collapsed_groups:{},
+  notes:[
+    {id:'n1',text:'Paused briefly Jun 13 ahead of Fed announcement — resumed after. Pattern degradation warning flagged by AI — monitoring closely before deciding to run new backtest.',meta:'Jun 14 · 9:20am · by you'},
+    {id:'n2',text:'Reduced max contracts from 3 to 2 after margin rejection on Jun 14 morning. Need to review position sizing in Backtest Config.',meta:'Jun 14 · 9:35am · by you'},
+  ],
+  draft:'', composerOpen:false, notePublic:false, toastMsg:null,
+};
+
+// ── Sidebar ──
+function applySidebar() {
+  const sb=document.getElementById('sidebar'), c=state.collapsed;
+  sb.style.width=c?'58px':'234px';
+  document.querySelectorAll('.nav-label').forEach(el=>el.style.display=c?'none':'');
+  document.querySelectorAll('.nav-section').forEach(el=>el.style.display=c?'none':'');
+  document.getElementById('logo-mark').style.display=c?'block':'none';
+  document.getElementById('logo-wordmark').style.display=c?'none':'block';
+  document.getElementById('sb-footer').style.display=c?'none':'block';
+}
+function fmtClock(d){return[d.getUTCHours(),d.getUTCMinutes(),d.getUTCSeconds()].map(n=>String(n).padStart(2,'0')).join(':');}
+function tickClock(){const el=document.getElementById('clock-display');if(el)el.textContent=fmtClock(new Date());}
+tickClock();setInterval(tickClock,1000);
+function applyTheme(){
+  document.body.classList.toggle('tv-dark',state.dark);
+  document.getElementById('theme-moon').style.display=state.dark?'none':'inline-flex';
+  document.getElementById('theme-sun').style.display=state.dark?'inline-flex':'none';
+}
+function applyKill(){
+  const btn=document.getElementById('kill-btn'),label=document.getElementById('kill-label');
+  if(state.killArmed){btn.style.background='rgba(239,68,68,.9)';btn.style.color='#fff';btn.style.borderColor='#EF4444';label.textContent='KILL — ARMED';}
+  else{btn.style.background='rgba(239,68,68,.14)';btn.style.color='#FF8A8A';btn.style.borderColor='rgba(239,68,68,.5)';label.textContent='KILL';}
+}
+function showDD(id,open){
+  const el=document.getElementById(id);if(!el)return;
+  el.style.opacity=open?'1':'0';
+  el.style.transform=open?(id==='acct-menu'?'translateY(0) scale(1)':'translateY(0) scale(1)'):(id==='acct-menu'?'translateY(8px) scale(.98)':'translateY(-6px) scale(.97)');
+  el.style.pointerEvents=open?'auto':'none';
+}
+function renderDropdowns(){
+  showDD('acct-menu',state.acctOpen); showDD('notif-menu',state.notifOpen); showDD('profile-menu',state.profileOpen);
+  document.getElementById('acct-chevron').style.transform=state.acctOpen?'rotate(180deg)':'';
+  document.getElementById('acct-trigger').style.borderColor=state.acctOpen?'var(--sb-border)':'transparent';
+  document.getElementById('profile-chevron').style.transform=state.profileOpen?'rotate(180deg)':'';
+}
+let toastTimer;
+function showToast(msg){
+  const el=document.getElementById('toast');el.textContent=msg;el.style.opacity='1';el.style.pointerEvents='auto';
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>{el.style.opacity='0';el.style.pointerEvents='none';},2800);
+}
+
+// ── Data ──
+function mkSvg(paths,col,size,sw){return`<svg width="${size||16}" height="${size||16}" viewBox="0 0 24 24" fill="none" stroke="${col||'currentColor'}" stroke-width="${sw||2}" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">${paths}</svg>`;}
+const typeMap={
+  filled:{c:'var(--profit)',bg:'var(--profit-soft)',icon:'<path d="M20 6 9 17l-5-5"/>'},
+  skipped:{c:'var(--muted)',bg:'var(--subtle)',icon:'<path d="M5 12h14"/>'},
+  rejected:{c:'var(--loss)',bg:'var(--loss-soft)',icon:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>'},
+  warning:{c:'var(--warn)',bg:'var(--warn-soft)',icon:'<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/>'},
+  system:{c:'#7C3AED',bg:'rgba(124,58,237,.10)',icon:'<path d="M12 4v8"/><path d="M7.5 7.5a7 7 0 1 0 9 0"/>'},
+};
+const tagStyles={purple:{bg:'rgba(124,58,237,.10)',c:'#7C3AED'},green:{bg:'var(--profit-soft)',c:'var(--profit)'},gray:{bg:'var(--subtle)',c:'var(--muted)'},red:{bg:'var(--loss-soft)',c:'var(--loss)'},amber:{bg:'var(--warn-soft)',c:'var(--warn)'}};
+function mkTag(text,kind){const m=tagStyles[kind]||{bg:'var(--subtle)',c:'var(--body)'};return`<span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:5px;background:${m.bg};color:${m.c};white-space:nowrap;border:1px solid color-mix(in srgb,${m.c} 22%,transparent)">${text}</span>`;}
+
+const eventsData = {
+  today:[
+    {id:'e1',type:'filled',strat:'mb1',time:'10:23am',title:'NQ Long — signal fired and filled',text:'nq long signal fired filled buy 19847 confidence 84 momentum breakout',
+      desc:'Momentum Breakout · Instance 1 fired a <strong style="color:var(--head)">buy signal at 19,847.25</strong>. Order placed and filled at 19,847.50. Confidence 84% — 3 of 4 context conditions met.',
+      tags:[['Momentum Breakout · I1','purple'],['Filled @ 19,847.50','green'],['Confidence 84%','purple']],
+      detail:{grid:[['Signal time','10:23:04am'],['Signal price','19,847.25'],['Fill price','19,847.50'],['Slippage','+0.25 (0.5 tk)'],['Contracts','2'],['Stop','19,798'],['Take profit','19,983 (2R)'],['Broker','Alpaca paper']],context:[['SQQQ',true],['ATR',true],['BOS',true],['DXY',false]],reason:null}},
+    {id:'e2',type:'skipped',strat:'mb1',time:'9:58am',title:'NQ Long — signal skipped',text:'nq long signal skipped confidence 38 below threshold sqqq did not confirm',
+      desc:'Momentum Breakout · Instance 1 fired a buy signal but it was <strong style="color:var(--head)">skipped — confidence 38%</strong> (below your 50% threshold). SQQQ did not confirm within 90 seconds.',
+      tags:[['Momentum Breakout · I1','purple'],['Skipped','gray'],['Confidence 38% — below threshold','purple']],
+      detail:{grid:[['Signal time','9:58:11am'],['Signal price','19,801.00'],['Skip reason','Confidence below threshold'],['Threshold set','50% minimum']],context:[['SQQQ',false],['ATR',true],['BOS',false],['DXY',false]],reason:'Your confidence threshold protected you here — only 38% of context conditions were met. SQQQ failed to confirm within the 90-second window, so the entry was blocked. No action needed.'}},
+    {id:'e3',type:'filled',strat:'mb1',time:'9:47am → 11:02am',title:'NQ Long — closed at take profit',text:'nq long closed take profit 2r exit 19983 pnl 2660 momentum breakout',
+      desc:'Position opened at 9:47am <strong style="color:var(--head)">closed at take profit (2R)</strong>. Exit at 19,983. Held 1h 15m. P&L +$2,660 (+2.0R).',
+      tags:[['Momentum Breakout · I1','purple'],['TP hit @ 19,983','green'],['+$2,660 (+2.0R)','green']],
+      detail:{grid:[['Entry time','9:47:30am'],['Entry price','19,851.00'],['Exit time','11:02:14am'],['Exit price','19,983.00'],['Hold time','1h 15m'],['Contracts','2'],['P&L','+$2,660'],['R-multiple','+2.0R']],context:null,reason:null}},
+    {id:'e4',type:'rejected',strat:'mb1',time:'9:31am',title:'NQ Long — order rejected by broker',text:'nq long order rejected broker insufficient buying power margin 3 contracts',
+      desc:'Signal fired correctly but the broker rejected the order — <strong style="color:var(--head)">insufficient buying power</strong>. Order was for 3 contracts at 19,623. Available margin covered 2 contracts only.',
+      tags:[['Momentum Breakout · I1','purple'],['Broker rejection','red'],['Insufficient margin','amber']],
+      detail:{grid:[['Signal time','9:31:02am'],['Signal price','19,623.50'],['Requested size','3 contracts'],['Broker error','Insufficient buying power']],context:null,reason:'The signal was valid, but your account margin only covered 2 of the 3 requested contracts. Consider lowering Risk per trade or Max contracts in Backtest Config so orders fit available margin.',raw:'INSUFFICIENT_BUYING_POWER'}},
+    {id:'e5',type:'warning',strat:'mb1',time:'9:15am',title:'Context engine — pattern degradation detected',text:'context engine pattern degradation sqqq atr bos win rate 84 61 declining',
+      desc:'Your top winning pattern (<strong style="color:var(--head)">SQQQ + ATR + BOS</strong>) has shown declining win rate over the last 7 live trading days — 84% in backtest, now 61% in live conditions. AI is flagging this for your review.',
+      tags:[['Pattern degradation','amber'],['Momentum Breakout · I1','purple'],['84% → 61% win rate','purple']],
+      detail:{grid:[['Pattern','SQQQ + ATR + BOS'],['Backtest win rate','84%'],['Live win rate (7d)','61%'],['Live trades','23']],context:null,reason:'Live performance has dropped more than 15 points below backtest over 23 trades. Markets may have shifted. Consider running a fresh backtest on recent data, or tightening the entry filters before this pattern degrades further.'}},
+    {id:'e6',type:'system',strat:'mb1',time:'8:30am',title:'Momentum Breakout · Instance 1 — resumed',text:'instance resumed momentum breakout live',
+      desc:'Instance manually resumed after the overnight pause. <strong style="color:var(--head)">Now live</strong> and listening for signals on NQ · 5m.',
+      tags:[['Momentum Breakout · I1','purple'],['Resumed','green']],
+      detail:{grid:[['Resumed at','8:30:00am'],['Paused since','Jun 13 · 4:10pm'],['Signals missed','0'],['Status','Live']],context:null,reason:null}},
+  ],
+  yesterday:[
+    {id:'y1',type:'system',strat:'mb1',time:'3:47pm',title:'KILL switch activated',text:'kill switch activated manual position closed market nq long 19720 paused',
+      desc:'All live signals paused manually. <strong style="color:var(--head)">1 open position closed at market</strong>. NQ Long closed at 19,720 (was +0.6R at close). All instances set to paused.',
+      tags:[['Manual KILL','purple'],['1 position force-closed','amber'],['Resumed 4:10pm','green']],
+      detail:{grid:[['Kill time','3:47:12pm'],['Resume time','4:10:40pm'],['Positions closed','1 (NQ Long)'],['Signals cancelled','2 pending']],context:null,reason:"You triggered the KILL switch. All live signals were halted and the single open NQ Long position was force-closed at market (19,720, +0.6R). Two pending signals were cancelled. Instances were resumed at 4:10pm."}},
+    {id:'y2',type:'skipped',strat:'mb1',time:'4:01pm',title:'NQ Long — skipped (session ended)',text:'nq long skipped session ended ny 4pm session filter',
+      desc:'Signal fired at 4:01pm but was skipped — <strong style="color:var(--head)">NY session ended at 4:00pm</strong>. Session filter prevented entry.',
+      tags:[['Momentum Breakout · I1','purple'],['Session ended','gray']],
+      detail:{grid:[['Signal time','4:01:09pm'],['Signal price','19,712.00'],['Skip reason','Session ended (NY 4:00pm)'],['Filter','NY session only']],context:null,reason:"Your strategy only trades the New York session (09:30–16:00 ET). This signal fired one minute after the session closed, so the session filter correctly blocked the entry."}},
+  ]
+};
+
+function matches(ev){
+  if(state.filter!=='All'){const map={Filled:'filled',Skipped:'skipped',Rejected:'rejected',Warnings:'warning',System:'system'};if(ev.type!==map[state.filter])return false;}
+  if(state.strat!=='all'&&ev.strat!==state.strat)return false;
+  if(state.search.trim()&&!(ev.text+' '+ev.title).toLowerCase().includes(state.search.trim().toLowerCase()))return false;
+  return true;
+}
+
+function detailPanelHTML(ev){
+  const dt=ev.detail||{};
+  let html='';
+  if(dt.grid){html+=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px 18px">${dt.grid.map(([k,v])=>`<div><span style="display:block;font-size:10px;font-weight:700;letter-spacing:0.05em;color:var(--muted);text-transform:uppercase;margin-bottom:3px">${k}</span><span style="font-size:13px;font-weight:600;color:var(--head);font-variant-numeric:tabular-nums">${v}</span></div>`).join('')}</div>`;}
+  if(dt.context){html+=`<div style="margin-top:14px"><span style="display:block;font-size:10px;font-weight:700;letter-spacing:0.05em;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Context conditions at signal</span><div style="display:flex;flex-wrap:wrap;gap:8px">${dt.context.map(([l,ok])=>`<div style="display:inline-flex;align-items:center;gap:7px;padding:5px 10px;border-radius:8px;background:var(--card);border:1px solid var(--border)"><div style="width:15px;height:15px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:${ok?'var(--profit)':'var(--loss)'};">${mkSvg(ok?'<path d="M20 6 9 17l-5-5"/>':'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>','#fff',10)}</div><span style="font-size:12.5px;font-weight:600;color:var(--head)">${l}</span></div>`).join('')}</div></div>`;}
+  if(dt.reason){html+=`<div style="margin-top:14px;padding:11px 13px;border-radius:9px;background:var(--card);border:1px solid var(--border)"><span style="font-size:13px;color:var(--body);line-height:1.55">${dt.reason}</span>${dt.raw?`<span style="display:block;font-size:11px;font-family:var(--mono);color:var(--muted);margin-top:7px">Broker code: ${dt.raw}</span>`:''}</div>`;}
+  return`<div style="padding:16px 18px 18px 74px;background:var(--subtle);border-top:1px solid var(--border)">${html}</div>`;
+}
+
+function logRowHTML(ev){
+  const m=typeMap[ev.type];
+  const open=state.openRow===ev.id;
+  return`<div id="row-${ev.id}" style="border-left:3px solid ${m.c};border-bottom:1px solid var(--border);background:var(--card)">
+    <div class="row-toggle" data-id="${ev.id}" style="display:flex;gap:14px;padding:16px 18px;cursor:pointer;">
+      <div style="width:36px;height:36px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:${m.bg}">${mkSvg(m.icon,m.c,18)}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:baseline;gap:12px">
+          <span style="flex:1;font-size:15px;font-weight:700;color:var(--head)">${ev.title}</span>
+          <span style="font-size:13px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums">${ev.time}</span>
+        </div>
+        <p style="margin:5px 0 0;font-size:14px;color:var(--body);line-height:1.55">${ev.desc}</p>
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-top:11px">
+          ${ev.tags.map(t=>mkTag(t[0],t[1])).join('')}
+          <button class="note-btn" data-id="${ev.id}" data-title="${ev.title.replace(/"/g,'&quot;')}" data-time="${ev.time}" style="display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 9px;border-radius:5px;border:1px dashed var(--border);background:transparent;color:var(--muted);font-size:11px;font-weight:600;cursor:pointer">${mkSvg('<path d="M12 5v14"/><path d="M5 12h14"/>','currentColor',12)} Note</button>
+        </div>
+      </div>
+      <div style="flex-shrink:0;padding-top:2px;color:var(--muted)">${mkSvg(`<path d="${open?'m18 15-6-6-6 6':'m6 9 6 6 6-6'}"/>`,'currentColor',18)}</div>
+    </div>
+    ${open?detailPanelHTML(ev):''}
+  </div>`;
+}
+
+function dateGroupHTML(key,label,count,list){
+  const collapsed=!!state.collapsed_groups[key];
+  const visible=list.filter(ev=>matches(ev));
+  if(visible.length===0)return'';
+  return`<div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;background:var(--card)">
+    <button class="group-hdr" data-key="${key}" style="display:flex;align-items:center;gap:10px;width:100%;padding:12px 18px;background:var(--subtle);border:none;border-bottom:1px solid var(--border);cursor:pointer;font-family:var(--sans)">
+      ${mkSvg(`<path d="${collapsed?'m9 18 6-6-6-6':'m6 9 6 6 6-6'}"/>`,'var(--muted)',15)}
+      <span style="font-size:12px;font-weight:700;letter-spacing:0.05em;color:var(--head);text-transform:uppercase">${label}</span>
+      <span style="font-size:12px;color:var(--muted)">${visible.length} events</span>
+    </button>
+    ${collapsed?'':'<div>'+visible.map(ev=>logRowHTML(ev)).join('')+'</div>'}
+  </div>`;
+}
+
+function summaryStripHTML(){
+  const cards=[{v:'47',l:'Signals fired today',c:'var(--head)'},{v:'31',l:'Orders filled',c:'var(--profit)'},{v:'14',l:'Signals skipped',c:'var(--muted)'},{v:'2',l:'Rejections',c:'var(--loss)'},{v:'1',l:'Warnings',c:'var(--warn)'}];
+  return`<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px">${cards.map(c=>`<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px"><span style="display:block;font-size:26px;font-weight:800;color:${c.c};line-height:1;font-variant-numeric:tabular-nums">${c.v}</span><span style="display:block;font-size:11px;font-weight:600;letter-spacing:0.04em;color:var(--muted);text-transform:uppercase;margin-top:8px;line-height:1.3">${c.l}</span></div>`).join('')}</div>`;
+}
+
+function filterBarHTML(){
+  const pills=['All','Filled','Skipped','Rejected','Warnings','System'];
+  const pillBar=pills.map(p=>{const on=state.filter===p;return`<button class="filter-pill" data-p="${p}" style="height:36px;padding:0 16px;border-radius:999px;font-size:14px;font-weight:600;cursor:pointer;background:${on?'var(--subtle)':'transparent'};color:${on?'var(--head)':'var(--muted)'};border:1px solid var(--border)">${p}</button>`;}).join('');
+  const stratOpts=[['all','All strategies'],['mb1','Momentum Breakout · I1'],['mb2','Momentum Breakout · I2'],['vw1','VWAP Scalper · I1']];
+  const rangeOpts=[['Today','Today'],['7d','Last 7 days'],['30d','Last 30 days']];
+  function selHTML(id,val,opts){return`<div style="position:relative;flex:1"><select id="${id}" style="width:100%;height:46px;padding:0 36px 0 16px;font-family:var(--sans);font-size:15px;font-weight:600;color:var(--head);background:var(--card);border:1px solid var(--border);border-radius:10px;outline:none;appearance:none;cursor:pointer">${opts.map(o=>`<option value="${o[0]}"${o[0]===val?' selected':''}>${o[1]}</option>`).join('')}</select><div style="position:absolute;right:14px;top:50%;transform:translateY(-50%);pointer-events:none">${mkSvg('<path d="m6 9 6 6 6-6"/>','var(--muted)',17)}</div></div>`;}
+  return`<div style="display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">${pillBar}</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:stretch">
+      ${selHTML('strat-sel',state.strat,stratOpts)}
+      ${selHTML('range-sel',state.range,rangeOpts)}
+      <div style="position:relative;flex:1 1 260px">
+        ${mkSvg('<path d="M11 11m-8 0a8 8 0 1 0 16 0 8 8 0 0 0-16 0"/><path d="m21 21-4.3-4.3"/>','var(--muted)',17).replace('style="flex-shrink:0"','style="position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none"')}
+        <input id="search-inp" type="text" value="${state.search}" placeholder="Search events…" style="width:100%;height:46px;padding:0 14px 0 42px;font-family:var(--sans);font-size:15px;color:var(--head);background:var(--card);border:1px solid var(--border);border-radius:10px;outline:none">
+      </div>
+    </div>
+  </div>`;
+}
+
+function notesSection(){
+  const name={mb1:'Momentum Breakout · Instance 1',mb2:'Momentum Breakout · Instance 2',vw1:'VWAP Scalper · Instance 1'}[state.strat];
+  if(!name)return'';
+  const noteRows=state.notes.map(n=>`<div style="padding:15px 18px;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:flex-start">
+    <div style="width:8px;height:8px;border-radius:50%;background:#7C3AED;flex-shrink:0;margin-top:6px"></div>
+    <div style="flex:1;min-width:0">
+      <span style="display:block;font-size:14px;color:var(--head);line-height:1.55">${n.text}</span>
+      <span style="display:block;font-size:12px;color:var(--muted);margin-top:6px">${n.meta}</span>
+    </div>
+    <button class="del-note" data-nid="${n.id}" style="width:28px;height:28px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:7px;border:none;background:transparent;color:var(--muted);cursor:pointer">${mkSvg('<path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/>','currentColor',14)}</button>
+  </div>`).join('');
+  const ready=state.draft.trim().length>0;
+  const composer=state.composerOpen?`<div style="padding:14px 16px 16px;border-top:1px solid var(--border);background:var(--subtle)">
+    <textarea id="note-ta" maxlength="280" placeholder="Write a note about this instance…" style="width:100%;min-height:90px;resize:vertical;box-sizing:border-box;padding:12px 14px;font-family:var(--sans);font-size:14px;line-height:1.55;color:var(--head);background:var(--card);border:1px solid var(--border);border-radius:10px;outline:none">${state.draft}</textarea>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:11px;flex-wrap:wrap">
+      <button id="note-visibility" style="display:flex;align-items:center;gap:7px;height:34px;padding:0 12px;border-radius:8px;border:1px solid ${state.notePublic?'rgba(124,58,237,.35)':'var(--border)'};background:${state.notePublic?'rgba(124,58,237,.08)':'var(--card)'};color:${state.notePublic?'#7C3AED':'var(--muted)'};font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans)">${state.notePublic?'Visible to followers':'Private — only you'}</button>
+      <div style="flex:1"></div>
+      <span style="font-size:11px;color:var(--muted)">${state.draft.length} / 280</span>
+      <button id="note-cancel" style="height:38px;padding:0 16px;border-radius:9px;background:var(--card);border:1px solid var(--border);font-size:13px;font-weight:600;color:var(--body);cursor:pointer;font-family:var(--sans)">Cancel</button>
+      <button id="note-save" style="height:38px;padding:0 18px;border-radius:9px;background:${ready?'var(--accent)':'var(--subtle)'};color:${ready?'var(--accent-on)':'var(--muted)'};border:${ready?'none':'1px solid var(--border)'};font-size:13px;font-weight:700;cursor:${ready?'pointer':'not-allowed'};font-family:var(--sans)">Save note</button>
+    </div>
+  </div>`:
+  `<button id="open-composer" style="display:flex;align-items:center;gap:11px;width:100%;padding:14px 16px;background:none;border:none;border-top:1px solid var(--border);cursor:pointer;font-family:var(--sans);text-align:left">
+    <div style="width:24px;height:24px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:rgba(124,58,237,.10);color:#7C3AED">${mkSvg('<path d="M12 5v14"/><path d="M5 12h14"/>','currentColor',14)}</div>
+    <span style="font-size:14px;color:var(--muted)">Add note to this instance…</span>
+  </button>`;
+  return`<div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--card)">
+    <div style="display:flex;align-items:center;gap:10px;padding:15px 18px;border-bottom:1px solid var(--border)">
+      ${mkSvg('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6"/><path d="M9 17h4"/>','var(--muted)',17)}
+      <span style="flex:1;font-size:15px;font-weight:700;color:var(--head)">Instance notes — ${name}</span>
+    </div>
+    ${noteRows}${composer}
+  </div>`;
+}
+
+function renderAudit(){
+  const root=document.getElementById('audit-root');
+  const header=`<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div>
+      <span style="display:block;font-size:28px;font-weight:800;color:var(--head);letter-spacing:-0.02em">Audit log</span>
+      <span style="display:block;font-size:14px;color:var(--muted);margin-top:5px">Every signal, fill, skip, and system event — in plain English</span>
+    </div>
+    <button id="export-btn" style="display:flex;align-items:center;gap:8px;height:40px;padding:0 16px;background:transparent;border:1px solid var(--border);border-radius:10px;font-family:var(--sans);font-size:14px;font-weight:600;color:var(--body);cursor:pointer">
+      ${mkSvg('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/>','currentColor',16)} Export CSV
+    </button>
+  </div>`;
+  const groups=`<div>${dateGroupHTML('today','Today — Jun 14, 2026',12,eventsData.today)}${dateGroupHTML('yesterday','Yesterday — Jun 13, 2026',8,eventsData.yesterday)}</div>`;
+  const anyVisible=eventsData.today.some(e=>matches(e))||eventsData.yesterday.some(e=>matches(e));
+  const empty=!anyVisible?`<div style="padding:48px;text-align:center;background:var(--card);border:1px solid var(--border);border-radius:12px"><span style="font-size:14px;color:var(--muted)">No events match these filters</span></div>`:'';
+  root.innerHTML=header+summaryStripHTML()+filterBarHTML()+`<div style="margin-top:2px">${groups}${empty}</div>`+notesSection();
+
+  // Wire filter pills
+  document.querySelectorAll('.filter-pill').forEach(el=>el.addEventListener('click',()=>{state.filter=el.dataset.p;renderAudit();}));
+  // strat/range selects
+  const stratSel=document.getElementById('strat-sel');if(stratSel)stratSel.addEventListener('change',e=>{state.strat=e.target.value;state.openRow=null;renderAudit();});
+  const rangeSel=document.getElementById('range-sel');if(rangeSel)rangeSel.addEventListener('change',e=>{state.range=e.target.value;renderAudit();});
+  // search
+  const searchInp=document.getElementById('search-inp');if(searchInp)searchInp.addEventListener('input',e=>{state.search=e.target.value;renderAudit();});
+  // export
+  const expBtn=document.getElementById('export-btn');if(expBtn)expBtn.addEventListener('click',()=>showToast('Export CSV — logic coming soon'));
+  // group headers
+  document.querySelectorAll('.group-hdr').forEach(el=>el.addEventListener('click',()=>{const k=el.dataset.key;state.collapsed_groups[k]=!state.collapsed_groups[k];renderAudit();}));
+  // row toggles
+  document.querySelectorAll('.row-toggle').forEach(el=>el.addEventListener('click',()=>{const id=el.dataset.id;state.openRow=state.openRow===id?null:id;renderAudit();}));
+  // note buttons
+  document.querySelectorAll('.note-btn').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();const ref=el.dataset.title.split(' — ')[0];state.draft='Re: '+ref+' at '+el.dataset.time+' — ';state.composerOpen=true;renderAudit();showToast('Note started — finish it in Instance notes below');}));
+  // delete notes
+  document.querySelectorAll('.del-note').forEach(el=>el.addEventListener('click',()=>{state.notes=state.notes.filter(n=>n.id!==el.dataset.nid);renderAudit();showToast('Note deleted');}));
+  // open composer
+  const oc=document.getElementById('open-composer');if(oc)oc.addEventListener('click',()=>{state.composerOpen=true;renderAudit();});
+  // note textarea
+  const ta=document.getElementById('note-ta');if(ta)ta.addEventListener('input',e=>{state.draft=e.target.value;const saveBtn=document.getElementById('note-save');if(saveBtn){const ready=state.draft.trim().length>0;saveBtn.style.background=ready?'var(--accent)':'var(--subtle)';saveBtn.style.color=ready?'var(--accent-on)':'var(--muted)';}});
+  // note cancel
+  const nc=document.getElementById('note-cancel');if(nc)nc.addEventListener('click',()=>{state.composerOpen=false;state.draft='';renderAudit();});
+  // note save
+  const ns=document.getElementById('note-save');if(ns)ns.addEventListener('click',()=>{if(!state.draft.trim()){showToast('Write something first');return;}state.notes.push({id:'n'+Date.now(),text:state.draft.trim(),meta:'Jun 14 · just now · by you'+(state.notePublic?' · visible to followers':'')});state.draft='';state.composerOpen=false;renderAudit();showToast('Note added to this instance');});
+  // note visibility
+  const nv=document.getElementById('note-visibility');if(nv)nv.addEventListener('click',()=>{state.notePublic=!state.notePublic;renderAudit();});
+}
+
+// ── Controls ──
+document.getElementById('collapse-btn').addEventListener('click',()=>{state.collapsed=!state.collapsed;applySidebar();});
+document.getElementById('theme-btn').addEventListener('click',()=>{state.dark=!state.dark;applyTheme();renderAudit();});
+document.getElementById('kill-btn').addEventListener('click',()=>{state.killArmed=!state.killArmed;applyKill();});
+document.getElementById('acct-trigger').addEventListener('click',()=>{state.acctOpen=!state.acctOpen;renderDropdowns();});
+document.getElementById('notif-btn').addEventListener('click',e=>{e.stopPropagation();state.notifOpen=!state.notifOpen;renderDropdowns();});
+document.getElementById('profile-btn').addEventListener('click',e=>{e.stopPropagation();state.profileOpen=!state.profileOpen;renderDropdowns();});
+document.addEventListener('click',e=>{
+  let ch=false;
+  if(state.notifOpen&&!e.target.closest('#notif-btn')&&!e.target.closest('#notif-menu')){state.notifOpen=false;ch=true;}
+  if(state.profileOpen&&!e.target.closest('#profile-btn')&&!e.target.closest('#profile-menu')){state.profileOpen=false;ch=true;}
+  if(state.acctOpen&&!e.target.closest('#acct-trigger')&&!e.target.closest('#acct-menu')){state.acctOpen=false;ch=true;}
+  if(ch)renderDropdowns();
+});
+
+applySidebar();applyTheme();applyKill();renderAudit();
+</script>
+</body>
+</html>

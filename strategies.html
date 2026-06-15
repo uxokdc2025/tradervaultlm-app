@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Strategies — TraderVault</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --tv-font-sans:'Inter',ui-sans-serif,system-ui,sans-serif;
+  --tv-radius-lg:11px;--tv-radius-md:8px;--tv-radius-sm:6px;
+  --tv-bg:#F8FAFC;--tv-surface:#FFFFFF;--tv-surface-2:#F1F5F9;--tv-surface-3:#E9EEF4;
+  --tv-border:rgba(0,0,0,0.07);--tv-border-2:#CBD5E1;
+  --tv-text:#1E293B;--tv-text-2:#475569;--tv-muted:#64718A;--tv-dimmer:#8492A0;
+  --tv-green:#16A34A;--tv-green-bg:#DCFCE7;--tv-green-text:#16A34A;--tv-green-border:#BBF7D0;
+  --tv-red:#DC2626;--tv-red-bg:#FEE2E2;--tv-red-text:#DC2626;--tv-red-border:#FECACA;
+  --tv-amber:#D97706;--tv-amber-bg:#FEF3C7;--tv-amber-text:#D97706;--tv-amber-border:#FDE68A;
+  --tv-teal:#3DD5A8;--tv-coral:#F87171;--tv-purple:#7C3AED;
+  --tv-sidebar-green:#CAFF33;--tv-sidebar-text:#C4CBD4;--tv-sidebar-muted:#8B95A4;--tv-sidebar-label:#7E8C99;
+  --tv-nav-hover:rgba(255,255,255,0.06);--tv-nav-badge-bg:rgba(255,255,255,0.08);
+  --tv-strategies-active:rgba(61,213,168,0.12);--tv-analysis-active:rgba(61,213,168,0.12);
+  --tv-trading-active:rgba(251,178,58,0.10);--tv-copy-active:rgba(248,113,113,0.10);
+  --tv-dim-overlay:rgba(0,0,0,0.45);
+  --sb-bg:#101B25;--sb-fg:#9DAAB6;--sb-muted:#7E8C99;--sb-hover:#1B2731;--sb-border:#2A3640;
+  --accent:#C8FF00;--accent-on:#101B25;--accent-soft:rgba(200,255,0,.16);
+  --profit:#22C55E;--loss:#F87171;
+  --head:#1E293B;--body:#475569;--muted:#64718A;
+  --bg:#F8FAFC;--card:#FFFFFF;--subtle:#F1F5F9;--border:rgba(0,0,0,0.07);--input:#E9EEF4;
+}
+.tv-dark{
+  --tv-bg:#0B131B;--tv-surface:#101B25;--tv-surface-2:#18242F;--tv-surface-3:#1C2832;
+  --tv-border:rgba(255,255,255,0.07);--tv-border-2:#374151;
+  --tv-text:#F1F4F7;--tv-text-2:#AEB9C4;--tv-muted:#8492A0;--tv-dimmer:#8492A0;
+  --tv-green:#22C55E;--tv-green-bg:rgba(34,197,94,0.12);--tv-green-text:#22C55E;--tv-green-border:rgba(34,197,94,0.25);
+  --tv-red:#F87171;--tv-red-bg:rgba(248,113,113,0.12);--tv-red-text:#F87171;--tv-red-border:rgba(248,113,113,0.25);
+  --tv-amber:#FBB23A;--tv-amber-bg:rgba(251,178,58,0.12);--tv-amber-text:#FBB23A;--tv-amber-border:rgba(251,178,58,0.25);
+  --head:#F1F4F7;--body:#AEB9C4;--muted:#8492A0;
+  --accent:#C8FF00;--accent-on:#101B25;--accent-soft:rgba(200,255,0,.16);
+  --bg:#0B131B;--card:#101B25;--subtle:#18242F;--border:#28333D;--input:#374151;
+  --profit:#22C55E;--loss:#F87171;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:var(--tv-font-sans);font-size:14px;background:var(--tv-bg);color:var(--tv-text);transition:background .2s,color .2s;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;}
+input,select{font-family:inherit;}
+a{text-decoration:none;color:inherit;}
+.sidebar{width:234px;min-width:234px;height:100vh;background:var(--sb-bg);display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:200;border-right:1px solid var(--sb-border);transition:width .22s,min-width .22s;overflow:hidden;}
+.sidebar.collapsed{width:56px;min-width:56px;}
+.main-wrap{margin-left:234px;display:flex;flex-direction:column;height:100vh;transition:margin-left .22s;}
+.sidebar.collapsed~.main-wrap{margin-left:56px;}
+.topbar{height:56px;min-height:56px;background:var(--tv-surface);border-bottom:1px solid var(--tv-border);display:flex;align-items:center;padding:0 20px;gap:10px;position:sticky;top:0;z-index:100;}
+.main-content{flex:1;overflow-y:auto;padding:20px 24px 40px;}
+.sb-logo{display:flex;align-items:center;gap:9px;padding:0 14px;height:56px;border-bottom:1px solid var(--sb-border);flex-shrink:0;}
+.sb-logo-icon{width:28px;height:28px;background:#1B2731;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sb-logo-icon svg{width:16px;height:16px;}
+.sb-logo-text{font-size:15px;font-weight:700;color:#F1F4F7;white-space:nowrap;letter-spacing:-.3px;}
+.sb-logo-dot{width:7px;height:7px;border-radius:50%;background:var(--tv-sidebar-green);margin-left:2px;flex-shrink:0;}
+.sb-nav{flex:1;overflow-y:auto;padding:10px 0;scrollbar-width:none;}
+.sb-nav::-webkit-scrollbar{display:none;}
+.sb-label{font-size:10px;font-weight:600;letter-spacing:.8px;color:var(--sb-muted);padding:10px 14px 4px;text-transform:uppercase;white-space:nowrap;transition:opacity .2s;}
+.sidebar.collapsed .sb-label{opacity:0;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:0 10px;height:36px;border-radius:var(--tv-radius-md);margin:1px 6px;cursor:pointer;color:var(--sb-fg);font-size:13px;font-weight:500;white-space:nowrap;transition:background .15s,color .15s;}
+.sb-item:hover{background:var(--sb-hover);color:#E2E8F0;}
+.sb-item.active{background:var(--tv-strategies-active);color:var(--tv-teal);box-shadow:inset 2px 0 0 var(--tv-teal);}
+.sb-item svg{width:16px;height:16px;flex-shrink:0;}
+.sb-item.active svg{color:var(--tv-teal);}
+.sb-item-label{white-space:nowrap;transition:opacity .2s;}
+.sidebar.collapsed .sb-item-label{opacity:0;width:0;overflow:hidden;}
+.sb-bottom{border-top:1px solid var(--sb-border);padding:10px 8px;flex-shrink:0;}
+.sb-account{display:flex;align-items:center;gap:9px;padding:8px 6px;border-radius:var(--tv-radius-md);cursor:pointer;transition:background .15s;position:relative;}
+.sb-account:hover{background:var(--sb-hover);}
+.sb-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#3DD5A8,#7C3AED);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;}
+.sb-acct-info{flex:1;min-width:0;transition:opacity .2s;}
+.sb-acct-name{font-size:12px;font-weight:600;color:#E2E8F0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-acct-sub{font-size:11px;color:var(--sb-muted);}
+.sidebar.collapsed .sb-acct-info,.sidebar.collapsed .sb-acct-chev{opacity:0;width:0;overflow:hidden;}
+.sb-acct-chev svg{width:14px;height:14px;color:var(--sb-muted);}
+.sb-acct-dropdown{position:absolute;bottom:calc(100% + 8px);left:0;right:0;background:#1B2731;border:1px solid var(--sb-border);border-radius:var(--tv-radius-md);padding:6px;z-index:300;display:none;}
+.sb-acct-dropdown.open{display:block;}
+.sb-dd-item{padding:8px 10px;border-radius:6px;cursor:pointer;color:#C4CBD4;font-size:12px;display:flex;align-items:center;gap:8px;}
+.sb-dd-item:hover{background:var(--sb-hover);}
+.sb-dd-check{color:var(--tv-teal);}
+.sb-collapse{display:flex;align-items:center;gap:9px;padding:7px 6px;border-radius:var(--tv-radius-md);cursor:pointer;color:var(--sb-muted);font-size:12px;transition:background .15s,color .15s;margin-top:4px;}
+.sb-collapse:hover{background:var(--sb-hover);color:#E2E8F0;}
+.sb-collapse svg{width:16px;height:16px;flex-shrink:0;transition:transform .22s;}
+.sidebar.collapsed .sb-collapse svg{transform:rotate(180deg);}
+.sb-collapse-lbl{transition:opacity .2s;white-space:nowrap;}
+.sidebar.collapsed .sb-collapse-lbl{opacity:0;width:0;overflow:hidden;}
+.topbar-title{font-size:15px;font-weight:700;color:var(--tv-text);}
+.topbar-sub{font-size:12px;font-weight:400;color:var(--tv-muted);margin-left:8px;}
+.topbar-spacer{flex:1;}
+.topbar-clock{font-size:12px;font-weight:600;color:var(--tv-muted);font-variant-numeric:tabular-nums;letter-spacing:.3px;white-space:nowrap;}
+.topbar-btn{width:34px;height:34px;border-radius:var(--tv-radius-md);display:flex;align-items:center;justify-content:center;color:var(--tv-muted);transition:background .15s,color .15s;cursor:pointer;}
+.topbar-btn:hover{background:var(--tv-surface-2);color:var(--tv-text);}
+.topbar-btn svg{width:17px;height:17px;}
+.kill-btn{height:34px;padding:0 12px;border-radius:var(--tv-radius-md);background:var(--tv-red-bg);color:var(--tv-red-text);font-size:12px;font-weight:600;border:1px solid var(--tv-red-border);display:flex;align-items:center;gap:5px;cursor:pointer;transition:opacity .15s;}
+.kill-btn:hover{opacity:.85;}
+.kill-btn svg{width:13px;height:13px;}
+.summary-bar{background:var(--tv-surface);border:1px solid var(--tv-border);border-radius:var(--tv-radius-lg);display:flex;margin-bottom:18px;overflow:hidden;}
+.summary-col{flex:1;padding:14px 18px;display:flex;flex-direction:column;gap:4px;border-right:1px solid var(--tv-border);}
+.summary-col:last-child{border-right:none;}
+.sum-label{font-size:11px;font-weight:500;color:var(--tv-muted);text-transform:uppercase;letter-spacing:.5px;}
+.sum-val{font-size:22px;font-weight:700;color:var(--tv-text);}
+.sum-val.green{color:var(--tv-green-text);}
+.toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.search-wrap{position:relative;}
+.search-wrap svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--tv-muted);pointer-events:none;}
+.search-input{height:34px;padding:0 10px 0 32px;border-radius:var(--tv-radius-md);border:1px solid var(--tv-border-2);background:var(--tv-surface);color:var(--tv-text);font-size:13px;width:220px;outline:none;transition:border-color .15s;}
+.search-input:focus{border-color:var(--tv-teal);}
+.tv-dark .search-input{background:var(--tv-surface-2);}
+.filter-pills{display:flex;gap:4px;}
+.pill{height:30px;padding:0 11px;border-radius:20px;border:1px solid var(--tv-border-2);background:var(--tv-surface);color:var(--tv-text-2);font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s;}
+.pill:hover{border-color:var(--tv-teal);color:var(--tv-teal);}
+.pill.active{background:var(--tv-strategies-active);border-color:var(--tv-teal);color:var(--tv-teal);}
+.pill-count{background:var(--tv-nav-badge-bg);border-radius:20px;padding:1px 6px;font-size:10px;font-weight:600;color:var(--tv-muted);}
+.pill.active .pill-count{background:rgba(61,213,168,.15);color:var(--tv-teal);}
+.tbar-spacer{flex:1;}
+.sort-sel{height:34px;padding:0 10px;border-radius:var(--tv-radius-md);border:1px solid var(--tv-border-2);background:var(--tv-surface);color:var(--tv-text);font-size:12px;cursor:pointer;outline:none;}
+.tv-dark .sort-sel{background:var(--tv-surface-2);}
+.new-btn-wrap{display:flex;border-radius:var(--tv-radius-md);overflow:hidden;}
+.new-btn-main{height:34px;padding:0 14px;background:var(--accent);color:var(--accent-on);font-size:13px;font-weight:600;border:none;cursor:pointer;transition:opacity .15s;}
+.new-btn-main:hover{opacity:.9;}
+.new-btn-split{height:34px;width:32px;background:var(--accent);color:var(--accent-on);border-left:1px solid rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.new-btn-split:hover{opacity:.9;}
+.new-btn-split svg{width:13px;height:13px;}
+.cards-list{display:flex;flex-direction:column;gap:10px;}
+.strategy-card{background:var(--tv-surface);border:1px solid var(--tv-border);border-radius:var(--tv-radius-lg);overflow:hidden;transition:box-shadow .15s;}
+.strategy-card:hover{box-shadow:0 2px 14px rgba(0,0,0,.08);}
+.tv-dark .strategy-card:hover{box-shadow:0 2px 14px rgba(0,0,0,.35);}
+.strategy-card[hidden]{display:none!important;}
+.card-main{padding:14px 16px 12px;display:flex;flex-direction:column;gap:10px;}
+.card-header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.card-name{font-size:14px;font-weight:600;color:var(--tv-text);flex:1;}
+.badge{display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.5px;flex-shrink:0;}
+.card-meta{font-size:12px;color:var(--tv-muted);display:flex;align-items:center;gap:4px;}
+.score-chip{height:26px;padding:0 10px;border-radius:20px;font-size:12px;font-weight:700;display:flex;align-items:center;margin-left:auto;flex-shrink:0;}
+.score-green{background:var(--tv-green-bg);color:var(--tv-green-text);}
+.score-amber{background:var(--tv-amber-bg);color:var(--tv-amber-text);}
+.score-red{background:var(--tv-red-bg);color:var(--tv-red-text);}
+.card-stats{display:flex;gap:24px;flex-wrap:wrap;}
+.stat-item{display:flex;flex-direction:column;gap:2px;}
+.stat-lbl{font-size:10px;font-weight:500;color:var(--tv-muted);text-transform:uppercase;letter-spacing:.4px;}
+.stat-val{font-size:14px;font-weight:700;color:var(--tv-text);}
+.stat-val.g{color:var(--tv-green-text);}
+.stat-val.r{color:var(--tv-red-text);}
+.stat-val.d{color:var(--tv-muted);}
+.card-actions{display:flex;align-items:center;gap:8px;padding-top:8px;border-top:1px solid var(--tv-border);}
+.btn-sec{height:30px;padding:0 12px;border-radius:var(--tv-radius-sm);border:1px solid var(--tv-border-2);background:var(--tv-surface);color:var(--tv-text-2);font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s;}
+.btn-sec:hover{border-color:var(--tv-teal);color:var(--tv-teal);}
+.btn-sec:disabled{opacity:.5;cursor:not-allowed;pointer-events:none;}
+.btn-lime{height:30px;padding:0 12px;border-radius:var(--tv-radius-sm);background:var(--accent);color:var(--accent-on);font-size:12px;font-weight:600;cursor:pointer;border:none;display:flex;align-items:center;gap:5px;transition:opacity .15s;}
+.btn-lime:hover{opacity:.9;}
+.btn-amber-out{height:28px;padding:0 10px;border-radius:var(--tv-radius-sm);border:1px solid var(--tv-amber-border);background:var(--tv-amber-bg);color:var(--tv-amber-text);font-size:11px;font-weight:600;cursor:pointer;transition:opacity .15s;}
+.btn-amber-out:hover{opacity:.8;}
+.icon-btn{width:30px;height:30px;border-radius:var(--tv-radius-sm);border:1px solid var(--tv-border-2);background:var(--tv-surface);color:var(--tv-muted);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0;}
+.icon-btn:hover{border-color:var(--tv-teal);color:var(--tv-teal);}
+.icon-btn svg{width:14px;height:14px;}
+.more-btn{width:30px;height:30px;border-radius:var(--tv-radius-sm);display:flex;align-items:center;justify-content:center;color:var(--tv-muted);font-size:18px;cursor:pointer;transition:background .15s;}
+.more-btn:hover{background:var(--tv-surface-2);}
+.exp-btn{width:30px;height:30px;border-radius:var(--tv-radius-sm);display:flex;align-items:center;justify-content:center;color:var(--tv-muted);cursor:pointer;transition:background .15s;margin-left:auto;flex-shrink:0;}
+.exp-btn:hover{background:var(--tv-surface-2);}
+.exp-btn svg{width:14px;height:14px;transition:transform .2s;}
+.exp-btn.open svg{transform:rotate(180deg);}
+.spinner{width:12px;height:12px;border:2px solid var(--tv-border-2);border-top-color:var(--tv-teal);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.card-detail{border-top:1px solid var(--tv-border);background:var(--tv-surface-2);padding:12px 16px;display:none;gap:16px;flex-wrap:wrap;}
+.card-detail.open{display:flex;}
+.det-grp{display:flex;flex-direction:column;gap:3px;}
+.det-lbl{font-size:10px;font-weight:600;color:var(--tv-muted);text-transform:uppercase;letter-spacing:.5px;}
+.det-val{font-size:12px;color:var(--tv-text-2);}
+.ind-chips{display:flex;gap:4px;flex-wrap:wrap;}
+.ind-chip{display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:4px;font-size:11px;font-weight:500;background:var(--tv-surface-3);color:var(--tv-text-2);border:1px solid var(--tv-border-2);}
+.lc-bar{display:flex;gap:3px;align-items:center;}
+.lc-dot{width:8px;height:8px;border-radius:2px;background:var(--tv-border-2);}
+.lc-dot.on{background:var(--tv-teal);}
+.lc-txt{font-size:11px;color:var(--tv-muted);margin-left:5px;}
+.drawer-backdrop{position:fixed;inset:0;background:var(--tv-dim-overlay);z-index:400;opacity:0;pointer-events:none;transition:opacity .22s;}
+.drawer-backdrop.open{opacity:1;pointer-events:all;}
+.vh-drawer{position:fixed;top:0;right:0;height:100vh;width:300px;background:var(--tv-surface);border-left:1px solid var(--tv-border);z-index:500;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);}
+.vh-drawer.open{transform:translateX(0);}
+.drawer-hdr{display:flex;align-items:center;gap:10px;padding:0 16px;height:56px;border-bottom:1px solid var(--tv-border);flex-shrink:0;}
+.drawer-ttl{font-size:14px;font-weight:700;color:var(--tv-text);flex:1;}
+.drawer-sub{font-size:12px;color:var(--tv-muted);}
+.drw-close{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--tv-muted);cursor:pointer;flex-shrink:0;}
+.drw-close:hover{background:var(--tv-surface-2);}
+.drw-close svg{width:16px;height:16px;}
+.vh-list{flex:1;overflow-y:auto;padding:10px;}
+.vh-item{display:flex;align-items:center;gap:10px;padding:10px;border-radius:var(--tv-radius-md);margin-bottom:4px;cursor:pointer;transition:background .15s;border:1px solid transparent;}
+.vh-item:hover{background:var(--tv-surface-2);}
+.vh-item.cur{background:var(--tv-strategies-active);border-color:rgba(61,213,168,.3);}
+.vh-ver{font-size:13px;font-weight:600;color:var(--tv-text);}
+.vh-date{font-size:11px;color:var(--tv-muted);flex:1;}
+.vh-cur-tag{font-size:10px;font-weight:700;color:var(--tv-teal);background:rgba(61,213,168,.15);padding:2px 7px;border-radius:20px;}
+.vh-acts{display:none;gap:5px;}
+.vh-item:not(.cur):hover .vh-acts{display:flex;}
+.vh-restore{height:24px;padding:0 8px;border-radius:5px;background:var(--tv-strategies-active);color:var(--tv-teal);font-size:11px;font-weight:600;border:none;cursor:pointer;}
+.vh-compare{height:24px;padding:0 8px;border-radius:5px;background:var(--tv-surface-3);color:var(--tv-muted);font-size:11px;border:none;cursor:not-allowed;opacity:.5;}
+.bldr-drawer{position:fixed;top:0;right:0;height:100vh;width:34vw;min-width:408px;background:var(--tv-surface);border-left:1px solid var(--tv-border);z-index:500;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);}
+.bldr-drawer.open{transform:translateX(0);}
+.bldr-body{flex:1;overflow-y:auto;padding:20px;}
+.bldr-foot{padding:12px 16px;border-top:1px solid var(--tv-border);display:flex;gap:8px;align-items:center;flex-shrink:0;}
+.foot-sp{flex:1;}
+.btn-ghost{height:34px;padding:0 14px;border-radius:var(--tv-radius-md);border:1px solid var(--tv-border-2);background:none;color:var(--tv-text-2);font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;transition:all .15s;}
+.btn-ghost:hover{background:var(--tv-surface-2);}
+.btn-save{height:34px;padding:0 14px;border-radius:var(--tv-radius-md);border:1px solid var(--tv-border-2);background:none;color:var(--tv-text-2);font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;transition:all .15s;}
+.btn-save:hover{background:var(--tv-surface-2);}
+.btn-primary{height:34px;padding:0 16px;border-radius:var(--tv-radius-md);background:var(--tv-teal);color:#0B131B;font-size:13px;font-weight:700;cursor:pointer;border:none;display:flex;align-items:center;gap:5px;transition:opacity .15s;}
+.btn-primary:hover{opacity:.9;}
+.btn-lime-lg{height:34px;padding:0 16px;border-radius:var(--tv-radius-md);background:var(--accent);color:var(--accent-on);font-size:13px;font-weight:700;cursor:pointer;border:none;display:flex;align-items:center;gap:5px;transition:opacity .15s;}
+.btn-lime-lg:hover{opacity:.9;}
+.btn-back{height:34px;padding:0 12px;border-radius:var(--tv-radius-md);border:1px solid var(--tv-border-2);background:none;color:var(--tv-text-2);font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s;}
+.btn-back:hover{background:var(--tv-surface-2);}
+.bldr-step{display:none;}
+.bldr-step.active{display:block;}
+.mode-intro{font-size:13px;color:var(--tv-muted);margin-bottom:16px;line-height:1.5;}
+.mode-cards{display:flex;flex-direction:column;gap:10px;}
+.mode-card{padding:16px;border-radius:var(--tv-radius-lg);border:1px solid var(--tv-border-2);cursor:pointer;transition:all .18s;background:var(--tv-surface);}
+.mode-card:hover{border-color:var(--tv-teal);background:var(--tv-strategies-active);}
+.mode-card.ai{border:1.5px solid transparent;background:linear-gradient(var(--tv-surface),var(--tv-surface)) padding-box,linear-gradient(135deg,#7C3AED,#3DD5A8) border-box;}
+.mode-card.ai:hover{background:linear-gradient(var(--tv-strategies-active),var(--tv-strategies-active)) padding-box,linear-gradient(135deg,#7C3AED,#3DD5A8) border-box;}
+.mode-card-ttl{font-size:14px;font-weight:700;color:var(--tv-text);display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;}
+.mode-card-sub{font-size:12px;color:var(--tv-muted);line-height:1.45;}
+.rec-badge{font-size:9px;font-weight:700;letter-spacing:.6px;background:linear-gradient(90deg,#7C3AED,#3DD5A8);color:#fff;padding:2px 7px;border-radius:20px;}
+.stepper{display:flex;margin-bottom:20px;border-bottom:1px solid var(--tv-border);}
+.step-item{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--tv-muted);padding:0 10px 10px;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;}
+.step-item.active{color:var(--tv-teal);border-bottom-color:var(--tv-teal);}
+.step-item.done{color:var(--tv-text-2);}
+.step-num{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;background:var(--tv-surface-3);color:var(--tv-muted);flex-shrink:0;}
+.step-item.active .step-num{background:var(--tv-teal);color:#0B131B;}
+.step-item.done .step-num{background:var(--tv-green-bg);color:var(--tv-green-text);}
+.name-band{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.name-input{flex:1;height:36px;padding:0 10px;border-radius:var(--tv-radius-md);border:1px solid var(--tv-border-2);background:var(--tv-surface-2);color:var(--tv-text);font-size:13px;outline:none;transition:border-color .15s;}
+.name-input:focus{border-color:var(--tv-teal);}
+.name-dot{width:8px;height:8px;border-radius:50%;background:var(--tv-border-2);flex-shrink:0;transition:background .2s;}
+.name-dot.filled{background:var(--tv-teal);}
+.live-bar{display:flex;align-items:center;gap:6px;padding:8px 10px;border-radius:var(--tv-radius-md);background:var(--tv-surface-2);border:1px solid var(--tv-border);margin-bottom:14px;min-height:38px;flex-wrap:wrap;}
+.live-bar-lbl{font-size:11px;color:var(--tv-muted);font-weight:500;flex-shrink:0;}
+.live-empty{font-size:12px;color:var(--tv-dimmer);}
+.sig-chip{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.sig-chip.buy{background:var(--tv-green-bg);color:var(--tv-green-text);border:1px solid var(--tv-green-border);}
+.sig-chip.sell{background:var(--tv-red-bg);color:var(--tv-red-text);border:1px solid var(--tv-red-border);}
+.sig-chip.both{background:var(--tv-amber-bg);color:var(--tv-amber-text);border:1px solid var(--tv-amber-border);}
+.ind-search{width:100%;height:34px;padding:0 10px;border-radius:var(--tv-radius-md);border:1px solid var(--tv-border-2);background:var(--tv-surface-2);color:var(--tv-text);font-size:13px;outline:none;margin-bottom:8px;transition:border-color .15s;}
+.ind-search:focus{border-color:var(--tv-teal);}
+.ind-list{display:flex;flex-direction:column;gap:3px;}
+.ind-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--tv-radius-md);cursor:pointer;transition:all .15s;color:var(--tv-text-2);font-size:13px;border:1px solid transparent;}
+.ind-item:hover{background:var(--tv-surface-2);border-color:var(--tv-border);}
+.ind-item.sel{background:var(--tv-strategies-active);border-color:rgba(61,213,168,.3);color:var(--tv-teal);}
+.ind-icon{width:28px;height:28px;border-radius:6px;background:var(--tv-surface-3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;color:var(--tv-text-2);}
+.cfg-panel{margin-top:14px;padding:14px;border-radius:var(--tv-radius-lg);border:1px solid var(--tv-teal);background:rgba(61,213,168,.06);display:none;}
+.cfg-panel.open{display:block;}
+.ai-hint{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:var(--tv-radius-md);background:rgba(61,213,168,.1);border:1px solid rgba(61,213,168,.25);margin-bottom:12px;font-size:12px;color:var(--tv-text-2);line-height:1.45;}
+.ai-hint-ico{color:var(--tv-teal);flex-shrink:0;margin-top:1px;}
+.cfg-ttl{font-size:13px;font-weight:700;color:var(--tv-text);margin-bottom:8px;}
+.radio-grp{display:flex;flex-direction:column;gap:7px;margin-bottom:12px;}
+.radio-lbl{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--tv-text-2);}
+.radio-lbl input{accent-color:var(--tv-teal);}
+.added-inds{display:flex;flex-direction:column;gap:6px;margin-top:10px;}
+.added-ind{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--tv-radius-md);background:var(--tv-surface-2);border:1px solid var(--tv-border);}
+.added-ind-name{flex:1;font-size:13px;font-weight:600;color:var(--tv-text);}
+.added-ind-sig{font-size:11px;color:var(--tv-muted);}
+.added-ind-rm{width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;color:var(--tv-muted);cursor:pointer;font-size:16px;line-height:1;transition:all .15s;}
+.added-ind-rm:hover{background:var(--tv-red-bg);color:var(--tv-red-text);}
+.add-another{width:100%;height:34px;border-radius:var(--tv-radius-md);border:1.5px dashed var(--tv-border-2);background:none;color:var(--tv-muted);font-size:12px;font-weight:500;cursor:pointer;margin-top:8px;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:5px;}
+.add-another:hover{border-color:var(--tv-teal);color:var(--tv-teal);}
+.logic-card{padding:14px;border-radius:var(--tv-radius-lg);border:1px solid var(--tv-border);background:var(--tv-surface-2);margin-bottom:10px;}
+.logic-hdr{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.logic-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.logic-ttl{font-size:13px;font-weight:700;color:var(--tv-text);flex:1;}
+.logic-btns{display:flex;gap:6px;}
+.btn-ask-ai{height:26px;padding:0 9px;border-radius:5px;background:rgba(61,213,168,.12);color:var(--tv-teal);font-size:11px;font-weight:600;border:1px solid rgba(61,213,168,.25);cursor:pointer;}
+.btn-edit{height:26px;padding:0 9px;border-radius:5px;background:var(--tv-surface);color:var(--tv-text-2);font-size:11px;font-weight:500;border:1px solid var(--tv-border-2);cursor:pointer;}
+.logic-mode{font-size:12px;color:var(--tv-muted);}
+.edit-panel{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--tv-border);}
+.edit-panel.open{display:block;}
+.edit-btns{display:flex;gap:6px;margin-top:10px;}
+.edit-confirm{height:28px;padding:0 12px;border-radius:5px;background:var(--tv-teal);color:#0B131B;font-size:12px;font-weight:600;border:none;cursor:pointer;}
+.edit-cancel{height:28px;padding:0 10px;border-radius:5px;background:none;color:var(--tv-muted);font-size:12px;border:1px solid var(--tv-border-2);cursor:pointer;}
+.seg-lbl{font-size:12px;font-weight:600;color:var(--tv-text-2);margin-bottom:8px;margin-top:16px;}
+.seg-ctrl{display:inline-flex;border-radius:var(--tv-radius-md);border:1px solid var(--tv-border-2);overflow:hidden;background:var(--tv-surface-2);}
+.seg-btn{height:32px;padding:0 14px;font-size:12px;font-weight:500;color:var(--tv-muted);cursor:pointer;border:none;background:none;transition:all .15s;}
+.seg-btn.active{background:var(--tv-surface);color:var(--tv-text);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.08);}
+.trade-desc{font-size:13px;color:var(--tv-muted);margin-bottom:4px;line-height:1.5;}
+.toast{position:fixed;bottom:24px;right:24px;z-index:1000;background:#1E293B;color:#F1F4F7;padding:11px 16px;border-radius:var(--tv-radius-md);display:flex;align-items:center;gap:9px;font-size:13px;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,.3);opacity:0;transform:translateY(8px);transition:opacity .2s,transform .2s;pointer-events:none;max-width:320px;}
+.toast.show{opacity:1;transform:translateY(0);}
+.toast-chk{width:18px;height:18px;border-radius:50%;background:#22C55E;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;color:#fff;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--tv-border-2);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-icon">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.5" fill="#3DD5A8"/><rect x="9" y="2" width="5" height="5" rx="1.5" fill="#CAFF33"/><rect x="2" y="9" width="5" height="5" rx="1.5" fill="#CAFF33" opacity=".5"/><rect x="9" y="9" width="5" height="5" rx="1.5" fill="#3DD5A8" opacity=".5"/></svg>
+    </div>
+    <span class="sb-logo-text">TraderVault</span>
+    <div class="sb-logo-dot"></div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-label">Strategies</div>
+    <a href="index.html" class="sb-item">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="1.5" width="5" height="5" rx="1"/><rect x="9.5" y="1.5" width="5" height="5" rx="1"/><rect x="1.5" y="9.5" width="5" height="5" rx="1"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/></svg>
+      <span class="sb-item-label">Overview</span>
+    </a>
+    <a href="strategies.html" class="sb-item active">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h8M2 12h10"/></svg>
+      <span class="sb-item-label">Strategies</span>
+    </a>
+    <a href="analysis.html" class="sb-item">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="1.5,12 5,7 8.5,9.5 13,3.5"/><circle cx="13" cy="3.5" r="1.5" fill="currentColor" stroke="none"/></svg>
+      <span class="sb-item-label">Analysis</span>
+    </a>
+    <div class="sb-label">Trading</div>
+    <a href="chart.html" class="sb-item">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="1.5" width="13" height="13" rx="2"/><path d="M4 10l2.5-3 2.5 2 3-4"/></svg>
+      <span class="sb-item-label">Chart</span>
+    </a>
+    <a href="audit.html" class="sb-item">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="1.5" width="11" height="13" rx="1.5"/><path d="M5 6h6M5 9h4"/></svg>
+      <span class="sb-item-label">Audit</span>
+    </a>
+    <div class="sb-label">Copy Trading</div>
+    <a href="marketplace.html" class="sb-item">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M5.5 8.5c0-1.4 1.1-2.5 2.5-2.5s2.5 1.1 2.5 2.5"/><circle cx="8" cy="6" r="1" fill="currentColor" stroke="none"/></svg>
+      <span class="sb-item-label">Marketplace</span>
+    </a>
+    <a href="mysignals.html" class="sb-item">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1.5v13M4.5 4L8 1.5 11.5 4M4.5 12L8 14.5l3.5-2.5"/></svg>
+      <span class="sb-item-label">My Signals</span>
+    </a>
+  </nav>
+  <div class="sb-bottom">
+    <div class="sb-account" id="sbAccount">
+      <div class="sb-avatar">JD</div>
+      <div class="sb-acct-info">
+        <div class="sb-acct-name">John Doe</div>
+        <div class="sb-acct-sub">Live · Alpaca</div>
+      </div>
+      <div class="sb-acct-chev">
+        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3.5 5.5L7 9l3.5-3.5"/></svg>
+      </div>
+      <div class="sb-acct-dropdown" id="sbDropdown">
+        <div class="sb-dd-item"><span class="sb-dd-check">✓</span>Live · Alpaca</div>
+        <div class="sb-dd-item" onclick="showToast('Switched to Paper account')">Paper · Alpaca</div>
+        <div class="sb-dd-item" onclick="showToast('Switched to Demo account')">Demo</div>
+      </div>
+    </div>
+    <div class="sb-collapse" id="sbCollapseBtn">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 3L5 8l5 5"/></svg>
+      <span class="sb-collapse-lbl">Collapse</span>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN WRAP -->
+<div class="main-wrap" id="mainWrap">
+  <header class="topbar">
+    <span class="topbar-title">Strategies<span class="topbar-sub">5 strategies · 1 live · 2 paper · 1 draft</span></span>
+    <div class="topbar-spacer"></div>
+    <span class="topbar-clock" id="utcClock">--:--:-- UTC</span>
+    <button class="topbar-btn" id="themeToggle" title="Toggle theme">
+      <svg id="iconSun" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="4"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.93 4.93l1.41 1.41M13.66 13.66l1.41 1.41M4.93 15.07l1.41-1.41M13.66 6.34l1.41-1.41"/></svg>
+      <svg id="iconMoon" viewBox="0 0 20 20" fill="currentColor" style="display:none"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
+    </button>
+    <button class="kill-btn" id="killBtn">
+      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="5.5"/><path d="M7 4v3.5"/><circle cx="7" cy="10" r=".6" fill="currentColor" stroke="none"/></svg>
+      Kill Switch
+    </button>
+    <button class="topbar-btn" title="Notifications">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 2a6 6 0 016 6v3l2 2H2l2-2V8a6 6 0 016-6z"/><path d="M8 16a2 2 0 004 0"/></svg>
+    </button>
+    <button class="topbar-btn" title="Watchlist">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"/><circle cx="10" cy="10" r="2.5"/></svg>
+    </button>
+  </header>
+
+  <main class="main-content">
+    <!-- SUMMARY BAR -->
+    <div class="summary-bar">
+      <div class="summary-col"><div class="sum-label">Total P&amp;L · 7D</div><div class="sum-val green">+$11,650</div></div>
+      <div class="summary-col"><div class="sum-label">Total trades</div><div class="sum-val">748</div></div>
+      <div class="summary-col"><div class="sum-label">Avg win rate</div><div class="sum-val green">62.8%</div></div>
+      <div class="summary-col"><div class="sum-label">Signals fired</div><div class="sum-val">79</div></div>
+      <div class="summary-col"><div class="sum-label">Running now</div><div class="sum-val">3</div></div>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>
+        <input class="search-input" id="searchInput" type="search" placeholder="Search strategies…"/>
+      </div>
+      <div class="filter-pills">
+        <button class="pill active" data-filter="all">All <span class="pill-count">5</span></button>
+        <button class="pill" data-filter="live">Live <span class="pill-count">1</span></button>
+        <button class="pill" data-filter="paper">Paper <span class="pill-count">2</span></button>
+        <button class="pill" data-filter="draft">Draft <span class="pill-count">1</span></button>
+      </div>
+      <div class="tbar-spacer"></div>
+      <select class="sort-sel" id="sortSelect">
+        <option value="default">Sort: Default</option>
+        <option value="pnl">Sort: P&amp;L</option>
+        <option value="wr">Sort: Win Rate</option>
+        <option value="name">Sort: Name A–Z</option>
+      </select>
+      <div class="new-btn-wrap">
+        <button class="new-btn-main" id="newStratBtn">+ New strategy</button>
+        <button class="new-btn-split" onclick="showToast('More options coming soon')">
+          <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 4l4 4 4-4"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- CARDS LIST -->
+    <div class="cards-list" id="cardsList">
+
+      <!-- Card 1: Momentum Breakout -->
+      <div class="strategy-card" id="card-momentum" data-status="live" data-name="Momentum Breakout" data-pnl="8432" data-wr="67.4" style="border-left:3px solid #22C55E;">
+        <div class="card-main">
+          <div class="card-header">
+            <div class="status-dot" style="background:#22C55E;"></div>
+            <div class="card-name">Momentum Breakout</div>
+            <span class="badge" style="background:rgba(34,197,94,.15);color:#16A34A;">LIVE</span>
+            <div class="card-meta">v2.4 &middot; Alpaca &middot; 2h ago</div>
+            <div class="score-chip score-green">87</div>
+          </div>
+          <div class="card-stats">
+            <div class="stat-item"><div class="stat-lbl">P&amp;L</div><div class="stat-val g">+$8,432</div></div>
+            <div class="stat-item"><div class="stat-lbl">Win Rate</div><div class="stat-val">67.4%</div></div>
+            <div class="stat-item"><div class="stat-lbl">Trades</div><div class="stat-val">312</div></div>
+            <div class="stat-item"><div class="stat-lbl">Signals</div><div class="stat-val">48</div></div>
+          </div>
+          <div class="card-actions">
+            <div id="bt-momentum"></div>
+            <button class="icon-btn" onclick="openVH('momentum')" title="Version history">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5V8l2.5 2.5"/></svg>
+            </button>
+            <button class="more-btn">&#8943;</button>
+            <button class="exp-btn" id="exp-momentum" onclick="toggleExpand('momentum')">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="card-detail" id="detail-momentum">
+          <div class="det-grp"><div class="det-lbl">Indicators</div><div class="ind-chips"><span class="ind-chip">EMA(9)</span><span class="ind-chip">EMA(21)</span><span class="ind-chip">ATR(14)</span><span class="ind-chip">RSI(14)</span></div></div>
+          <div class="det-grp"><div class="det-lbl">Lifecycle</div><div class="lc-bar"><div class="lc-dot on"></div><div class="lc-dot on"></div><div class="lc-dot on"></div><div class="lc-dot on"></div><span class="lc-txt">4/4</span></div></div>
+          <div class="det-grp"><div class="det-lbl">Asset</div><div class="det-val">NASDAQ top 20</div></div>
+          <div class="det-grp"><div class="det-lbl">Timeframe</div><div class="det-val">5m</div></div>
+          <div class="det-grp"><div class="det-lbl">Last backtest</div><div class="det-val">Jun 11 · 12mo</div></div>
+        </div>
+      </div>
+
+      <!-- Card 2: Mean Reversion RSI -->
+      <div class="strategy-card" id="card-meanrev" data-status="paper" data-name="Mean Reversion RSI" data-pnl="3218" data-wr="58.1" style="border-left:3px solid #818CF8;">
+        <div class="card-main">
+          <div class="card-header">
+            <div class="status-dot" style="background:#818CF8;"></div>
+            <div class="card-name">Mean Reversion RSI</div>
+            <span class="badge" style="background:rgba(99,102,241,.15);color:#6366F1;">PAPER</span>
+            <div class="card-meta">v1.1 &middot; Alpaca &middot; 5h ago</div>
+            <div class="score-chip score-amber">72</div>
+          </div>
+          <div class="card-stats">
+            <div class="stat-item"><div class="stat-lbl">P&amp;L</div><div class="stat-val g">+$3,218</div></div>
+            <div class="stat-item"><div class="stat-lbl">Win Rate</div><div class="stat-val">58.1%</div></div>
+            <div class="stat-item"><div class="stat-lbl">Trades</div><div class="stat-val">247</div></div>
+            <div class="stat-item"><div class="stat-lbl">Signals</div><div class="stat-val">31</div></div>
+          </div>
+          <div class="card-actions">
+            <div id="bt-meanrev"></div>
+            <button class="icon-btn" onclick="openVH('meanrev')" title="Version history">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5V8l2.5 2.5"/></svg>
+            </button>
+            <button class="more-btn">&#8943;</button>
+            <button class="exp-btn" id="exp-meanrev" onclick="toggleExpand('meanrev')">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="card-detail" id="detail-meanrev">
+          <div class="det-grp"><div class="det-lbl">Indicators</div><div class="ind-chips"><span class="ind-chip">RSI(14)</span><span class="ind-chip">BB(20)</span><span class="ind-chip">MACD</span></div></div>
+          <div class="det-grp"><div class="det-lbl">Lifecycle</div><div class="lc-bar"><div class="lc-dot on"></div><div class="lc-dot on"></div><div class="lc-dot"></div><div class="lc-dot"></div><span class="lc-txt">2/4</span></div></div>
+          <div class="det-grp"><div class="det-lbl">Asset</div><div class="det-val">S&amp;P 500 ETF</div></div>
+          <div class="det-grp"><div class="det-lbl">Timeframe</div><div class="det-val">15m</div></div>
+          <div class="det-grp"><div class="det-lbl">Last backtest</div><div class="det-val">Jun 10 · 6mo</div></div>
+        </div>
+      </div>
+
+      <!-- Card 3: VWAP Scalper -->
+      <div class="strategy-card" id="card-vwap" data-status="paper" data-flagged="true" data-name="VWAP Scalper" data-pnl="-1247" data-wr="41.2" style="border-left:3px solid #F87171;">
+        <div class="card-main">
+          <div class="card-header">
+            <div class="status-dot" style="background:#F87171;"></div>
+            <div class="card-name">VWAP Scalper</div>
+            <span class="badge" style="background:rgba(248,113,113,.15);color:#F87171;">PAPER</span>
+            <div class="card-meta">v3.0 &middot; Alpaca &middot; 1d ago</div>
+            <div class="score-chip score-red">43</div>
+          </div>
+          <div class="card-stats">
+            <div class="stat-item"><div class="stat-lbl">P&amp;L</div><div class="stat-val r">-$1,247</div></div>
+            <div class="stat-item"><div class="stat-lbl">Win Rate</div><div class="stat-val">41.2%</div></div>
+            <div class="stat-item"><div class="stat-lbl">Trades</div><div class="stat-val">189</div></div>
+            <div class="stat-item"><div class="stat-lbl">Signals</div><div class="stat-val">22</div></div>
+          </div>
+          <div class="card-actions">
+            <div id="bt-vwap"></div>
+            <button class="btn-amber-out" onclick="showToast('Optimization queued for VWAP Scalper')">Optimize</button>
+            <button class="icon-btn" onclick="openVH('vwap')" title="Version history">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5V8l2.5 2.5"/></svg>
+            </button>
+            <button class="more-btn">&#8943;</button>
+            <button class="exp-btn" id="exp-vwap" onclick="toggleExpand('vwap')">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="card-detail" id="detail-vwap">
+          <div class="det-grp"><div class="det-lbl">Indicators</div><div class="ind-chips"><span class="ind-chip">VWAP</span><span class="ind-chip">Volume</span><span class="ind-chip">RSI(7)</span></div></div>
+          <div class="det-grp"><div class="det-lbl">Lifecycle</div><div class="lc-bar"><div class="lc-dot on"></div><div class="lc-dot on"></div><div class="lc-dot"></div><div class="lc-dot"></div><span class="lc-txt">2/4</span></div></div>
+          <div class="det-grp"><div class="det-lbl">Asset</div><div class="det-val">TSLA / NVDA / AMD</div></div>
+          <div class="det-grp"><div class="det-lbl">Timeframe</div><div class="det-val">1m</div></div>
+          <div class="det-grp"><div class="det-lbl">Last backtest</div><div class="det-val">Jun 9 · 3mo</div></div>
+        </div>
+      </div>
+
+      <!-- Card 4: Overnight Gap Fade -->
+      <div class="strategy-card" id="card-gap" data-status="draft" data-name="Overnight Gap Fade" data-pnl="0" data-wr="0" style="border-left:3px solid var(--tv-amber);">
+        <div class="card-main">
+          <div class="card-header">
+            <div class="status-dot" style="background:var(--tv-amber);"></div>
+            <div class="card-name">Overnight Gap Fade</div>
+            <span class="badge" style="background:var(--tv-amber-bg);color:var(--tv-amber-text);">DRAFT</span>
+            <div class="card-meta">v0.1 &middot; &#8212; &middot; 3d ago</div>
+          </div>
+          <div class="card-stats">
+            <div class="stat-item"><div class="stat-lbl">P&amp;L</div><div class="stat-val d">&#8212;</div></div>
+            <div class="stat-item"><div class="stat-lbl">Win Rate</div><div class="stat-val d">&#8212;</div></div>
+            <div class="stat-item"><div class="stat-lbl">Trades</div><div class="stat-val d">0</div></div>
+            <div class="stat-item"><div class="stat-lbl">Signals</div><div class="stat-val d">0</div></div>
+          </div>
+          <div class="card-actions">
+            <div id="bt-gap"></div>
+            <button class="icon-btn" onclick="openVH('gap')" title="Version history">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5V8l2.5 2.5"/></svg>
+            </button>
+            <button class="more-btn">&#8943;</button>
+            <button class="exp-btn" id="exp-gap" onclick="toggleExpand('gap')">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="card-detail" id="detail-gap">
+          <div class="det-grp"><div class="det-lbl">Indicators</div><div class="det-val" style="color:var(--tv-muted)">None added</div></div>
+          <div class="det-grp"><div class="det-lbl">Lifecycle</div><div class="lc-bar"><div class="lc-dot on"></div><div class="lc-dot"></div><div class="lc-dot"></div><div class="lc-dot"></div><span class="lc-txt">1/4</span></div></div>
+          <div class="det-grp"><div class="det-lbl">Asset</div><div class="det-val">US Equities</div></div>
+          <div class="det-grp"><div class="det-lbl">Timeframe</div><div class="det-val">Daily</div></div>
+          <div class="det-grp"><div class="det-lbl">Last backtest</div><div class="det-val d">&#8212;</div></div>
+        </div>
+      </div>
+
+      <!-- Card 5: Default Strategy -->
+      <div class="strategy-card" id="card-default" data-status="locked" data-name="Default Strategy" data-pnl="0" data-wr="0" style="border-left:3px solid #64718A;opacity:.65;">
+        <div class="card-main">
+          <div class="card-header">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#64718A" stroke-width="1.5" style="flex-shrink:0"><rect x="3" y="7" width="10" height="8" rx="1.5"/><path d="M5 7V5a3 3 0 016 0v2"/></svg>
+            <div class="card-name" style="color:var(--tv-muted)">Default Strategy</div>
+            <span class="badge" style="background:var(--tv-surface-3);color:var(--tv-muted);">DEFAULT</span>
+            <div class="card-meta">v1.0 &middot; &#8212; &middot; System</div>
+          </div>
+          <div class="card-stats">
+            <div class="stat-item"><div class="stat-lbl">P&amp;L</div><div class="stat-val d">&#8212;</div></div>
+            <div class="stat-item"><div class="stat-lbl">Win Rate</div><div class="stat-val d">&#8212;</div></div>
+            <div class="stat-item"><div class="stat-lbl">Trades</div><div class="stat-val d">&#8212;</div></div>
+            <div class="stat-item"><div class="stat-lbl">Signals</div><div class="stat-val d">&#8212;</div></div>
+          </div>
+          <div class="card-actions">
+            <span style="font-size:12px;color:var(--tv-muted);flex:1;">System default &#8212; read only</span>
+            <button class="icon-btn" onclick="openVH('default')" title="Version history">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5V8l2.5 2.5"/></svg>
+            </button>
+            <button class="exp-btn" id="exp-default" onclick="toggleExpand('default')">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="card-detail" id="detail-default">
+          <div class="det-grp"><div class="det-lbl">Lifecycle</div><div class="lc-bar"><div class="lc-dot"></div><div class="lc-dot"></div><div class="lc-dot"></div><div class="lc-dot"></div><span class="lc-txt">0/4</span></div></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- VERSION HISTORY DRAWER -->
+<div class="vh-drawer" id="vhDrawer">
+  <div class="drawer-hdr">
+    <div style="flex:1;min-width:0;">
+      <div class="drawer-ttl">Version History</div>
+      <div class="drawer-sub" id="vhStratName"></div>
+    </div>
+    <button class="drw-close" onclick="closeVH()">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3l10 10M13 3L3 13"/></svg>
+    </button>
+  </div>
+  <div class="vh-list" id="vhList"></div>
+</div>
+
+<!-- BUILDER DRAWER -->
+<div class="bldr-drawer" id="bldrDrawer">
+  <div class="drawer-hdr">
+    <div class="drawer-ttl" id="bldrTitle">New Strategy</div>
+    <button class="drw-close" onclick="closeBuilder()">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3l10 10M13 3L3 13"/></svg>
+    </button>
+  </div>
+  <div class="bldr-body">
+
+    <!-- STEP: MODE -->
+    <div class="bldr-step active" id="step-mode">
+      <p class="mode-intro">Choose how you want to build your strategy. You can always switch methods later.</p>
+      <div class="mode-cards">
+        <div class="mode-card ai" onclick="selectMode('ai')">
+          <div class="mode-card-ttl">&#x2728; AI Strategy Builder <span class="rec-badge">RECOMMENDED</span></div>
+          <div class="mode-card-sub">Describe your idea in plain English &#8212; AI generates indicators, conditions and risk rules automatically.</div>
+        </div>
+        <div class="mode-card" onclick="selectMode('manual')">
+          <div class="mode-card-ttl">&#x1F527; Build with indicators</div>
+          <div class="mode-card-sub">Manually pick indicators, define entry/exit conditions and tune every parameter yourself.</div>
+        </div>
+        <div class="mode-card" onclick="showToast('Coming soon')">
+          <div class="mode-card-ttl">&#x1F4D0; Advanced / market structure</div>
+          <div class="mode-card-sub">Order flow, volume profile, footprint charts and smart money concepts.</div>
+        </div>
+        <div class="mode-card" onclick="showToast('Coming soon')">
+          <div class="mode-card-ttl">&#x1F4C4; Import Pine Script or JSON</div>
+          <div class="mode-card-sub">Paste your existing TradingView Pine Script or a TraderVault JSON config.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP: INDICATORS -->
+    <div class="bldr-step" id="step-indicators">
+      <div class="name-band">
+        <input class="name-input" id="stratNameInput" type="text" placeholder="Strategy name&#8230;" oninput="onNameInput()"/>
+        <div class="name-dot" id="nameDot"></div>
+      </div>
+      <div class="stepper">
+        <div class="step-item active"><span class="step-num">1</span>Indicators</div>
+        <div class="step-item"><span class="step-num">2</span>Conditions</div>
+        <div class="step-item"><span class="step-num">3</span>Trade mgmt</div>
+      </div>
+      <div class="live-bar" id="liveBar">
+        <span class="live-bar-lbl">Signals:</span>
+        <span class="live-empty" id="liveEmpty">No indicators added yet</span>
+      </div>
+      <div id="indPickerSec">
+        <input class="ind-search" id="indSearch" type="search" placeholder="Search indicators&#8230;" oninput="filterInds()"/>
+        <div class="ind-list" id="indList">
+          <div class="ind-item" data-ind="MACD" onclick="openCfg('MACD')"><div class="ind-icon">M</div>MACD &#8212; Moving Avg Convergence Divergence</div>
+          <div class="ind-item" data-ind="RSI" onclick="openCfg('RSI')"><div class="ind-icon">R</div>RSI &#8212; Relative Strength Index</div>
+          <div class="ind-item" data-ind="EMA" onclick="openCfg('EMA')"><div class="ind-icon">E</div>EMA &#8212; Exponential Moving Average</div>
+          <div class="ind-item" data-ind="VWAP" onclick="openCfg('VWAP')"><div class="ind-icon">V</div>VWAP &#8212; Volume Weighted Avg Price</div>
+          <div class="ind-item" data-ind="Session" onclick="openCfg('Session')"><div class="ind-icon">S</div>Session filter &#8212; Market hours gate</div>
+        </div>
+        <div class="cfg-panel" id="cfgPanel">
+          <div class="ai-hint"><span class="ai-hint-ico">&#x2728;</span><span id="cfgHint">AI suggestion loading&#8230;</span></div>
+          <div class="cfg-ttl" id="cfgTitle">Configure indicator</div>
+          <div class="radio-grp">
+            <label class="radio-lbl"><input type="radio" name="sigType" value="buy" checked/> Buy signal</label>
+            <label class="radio-lbl"><input type="radio" name="sigType" value="sell"/> Sell signal</label>
+            <label class="radio-lbl"><input type="radio" name="sigType" value="both"/> Both (buy &amp; sell)</label>
+          </div>
+          <button class="btn-primary" style="width:100%;justify-content:center;" onclick="confirmInd()">Confirm &amp; add</button>
+        </div>
+      </div>
+      <div class="added-inds" id="addedIndsEl"></div>
+      <button class="add-another" id="addAnotherBtn" style="display:none;" onclick="showIndPicker()">+ Add another indicator</button>
+    </div>
+
+    <!-- STEP: CONDITIONS -->
+    <div class="bldr-step" id="step-conditions">
+      <div class="stepper">
+        <div class="step-item done"><span class="step-num">&#10003;</span>Indicators</div>
+        <div class="step-item active"><span class="step-num">2</span>Conditions</div>
+        <div class="step-item"><span class="step-num">3</span>Trade mgmt</div>
+      </div>
+      <div class="logic-card">
+        <div class="logic-hdr">
+          <div class="logic-icon" style="background:var(--tv-green-bg);">&#128200;</div>
+          <div class="logic-ttl">Buy logic</div>
+          <div class="logic-btns">
+            <button class="btn-ask-ai" onclick="showToast('AI buy logic suggestion applied')">Ask AI</button>
+            <button class="btn-edit" onclick="toggleEdit('buy')">Edit</button>
+          </div>
+        </div>
+        <div class="logic-mode" id="buyLogicTxt">All signals must match</div>
+        <div class="edit-panel" id="buyEditPanel">
+          <div class="ai-hint"><span class="ai-hint-ico">&#x2728;</span>AI recommends "All signals must match" for momentum strategies.</div>
+          <div class="radio-grp">
+            <label class="radio-lbl"><input type="radio" name="buyLogic" value="all" checked/> All signals must match</label>
+            <label class="radio-lbl"><input type="radio" name="buyLogic" value="most"/> Most signals must match (&#8805;50%)</label>
+            <label class="radio-lbl"><input type="radio" name="buyLogic" value="any"/> Any signal must match</label>
+          </div>
+          <div class="edit-btns">
+            <button class="edit-confirm" onclick="confirmLogic('buy')">Confirm</button>
+            <button class="edit-cancel" onclick="toggleEdit('buy')">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <div class="logic-card">
+        <div class="logic-hdr">
+          <div class="logic-icon" style="background:var(--tv-red-bg);">&#128201;</div>
+          <div class="logic-ttl">Sell logic</div>
+          <div class="logic-btns">
+            <button class="btn-ask-ai" onclick="showToast('AI sell logic suggestion applied')">Ask AI</button>
+            <button class="btn-edit" onclick="toggleEdit('sell')">Edit</button>
+          </div>
+        </div>
+        <div class="logic-mode" id="sellLogicTxt">Any signal must match</div>
+        <div class="edit-panel" id="sellEditPanel">
+          <div class="ai-hint"><span class="ai-hint-ico">&#x2728;</span>AI recommends "Any signal must match" for flexible exits.</div>
+          <div class="radio-grp">
+            <label class="radio-lbl"><input type="radio" name="sellLogic" value="all"/> All signals must match</label>
+            <label class="radio-lbl"><input type="radio" name="sellLogic" value="most"/> Most signals must match (&#8805;50%)</label>
+            <label class="radio-lbl"><input type="radio" name="sellLogic" value="any" checked/> Any signal must match</label>
+          </div>
+          <div class="edit-btns">
+            <button class="edit-confirm" onclick="confirmLogic('sell')">Confirm</button>
+            <button class="edit-cancel" onclick="toggleEdit('sell')">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP: TRADE MGMT -->
+    <div class="bldr-step" id="step-trademgmt">
+      <div class="stepper">
+        <div class="step-item done"><span class="step-num">&#10003;</span>Indicators</div>
+        <div class="step-item done"><span class="step-num">&#10003;</span>Conditions</div>
+        <div class="step-item active"><span class="step-num">3</span>Trade mgmt</div>
+      </div>
+      <p class="trade-desc">Configure risk parameters applied to every trade this strategy opens.</p>
+      <div class="seg-lbl">Stop loss</div>
+      <div class="seg-ctrl"><button class="seg-btn active" onclick="pickSeg(this)">ATR</button><button class="seg-btn" onclick="pickSeg(this)">Fixed</button><button class="seg-btn" onclick="pickSeg(this)">None</button></div>
+      <div class="seg-lbl">Take profit</div>
+      <div class="seg-ctrl"><button class="seg-btn" onclick="pickSeg(this)">1R</button><button class="seg-btn active" onclick="pickSeg(this)">2R</button><button class="seg-btn" onclick="pickSeg(this)">3R</button><button class="seg-btn" onclick="pickSeg(this)">Trail</button></div>
+      <div class="seg-lbl">Risk per trade</div>
+      <div class="seg-ctrl"><button class="seg-btn" onclick="pickSeg(this)">0.5%</button><button class="seg-btn active" onclick="pickSeg(this)">1%</button><button class="seg-btn" onclick="pickSeg(this)">2%</button></div>
+    </div>
+
+  </div>
+  <div class="bldr-foot" id="bldrFoot"></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><div class="toast-chk">&#10003;</div><span id="toastMsg"></span></div>
+
+<script>
+/* STATE */
+const btStates={momentum:'idle',meanrev:'idle',vwap:'idle',gap:'idle'};
+let activeFilter='all',activeSearch='',vhOpen=false,bldrOpen=false;
+let bldrStep='mode',bldrMode=null,addedInds=[],curCfgInd=null,toastTimer=null;
+
+const vhData={
+  momentum:[{v:'v2.4',d:'Jun 11, 2025',cur:true},{v:'v2.3',d:'May 28, 2025'},{v:'v2.2',d:'May 10, 2025'},{v:'v2.1',d:'Apr 3, 2025'},{v:'v1.0',d:'Feb 18, 2025'}],
+  meanrev:[{v:'v1.1',d:'Jun 10, 2025',cur:true},{v:'v1.0',d:'May 2, 2025'}],
+  vwap:[{v:'v3.0',d:'Jun 9, 2025',cur:true},{v:'v2.9',d:'May 20, 2025'},{v:'v2.8',d:'Apr 15, 2025'}],
+  gap:[{v:'v0.1',d:'Jun 12, 2025',cur:true}],
+  default:[{v:'v1.0',d:'System',cur:true}],
+};
+const stratNames={momentum:'Momentum Breakout',meanrev:'Mean Reversion RSI',vwap:'VWAP Scalper',gap:'Overnight Gap Fade',default:'Default Strategy'};
+const aiHints={
+  MACD:'MACD crossovers are reliable trend-confirmation signals — best on 5m or 15m charts.',
+  RSI:'RSI(14) below 30 triggers a buy; above 70 triggers a sell. Works well in ranging markets.',
+  EMA:'EMA(9) x EMA(21) fast/slow crossover is a classic momentum entry signal.',
+  VWAP:'Price crossing VWAP is a strong intraday breakout or mean-reversion signal.',
+  Session:'Filtering by session window (e.g. NY open 9:30-11:00) significantly reduces false signals.',
+};
+
+/* UTC CLOCK */
+function tick(){const n=new Date(),p=v=>String(v).padStart(2,'0');document.getElementById('utcClock').textContent=p(n.getUTCHours())+':'+p(n.getUTCMinutes())+':'+p(n.getUTCSeconds())+' UTC';}
+tick();setInterval(tick,1000);
+
+/* THEME */
+function setTheme(d){document.documentElement.classList.toggle('tv-dark',d);document.getElementById('iconSun').style.display=d?'none':'';document.getElementById('iconMoon').style.display=d?'':'none';}
+setTheme(localStorage.getItem('tv-theme')==='dark');
+document.getElementById('themeToggle').addEventListener('click',()=>{const d=document.documentElement.classList.toggle('tv-dark');localStorage.setItem('tv-theme',d?'dark':'light');document.getElementById('iconSun').style.display=d?'none':'';document.getElementById('iconMoon').style.display=d?'':'none';});
+
+/* SIDEBAR */
+document.getElementById('sbCollapseBtn').addEventListener('click',()=>document.getElementById('sidebar').classList.toggle('collapsed'));
+document.getElementById('sbAccount').addEventListener('click',e=>{e.stopPropagation();document.getElementById('sbDropdown').classList.toggle('open');});
+
+/* KILL SWITCH */
+document.getElementById('killBtn').addEventListener('click',()=>{if(confirm('Kill switch — stop ALL live strategies immediately. Continue?'))showToast('Kill switch activated — all strategies stopped');});
+
+/* FILTER */
+document.querySelectorAll('.pill').forEach(p=>p.addEventListener('click',()=>{document.querySelectorAll('.pill').forEach(x=>x.classList.remove('active'));p.classList.add('active');activeFilter=p.dataset.filter;applyFilters();}));
+document.getElementById('searchInput').addEventListener('input',e=>{activeSearch=e.target.value.toLowerCase().trim();applyFilters();});
+function applyFilters(){document.querySelectorAll('.strategy-card').forEach(c=>{const s=c.dataset.status||'',n=(c.dataset.name||'').toLowerCase();c.hidden=!((activeFilter==='all'||s===activeFilter)&&(!activeSearch||n.includes(activeSearch)));});}
+
+/* SORT */
+document.getElementById('sortSelect').addEventListener('change',e=>{
+  const list=document.getElementById('cardsList'),cards=[...list.querySelectorAll('.strategy-card')],v=e.target.value;
+  cards.sort((a,b)=>{if(v==='pnl')return+b.dataset.pnl-+a.dataset.pnl;if(v==='wr')return+b.dataset.wr-+a.dataset.wr;if(v==='name')return(a.dataset.name||'').localeCompare(b.dataset.name||'');return 0;});
+  cards.forEach(c=>list.appendChild(c));
+});
+
+/* EXPAND */
+function toggleExpand(id){const d=document.getElementById('detail-'+id),b=document.getElementById('exp-'+id),o=d.classList.toggle('open');b.classList.toggle('open',o);}
+
+/* BACKTEST */
+function renderBt(id){const w=document.getElementById('bt-'+id);if(!w)return;const s=btStates[id];if(s==='idle')w.innerHTML='<button class="btn-sec" onclick="runBt(\''+id+'\')">Run backtest</button>';else if(s==='running')w.innerHTML='<button class="btn-sec" disabled><div class="spinner"></div> Running…</button>';else if(s==='done')w.innerHTML='<button class="btn-lime" onclick="showToast(\'Opening results…\')">View results</button>';}
+function runBt(id){if(btStates[id]==='running')return;btStates[id]='running';renderBt(id);setTimeout(()=>{btStates[id]='done';renderBt(id);},2500);}
+['momentum','meanrev','vwap','gap'].forEach(renderBt);
+
+/* VERSION HISTORY */
+function openVH(id){
+  document.getElementById('vhStratName').textContent=stratNames[id]||id;
+  document.getElementById('vhList').innerHTML=(vhData[id]||[]).map(v=>'<div class="vh-item'+(v.cur?' cur':'')+'"><div style="flex:1"><div class="vh-ver">'+v.v+'</div><div class="vh-date">'+v.d+'</div></div>'+(v.cur?'<span class="vh-cur-tag">Current</span>':'')+'<div class="vh-acts"><button class="vh-restore" onclick="showToast(\'Version restored\')">Restore</button><button class="vh-compare" disabled>Compare</button></div></div>').join('');
+  document.getElementById('vhDrawer').classList.add('open');
+  document.getElementById('drawerBackdrop').classList.add('open');
+  vhOpen=true;
+}
+function closeVH(){document.getElementById('vhDrawer').classList.remove('open');if(!bldrOpen)document.getElementById('drawerBackdrop').classList.remove('open');vhOpen=false;}
+
+/* BUILDER */
+function openBuilder(){
+  bldrStep='mode';bldrMode=null;addedInds=[];curCfgInd=null;
+  document.querySelectorAll('.bldr-step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('step-mode').classList.add('active');
+  renderFoot();
+  document.getElementById('bldrDrawer').classList.add('open');
+  document.getElementById('drawerBackdrop').classList.add('open');
+  bldrOpen=true;
+}
+function closeBuilder(){document.getElementById('bldrDrawer').classList.remove('open');if(!vhOpen)document.getElementById('drawerBackdrop').classList.remove('open');bldrOpen=false;}
+document.getElementById('newStratBtn').addEventListener('click',openBuilder);
+
+function goStep(step){
+  bldrStep=step;
+  document.querySelectorAll('.bldr-step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('step-'+step).classList.add('active');
+  if(step==='indicators'){renderAddedInds();updateLiveBar();document.getElementById('cfgPanel').classList.remove('open');document.getElementById('indPickerSec').style.display='';document.getElementById('addAnotherBtn').style.display=addedInds.length?'flex':'none';}
+  renderFoot();
+}
+function renderFoot(){
+  const f=document.getElementById('bldrFoot');
+  const m={mode:'<button class="btn-ghost" onclick="closeBuilder()">Cancel</button>',
+    indicators:'<button class="btn-ghost" onclick="closeBuilder()">Cancel</button><div class="foot-sp"></div><button class="btn-save" onclick="showToast(\'Draft saved\')">Save</button><button class="btn-primary" onclick="goStep(\'conditions\')">Next: Conditions →</button>',
+    conditions:'<button class="btn-back" onclick="goStep(\'indicators\')">← Back</button><div class="foot-sp"></div><button class="btn-save" onclick="showToast(\'Draft saved\')">Save</button><button class="btn-lime-lg" onclick="showToast(\'Saved — backtest queued!\')">Save &amp; backtest</button>',
+    trademgmt:'<button class="btn-back" onclick="goStep(\'conditions\')">← Back</button><div class="foot-sp"></div><button class="btn-save" onclick="showToast(\'Draft saved\')">Save</button><button class="btn-lime-lg" onclick="showToast(\'Saved — backtest queued!\')">Save &amp; backtest</button>',
+  };
+  f.innerHTML=m[bldrStep]||'';
+}
+function selectMode(m){bldrMode=m;goStep('indicators');}
+
+/* INDICATORS */
+function openCfg(name){
+  curCfgInd=name;
+  document.querySelectorAll('.ind-item').forEach(el=>el.classList.toggle('sel',el.dataset.ind===name));
+  document.getElementById('cfgTitle').textContent='Configure: '+name;
+  document.getElementById('cfgHint').textContent=aiHints[name]||'Standard settings work well for most strategies.';
+  document.querySelector('input[name="sigType"][value="buy"]').checked=true;
+  document.getElementById('cfgPanel').classList.add('open');
+}
+function confirmInd(){
+  if(!curCfgInd)return;
+  const sig=document.querySelector('input[name="sigType"]:checked').value;
+  addedInds.push({name:curCfgInd,sig});curCfgInd=null;
+  document.getElementById('cfgPanel').classList.remove('open');
+  document.getElementById('indPickerSec').style.display='none';
+  document.getElementById('addAnotherBtn').style.display='flex';
+  document.querySelectorAll('.ind-item').forEach(el=>el.classList.remove('sel'));
+  renderAddedInds();updateLiveBar();
+}
+function showIndPicker(){document.getElementById('indPickerSec').style.display='';document.getElementById('addAnotherBtn').style.display='none';document.getElementById('cfgPanel').classList.remove('open');}
+function filterInds(){const q=document.getElementById('indSearch').value.toLowerCase();document.querySelectorAll('.ind-item').forEach(el=>el.style.display=el.textContent.toLowerCase().includes(q)?'':'none');}
+function renderAddedInds(){
+  document.getElementById('addedIndsEl').innerHTML=addedInds.map((ind,i)=>'<div class="added-ind"><div class="added-ind-name">'+ind.name+'</div><div class="added-ind-sig">'+(ind.sig==='buy'?'Buy signal':ind.sig==='sell'?'Sell signal':'Buy & Sell')+'</div><button class="added-ind-rm" onclick="removeInd('+i+')" title="Remove">×</button></div>').join('');
+}
+function removeInd(i){addedInds.splice(i,1);renderAddedInds();updateLiveBar();if(!addedInds.length){document.getElementById('indPickerSec').style.display='';document.getElementById('addAnotherBtn').style.display='none';}}
+function updateLiveBar(){
+  const bar=document.getElementById('liveBar');bar.querySelectorAll('.sig-chip').forEach(c=>c.remove());
+  const e=document.getElementById('liveEmpty');
+  if(!addedInds.length){e.style.display='';return;}e.style.display='none';
+  addedInds.forEach(ind=>{const types=ind.sig==='both'?['buy','sell']:[ind.sig];types.forEach(t=>{const c=document.createElement('span');c.className='sig-chip '+t;c.textContent=ind.name+' '+(t[0].toUpperCase()+t.slice(1));bar.appendChild(c);});});
+}
+function onNameInput(){document.getElementById('nameDot').classList.toggle('filled',document.getElementById('stratNameInput').value.trim().length>0);}
+
+/* CONDITIONS */
+function toggleEdit(t){document.getElementById(t+'EditPanel').classList.toggle('open');}
+function confirmLogic(t){
+  const sel=document.querySelector('input[name="'+t+'Logic"]:checked');
+  const map={all:'All signals must match',most:'Most signals must match (≥50%)',any:'Any signal must match'};
+  document.getElementById(t+'LogicTxt').textContent=map[sel.value]||sel.value;
+  document.getElementById(t+'EditPanel').classList.remove('open');
+  showToast((t[0].toUpperCase()+t.slice(1))+' logic updated');
+}
+
+/* SEGMENTED */
+function pickSeg(btn){const c=btn.closest('.seg-ctrl');c.querySelectorAll('.seg-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+
+/* TOAST */
+function showToast(msg){const t=document.getElementById('toast');document.getElementById('toastMsg').textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3500);}
+
+/* ESC + BACKDROP */
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(vhOpen)closeVH();else if(bldrOpen)closeBuilder();document.getElementById('sbDropdown').classList.remove('open');}});
+document.getElementById('drawerBackdrop').addEventListener('click',()=>{closeVH();closeBuilder();});
+document.addEventListener('click',e=>{if(!e.target.closest('#sbAccount'))document.getElementById('sbDropdown').classList.remove('open');});
+</script>
+</body>
+</html>
